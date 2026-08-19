@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --background: #06070a;
+  --surface: #10141d;
+  --surface-elevated: #141a25;
+  --surface-raised: #0b0f16;
+  --surface-translucent: rgba(16, 20, 29, 0.7);
+  --text-primary: #eef5ff;
+  --text-muted: #8a96a8;
+  --accent: #55d7ff;
+  --success: #6ee7a8;
+  --warning: #ffd36e;
+  --danger: #ff6f7d;
+  --border: rgba(145, 164, 191, 0.18);
+  --accent-soft: rgba(85, 215, 255, 0.12);
+  --accent-strong: rgba(85, 215, 255, 0.6);
+  --accent-contrast: #061018;
+  --accent-hover: #8be5ff;
+  --danger-soft: rgba(255, 111, 125, 0.12);
+  --danger-hover: rgba(255, 111, 125, 0.2);
+  --panel: rgba(16, 20, 29, 0.92);
+  --panel-strong: var(--surface);
+  --foreground: var(--text-primary);
+  --muted: var(--text-muted);
+  --cyan: var(--accent);
+  --blue: #6ea8ff;
+  --violet: #b18cff;
+  --green: var(--success);
+  --red: var(--danger);
+  --yellow: var(--warning);
+}
+
+@theme inline {
+  --font-sans: var(--font-ryanos-sans);
+  --font-mono: var(--font-ryanos-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(120deg, rgba(85, 215, 255, 0.08), transparent 34%),
+    linear-gradient(240deg, rgba(177, 140, 255, 0.08), transparent 38%), var(--background);
+  color: var(--text-primary);
+  font-family:
+    var(--font-ryanos-sans),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(85, 215, 255, 0.32);
+}
+
+.engineering-grid {
+  background-image:
+    linear-gradient(rgba(145, 164, 191, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(145, 164, 191, 0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.72), transparent);
+}
+
+.mono {
+  font-family:
+    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

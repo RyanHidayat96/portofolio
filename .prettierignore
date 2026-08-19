@@ -1,0 +1,8 @@
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+RYANOS_CODEX_MASTER.md
+RYANOS_CODEX_PHASED_REVISION.md
+*.tsbuildinfo
