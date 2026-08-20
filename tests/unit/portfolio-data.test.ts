@@ -4,6 +4,7 @@ import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
 import { skillGroups } from "@/data/skills";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const forbiddenPlaceholderTokens = ["TO" + "DO_PORTFOLIO_DATA", "TO" + "DO", "FIX" + "ME"];
@@ -24,16 +25,24 @@ describe("verified portfolio data", () => {
   });
 
   it("includes recruiter-critical identity, contact, experience, and education data", () => {
-    expect(profile.name).toBe("Ryan Hidayat");
-    expect(profile.yearsOfExperience).toBe("4+ years");
-    expect(profile.contact.email.href).toBe("mailto:ryanhidayat123456789@gmail.com");
-    expect(profile.contact.linkedIn.href).toBe("https://linkedin.com/in/ryan-hi");
+    expect(profile.name).not.toHaveLength(0);
+    expect(profile.yearsOfExperience).not.toHaveLength(0);
+    expect(profile.contact.email.href).toMatch(/^mailto:/);
+    expect(profile.contact.linkedIn.href).toMatch(/^https:\/\//);
     expect(experience).toHaveLength(3);
-    expect(education[0]?.institution).toBe("Universitas Dian Nusantara");
+    expect(education[0]?.institution).not.toHaveLength(0);
   });
 
-  it("keeps unverified GitHub and CV links hidden until configured", () => {
+  it("keeps unverified GitHub hidden and validates CV when configured", () => {
     expect(isPortfolioValueConfigured(profile.contact.github.href)).toBe(false);
-    expect(isPortfolioValueConfigured(profile.contact.cv.href)).toBe(false);
+
+    if (isPortfolioValueConfigured(profile.contact.cv.href)) {
+      expect(profile.contact.cv.href).toBe("/cv.pdf");
+      expect(profile.contact.cv.value).not.toHaveLength(0);
+      expect(existsSync("public/cv.pdf")).toBe(true);
+      return;
+    }
+
+    expect(profile.contact.cv.href).toBe("");
   });
 });

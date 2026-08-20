@@ -1,11 +1,6 @@
+import { parseJsonEnv } from "./env";
 import type { EducationCredential } from "./types";
 
-export const education: readonly EducationCredential[] = [
-  {
-    institution: "Universitas Dian Nusantara",
-    degree: "Bachelor of Informatics Engineering",
-    period: "March 2020 - June 2024",
-    gpa: "3.77 / 4.00",
-    location: "Jakarta, Indonesia"
-  }
-] as const;
+export const education: readonly EducationCredential[] = parseJsonEnv<
+  readonly EducationCredential[]
+>(process.env.NEXT_PUBLIC_RYANOS_EDUCATION_JSON, "NEXT_PUBLIC_RYANOS_EDUCATION_JSON", []);

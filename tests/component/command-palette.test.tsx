@@ -20,7 +20,7 @@ const actions: readonly PaletteAction[] = [
   },
   {
     id: "test-contact",
-    label: "Contact Ryan",
+    label: "Contact Owner",
     section: "contact",
     description: "Open contact panel."
   }
@@ -62,7 +62,7 @@ describe("CommandPalette", () => {
 
     await user.type(input, "contact");
 
-    expect(screen.getByRole("option", { name: /Contact Ryan/ })).toHaveAttribute(
+    expect(screen.getByRole("option", { name: /Contact Owner/ })).toHaveAttribute(
       "aria-selected",
       "true"
     );

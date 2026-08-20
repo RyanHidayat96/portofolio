@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { branding } from "@/data/branding";
 import { getAbsoluteUrl, siteConfig } from "@/config/site";
 import { StructuredData } from "./StructuredData";
 import "./globals.css";
@@ -70,14 +71,14 @@ export const metadata: Metadata = {
         url: siteConfig.ogImagePath,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.ownerName} SDET portfolio preview`
+        alt: `${siteConfig.ownerName} portfolio preview`
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.title,
-    description: "Automation, Mobile, API, Performance, CI/CD.",
+    description: branding.twitterDescription,
     images: [getAbsoluteUrl(siteConfig.twitterImagePath)]
   },
   category: "technology"

@@ -6,6 +6,17 @@ export interface ContactLink {
   readonly isPrimary?: boolean;
 }
 
+export interface Branding {
+  readonly appName: string;
+  readonly workspaceLabel: string;
+  readonly heroStatementLead: string;
+  readonly heroStatementAccent: string;
+  readonly metadataDescription: string;
+  readonly openGraphBadge: string;
+  readonly openGraphHighlights: readonly string[];
+  readonly twitterDescription: string;
+}
+
 export interface Profile {
   readonly name: string;
   readonly headline: string;
@@ -112,4 +123,17 @@ export interface ApiEndpointDefinition {
   readonly description: string;
   readonly responseShape: readonly string[];
   readonly relatedSkills: readonly string[];
+}
+
+export interface PipelinePanelMetadata {
+  readonly eyebrow: string;
+  readonly title: string;
+  readonly description: string;
+  readonly stack: readonly string[];
+  readonly flow: readonly string[];
+}
+
+export interface ArchitectureMap {
+  readonly nodes: readonly ArchitectureNode[];
+  readonly edges: readonly ArchitectureEdge[];
 }

@@ -77,7 +77,7 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   registry.register(new ClearCommand());
 
   registry.register(
-    new StaticCommand("whoami", "Show Ryan profile.", (_args, context) =>
+    new StaticCommand("whoami", "Show profile.", (_args, context) =>
       lines(context.profile.name, context.profile.headline, context.profile.tagline)
     )
   );
@@ -116,7 +116,7 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
 
   registry.register(
     new StaticCommand("stack", "Show core stack.", () =>
-      lines("Next.js", "React", "TypeScript", "Tailwind CSS", "Vitest", "Playwright")
+      lines("Next.js", "React", "TypeScript", "Tailwind CSS", "Vitest", "React Testing Library")
     )
   );
 
@@ -151,22 +151,22 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   );
 
   registry.register(
-    new StaticCommand("hire", "Run candidate evaluation.", (_args, context) =>
-      navigate(
+    new StaticCommand("hire", "Run candidate evaluation.", (_args, context) => {
+      const evidenceLines = context.skillGroups
+        .flatMap((group) => group.skills.map((skill) => `${skill.name.padEnd(24)} strong`))
+        .slice(0, 5);
+
+      return navigate(
         "contact",
         "Running candidate evaluation...",
         "",
         `Identity              ${context.profile.name}`,
-        "Automation Engineering  strong",
-        "API Testing             strong",
-        "Mobile Automation       strong",
-        "Performance Engineering strong",
-        "CI/CD Quality Gates     strong",
+        ...evidenceLines,
         "",
         "Result: Strong Match",
         "Opening contact channel..."
-      )
-    )
+      );
+    })
   );
 
   registry.register(

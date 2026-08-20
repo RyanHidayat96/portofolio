@@ -1,4 +1,5 @@
 import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
+import { profile } from "@/data/profile";
 import {
   Activity,
   BadgeCheck,
@@ -105,7 +106,7 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "contact",
     label: "Contact",
     icon: Mail,
-    description: "Open Ryan's verified contact channels."
+    description: "Open verified contact channels."
   }
 } as const;
 
@@ -185,7 +186,7 @@ export function getPaletteActions(mode: WorkspaceMode): readonly PaletteAction[]
         : item.id === "pipeline"
           ? "Run Pipeline"
           : item.id === "contact"
-            ? "Contact Ryan"
+            ? `Contact ${profile.name}`
             : `Go to ${item.label}`,
     section: item.id,
     description: item.description

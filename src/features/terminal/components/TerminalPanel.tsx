@@ -1,6 +1,7 @@
 "use client";
 
 import { Panel } from "@/components/ui/Panel";
+import { branding } from "@/data/branding";
 import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
@@ -29,7 +30,7 @@ export function TerminalPanel({
 }>): React.ReactElement {
   const registry = useMemo(() => createPortfolioCommandRegistry(), []);
   const [lines, setLines] = useState<readonly TerminalLine[]>([
-    createLine("system", 'RyanOS terminal ready. Type "help" or "hire ryan".')
+    createLine("system", `${branding.appName} terminal ready. Type "help" or "hire".`)
   ]);
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<readonly string[]>([]);

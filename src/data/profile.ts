@@ -1,43 +1,34 @@
+import { parseJsonEnv } from "./env";
 import type { Profile } from "./types";
 
-export const profile: Profile = {
-  name: "Ryan Hidayat",
-  headline: "Software Development Engineer in Test (SDET) | QA Automation Engineer",
-  role: "SDET",
-  yearsOfExperience: "4+ years",
-  tagline: "I don't just test software. I engineer confidence.",
-  summary:
-    "Ryan is a Software Development Engineer in Test and Software Quality Assurance Engineer with 4+ years of experience across enterprise web, mobile, API, and performance testing. He builds scalable automation frameworks with Playwright, WebDriverIO, Appium, and TypeScript, integrates automated quality gates into CI/CD pipelines, and brings backend engineering experience with Java Spring Boot, REST APIs, microservices, and enterprise data validation.",
-  location: "Jakarta, Indonesia",
-  availability: "Open to relevant SDET / QA Automation opportunities",
-  focusAreas: [
-    "Automation Engineering",
-    "Web Testing",
-    "Mobile Testing",
-    "API Testing",
-    "Performance Testing",
-    "CI/CD Quality Engineering"
-  ],
+const fallbackProfile: Profile = {
+  name: "Portfolio Owner",
+  headline: "Portfolio profile not configured",
+  role: "Portfolio Owner",
+  yearsOfExperience: "",
+  tagline: "Configure NEXT_PUBLIC_RYANOS_PROFILE_JSON in .env.",
+  summary: "Portfolio profile data is loaded from environment configuration.",
+  location: "",
+  availability: "",
+  focusAreas: [],
   contact: {
     email: {
       id: "email",
       label: "Email",
-      value: "ryanhidayat123456789@gmail.com",
-      href: "mailto:ryanhidayat123456789@gmail.com",
-      isPrimary: true
+      value: "",
+      href: ""
     },
     linkedIn: {
       id: "linkedin",
       label: "LinkedIn",
-      value: "linkedin.com/in/ryan-hi",
-      href: "https://linkedin.com/in/ryan-hi",
-      isPrimary: true
+      value: "",
+      href: ""
     },
     phone: {
       id: "phone",
       label: "Phone",
-      value: "087775009393",
-      href: "tel:087775009393"
+      value: "",
+      href: ""
     },
     github: {
       id: "github",
@@ -52,4 +43,10 @@ export const profile: Profile = {
       href: ""
     }
   }
-} as const;
+};
+
+export const profile: Profile = parseJsonEnv<Profile>(
+  process.env.NEXT_PUBLIC_RYANOS_PROFILE_JSON,
+  "NEXT_PUBLIC_RYANOS_PROFILE_JSON",
+  fallbackProfile
+);

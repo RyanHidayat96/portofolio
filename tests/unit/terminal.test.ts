@@ -19,9 +19,9 @@ function createTerminalContext(history: readonly string[] = []): TerminalContext
 
 describe("terminal parser", () => {
   it("parses command names and quoted args", () => {
-    expect(parseTerminalInput('hire "ryan hidayat"')).toEqual({
+    expect(parseTerminalInput('hire "portfolio owner"')).toEqual({
       commandName: "hire",
-      args: ["ryan hidayat"]
+      args: ["portfolio owner"]
     });
   });
 
@@ -67,15 +67,13 @@ describe("portfolio command registry", () => {
     const registry = createPortfolioCommandRegistry();
     const output = await registry.find("whoami")?.execute([], createTerminalContext());
 
-    expect(output?.lines).toContain("Ryan Hidayat");
-    expect(output?.lines).toContain(
-      "Software Development Engineer in Test (SDET) | QA Automation Engineer"
-    );
+    expect(output?.lines).toContain(profile.name);
+    expect(output?.lines).toContain(profile.headline);
   });
 
   it("hire command opens contact section", async () => {
     const registry = createPortfolioCommandRegistry();
-    const output = await registry.find("hire")?.execute(["ryan"], createTerminalContext());
+    const output = await registry.find("hire")?.execute(["owner"], createTerminalContext());
 
     expect(output?.action).toEqual({ type: "navigate", section: "contact" });
     expect(output?.lines.join("\n")).toContain("Strong Match");
@@ -116,7 +114,9 @@ describe("portfolio command registry", () => {
     });
     expect(emptyHistory?.lines).toEqual(["No command history yet."]);
     expect(populatedHistory?.lines).toEqual(["whoami", "projects"]);
-    expect(stackOutput?.lines).toEqual(expect.arrayContaining(["Next.js", "Playwright"]));
+    expect(stackOutput?.lines).toEqual(
+      expect.arrayContaining(["Next.js", "React Testing Library"])
+    );
     expect(registry.find("not-real")).toBeNull();
   });
 });

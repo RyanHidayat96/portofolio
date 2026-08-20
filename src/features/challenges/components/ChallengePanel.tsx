@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { challengeScenarios } from "@/data/challenges";
+import { profile } from "@/data/profile";
 import type { ChallengeScenario } from "@/data/types";
 import { Brain, RotateCcw } from "lucide-react";
 import { useState } from "react";
@@ -97,7 +98,7 @@ export function ChallengePanel(): React.ReactElement {
                   {selectedChoice.isPreferred ? "preferred path" : "useful signal, not first"}
                 </Badge>
                 <p className="mt-4 leading-7 text-[#c8d4e6]">{selectedChoice.feedback}</p>
-                <h3 className="mt-6 font-semibold">Ryan&apos;s Approach</h3>
+                <h3 className="mt-6 font-semibold">{profile.name}&apos;s Approach</h3>
                 <ol className="mt-3 grid gap-2 text-sm leading-6 text-[#b7c2d2]">
                   {scenario.approach.map((step, index) => (
                     <li key={step} className="grid grid-cols-[28px_1fr] gap-3">

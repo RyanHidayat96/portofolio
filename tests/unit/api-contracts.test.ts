@@ -8,22 +8,20 @@ import { GET as getExperience } from "@/app/api/experience/route";
 import { GET as getProjects } from "@/app/api/projects/route";
 import { GET as getRyan } from "@/app/api/ryan/route";
 import { GET as getSkills } from "@/app/api/skills/route";
+import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import { describe, expect, it } from "vitest";
 
 describe("portfolio API contracts", () => {
   it("defines portfolio-safe GET endpoints", () => {
-    expect(apiEndpoints.map((endpoint) => endpoint.path)).toEqual([
-      "/api/ryan",
-      "/api/skills",
-      "/api/projects",
-      "/api/experience",
-      "/api/contact"
-    ]);
+    expect(apiEndpoints.length).toBeGreaterThan(0);
+    expect(apiEndpoints.map((endpoint) => endpoint.path)).toEqual(
+      expect.arrayContaining(["/api/skills", "/api/projects", "/api/experience", "/api/contact"])
+    );
     expect(apiEndpoints.every((endpoint) => endpoint.method === "GET")).toBe(true);
     expect(apiEndpoints.every((endpoint) => endpoint.responseShape.length > 0)).toBe(true);
   });
 
-  it("returns Ryan profile contract", async () => {
+  it("returns configured profile contract", async () => {
     const response = getRyan();
     const body = (await response.json()) as {
       readonly name: string;
@@ -48,7 +46,7 @@ describe("portfolio API contracts", () => {
     ]);
     expect(body.name).toBe(profile.name);
     expect(body.role).toBe(profile.role);
-    expect(body.focus).toContain("API Testing");
+    expect(body.focus).toEqual(profile.focusAreas);
   });
 
   it("returns skills, projects, experience, and contact contracts", async () => {
@@ -136,13 +134,16 @@ describe("portfolio API contracts", () => {
     };
 
     expect(response.status).toBe(200);
-    expect(body.contact.map((link) => link.id)).toEqual(["email", "linkedin", "phone"]);
+    expect(body.contact.map((link) => link.id)).toEqual(
+      Object.values(profile.contact)
+        .filter(
+          (link) => isPortfolioValueConfigured(link.value) && isPortfolioValueConfigured(link.href)
+        )
+        .map((link) => link.id)
+    );
     expect(body.contact.every((link) => link.href && link.value)).toBe(true);
     expect(body.contact).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: "github" })])
-    );
-    expect(body.contact).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "cv" })])
     );
   });
 });

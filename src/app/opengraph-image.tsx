@@ -1,8 +1,9 @@
 import { ImageResponse } from "next/og";
+import { branding } from "@/data/branding";
 import { profile } from "@/data/profile";
 import { siteConfig } from "@/config/site";
 
-export const alt = "Ryan Hidayat SDET and QA Automation Engineer portfolio preview";
+export const alt = `${profile.name} ${profile.role} portfolio preview`;
 
 export const size = {
   width: 1200,
@@ -10,8 +11,6 @@ export const size = {
 };
 
 export const contentType = "image/png";
-
-const highlights = ["Playwright", "Appium", "API Testing", "K6", "CI/CD"];
 
 export default function OpenGraphImage(): ImageResponse {
   return new ImageResponse(
@@ -54,7 +53,7 @@ export default function OpenGraphImage(): ImageResponse {
             padding: "12px 18px"
           }}
         >
-          Engineering confidence
+          {branding.openGraphBadge}
         </div>
       </div>
 
@@ -93,7 +92,7 @@ export default function OpenGraphImage(): ImageResponse {
       </div>
 
       <div style={{ display: "flex", gap: 14 }}>
-        {highlights.map((highlight) => (
+        {branding.openGraphHighlights.map((highlight) => (
           <div
             key={highlight}
             style={{

@@ -32,8 +32,17 @@ export function ContactPanel(): React.ReactElement {
               <a
                 className="mt-4 inline-block text-sm font-semibold text-[var(--accent)]"
                 href={link.href}
-                rel={link.id === "phone" || link.id === "email" ? undefined : "noreferrer"}
-                target={link.id === "phone" || link.id === "email" ? undefined : "_blank"}
+                download={link.id === "cv" ? "cv.pdf" : undefined}
+                rel={
+                  link.id === "phone" || link.id === "email" || link.id === "cv"
+                    ? undefined
+                    : "noreferrer"
+                }
+                target={
+                  link.id === "phone" || link.id === "email" || link.id === "cv"
+                    ? undefined
+                    : "_blank"
+                }
               >
                 {link.value}
               </a>

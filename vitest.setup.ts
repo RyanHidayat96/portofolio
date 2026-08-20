@@ -1,4 +1,7 @@
 import "@testing-library/jest-dom/vitest";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd());
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,

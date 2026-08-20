@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { branding } from "@/data/branding";
 import { CheckCircle2, FastForward } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -58,7 +59,7 @@ export function BootSequence({
       <section className="w-full max-w-2xl border border-[var(--border)] bg-[#0d1119] p-5 sm:p-8">
         <div className="mb-7 flex items-center justify-between gap-4">
           <div>
-            <p className="mono text-sm text-[var(--accent)]">Initializing RyanOS...</p>
+            <p className="mono text-sm text-[var(--accent)]">Initializing {branding.appName}...</p>
             <h1 className="mt-2 text-2xl font-semibold">Engineering workspace boot</h1>
           </div>
           <Button

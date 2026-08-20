@@ -66,7 +66,7 @@ function RecruiterOverviewPanel({
             icon={<Mail aria-hidden="true" size={18} />}
             onClick={() => onNavigate("contact")}
           >
-            Contact Ryan
+            Contact {profile.name}
           </Button>
         </div>
       </Panel>
@@ -207,7 +207,7 @@ function EngineerOverviewPanel({
       <Panel className="p-5 sm:p-7">
         <Badge tone="info">Engineering Workbench</Badge>
         <h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-5xl">
-          Explore how Ryan thinks about quality systems.
+          Explore how {profile.name} thinks about quality systems.
         </h1>
         <p className="mt-5 text-base leading-7 text-[#b7c2d2]">
           Engineer Mode puts simulations first: automation recovery, CI/CD quality gates,

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { branding } from "@/data/branding";
 import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
 import type { WorkspaceSection } from "@/features/workspace/types";
@@ -13,10 +14,9 @@ interface RouteMetadataText {
 }
 
 export const siteConfig = {
-  name: "RyanOS",
-  title: `${profile.name} - SDET & QA Automation Engineer`,
-  description:
-    "Interactive RyanOS engineering portfolio for QA Automation, SDET work, Playwright, Appium, API testing, performance testing, and CI/CD quality gates.",
+  name: branding.appName,
+  title: `${profile.name} - ${profile.headline}`,
+  description: branding.metadataDescription,
   shortDescription: profile.tagline,
   ownerName: profile.name,
   locale: "en_US",
@@ -27,7 +27,7 @@ export const siteConfig = {
 
 const sectionMetadata: Readonly<Record<WorkspaceSection, RouteMetadataText>> = {
   overview: {
-    title: "RyanOS",
+    title: branding.appName,
     description: siteConfig.description
   },
   profile: {
@@ -36,12 +36,11 @@ const sectionMetadata: Readonly<Record<WorkspaceSection, RouteMetadataText>> = {
   },
   experience: {
     title: "Experience",
-    description: "Verified SDET, QA automation, and software engineering experience."
+    description: "Verified professional experience."
   },
   projects: {
     title: "Projects",
-    description:
-      "Portfolio-safe SDET case studies covering automation, mobile, CI/CD, API, and performance work."
+    description: "Portfolio-safe case studies and work highlights."
   },
   automation: {
     title: "Automation Lab",
@@ -57,23 +56,23 @@ const sectionMetadata: Readonly<Record<WorkspaceSection, RouteMetadataText>> = {
   },
   api: {
     title: "API Lab",
-    description: "Portfolio API contract explorer for RyanOS data routes."
+    description: `Portfolio API contract explorer for ${branding.appName} data routes.`
   },
   architecture: {
     title: "Architecture",
-    description: "RyanOS architecture map for data, UI, simulations, tests, and API routes."
+    description: `${branding.appName} architecture map for data, UI, simulations, tests, and API routes.`
   },
   terminal: {
     title: "Terminal",
-    description: "Interactive RyanOS terminal command surface."
+    description: `Interactive ${branding.appName} terminal command surface.`
   },
   challenge: {
     title: "Test Me",
-    description: "Scenario-based SDET decision challenge."
+    description: "Scenario-based decision challenge."
   },
   contact: {
     title: "Contact",
-    description: `Contact ${profile.name} for relevant SDET and QA Automation opportunities.`
+    description: `Contact ${profile.name} for relevant opportunities.`
   }
 };
 

@@ -20,7 +20,7 @@ interface ApiResponseState {
 }
 
 export function ApiPlayground(): React.ReactElement {
-  const [activePath, setActivePath] = useState(apiEndpoints[0]?.path ?? "/api/ryan");
+  const [activePath, setActivePath] = useState(apiEndpoints[0]?.path ?? "");
   const [response, setResponse] = useState<ApiResponseState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

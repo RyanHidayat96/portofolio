@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
+import { pipelinePanelMetadata } from "@/data/pipeline-metadata";
 import {
   createPipelineSnapshot,
   findPipelineScenario,
@@ -75,11 +76,9 @@ export function PipelineSimulatorPanel(): React.ReactElement {
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
       <Panel className="p-5">
-        <p className="mono text-sm text-[#55d7ff]">workflow.demo</p>
-        <h1 className="mt-3 text-2xl font-semibold">CI/CD Pipeline Simulator</h1>
-        <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
-          Simulation only. Shows GitLab CI/CD quality gate decisions; no deployment runs here.
-        </p>
+        <p className="mono text-sm text-[#55d7ff]">{pipelinePanelMetadata.eyebrow}</p>
+        <h1 className="mt-3 text-2xl font-semibold">{pipelinePanelMetadata.title}</h1>
+        <p className="mt-3 text-sm leading-6 text-[#8a96a8]">{pipelinePanelMetadata.description}</p>
 
         <label className="mt-6 block text-sm font-semibold text-[#c8d4e6]" htmlFor="pipeline-mode">
           Pipeline Scenario
@@ -107,10 +106,11 @@ export function PipelineSimulatorPanel(): React.ReactElement {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Badge tone="info">GitLab CI/CD</Badge>
-            <Badge tone="info">GitLab Runners</Badge>
-            <Badge tone="info">Docker</Badge>
-            <Badge tone="info">Quality Gates</Badge>
+            {pipelinePanelMetadata.stack.map((item) => (
+              <Badge key={item} tone="info">
+                {item}
+              </Badge>
+            ))}
           </div>
         </div>
 
@@ -136,7 +136,7 @@ export function PipelineSimulatorPanel(): React.ReactElement {
               <p className="mono text-sm text-[#55d7ff]">PIPELINE EXECUTION</p>
               <h2 className="mt-2 text-2xl font-semibold">Release Pipeline</h2>
               <p className="mt-2 text-sm text-[#8a96a8]">
-                Commit | Build | Unit Test | Automation Test | Performance Check | Gate | Deploy
+                {pipelinePanelMetadata.flow.join(" | ")}
               </p>
             </div>
             <Badge tone={getQualityGateTone(snapshot.qualityGate, isRunning)}>

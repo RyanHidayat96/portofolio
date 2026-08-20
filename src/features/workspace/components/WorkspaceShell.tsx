@@ -8,6 +8,8 @@ import {
   getNavigationItem,
   getNavigationItemsForMode
 } from "@/features/workspace/navigation";
+import { branding } from "@/data/branding";
+import { profile } from "@/data/profile";
 import { Command } from "lucide-react";
 
 export function WorkspaceShell({
@@ -35,8 +37,10 @@ export function WorkspaceShell({
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="hidden border-r border-[var(--border)] bg-[#080a0f]/96 p-4 lg:block">
           <div className="mb-6">
-            <p className="mono text-xs uppercase tracking-[0.24em] text-[var(--accent)]">RyanOS</p>
-            <h1 className="mt-2 text-xl font-semibold">SDET Workspace</h1>
+            <p className="mono text-xs uppercase tracking-[0.24em] text-[var(--accent)]">
+              {branding.appName}
+            </p>
+            <h1 className="mt-2 text-xl font-semibold">{branding.workspaceLabel}</h1>
             <Badge tone="success" className="mt-4">
               System Online
             </Badge>
@@ -82,7 +86,7 @@ export function WorkspaceShell({
                 <p className="mono text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
                   {activeLabel}
                 </p>
-                <h2 className="text-xl font-semibold">Ryan Hidayat</h2>
+                <h2 className="text-xl font-semibold">{profile.name}</h2>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">

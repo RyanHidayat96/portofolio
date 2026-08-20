@@ -8,7 +8,10 @@ import {
   siteConfig
 } from "@/config/site";
 import { profile } from "@/data/profile";
+import { projects } from "@/data/projects";
 import { createRouteForSection } from "@/features/workspace/routing";
+import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("SEO and production asset configuration", () => {
@@ -22,34 +25,47 @@ describe("SEO and production asset configuration", () => {
 
   it("uses central site URL for robots and sitemap entries", () => {
     const sitemapEntries = sitemap();
+    const firstProject = projects[0];
 
     expect(robots().sitemap).toBe(`${siteConfig.siteUrl.origin}/sitemap.xml`);
     expect(sitemapEntries).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           url: `${siteConfig.siteUrl.origin}/`
-        }),
-        expect.objectContaining({
-          url: `${siteConfig.siteUrl.origin}/projects/cicd-quality-gates`
         })
       ])
     );
+
+    if (firstProject) {
+      expect(sitemapEntries).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            url: `${siteConfig.siteUrl.origin}/projects/${firstProject.slug}`
+          })
+        ])
+      );
+    }
   });
 
   it("creates canonical metadata for deep linked workspace routes", () => {
-    const projectMetadata = getWorkspaceRouteMetadata(
-      createRouteForSection("projects", {
-        projectSlug: "cicd-quality-gates"
-      })
-    );
+    const firstProject = projects[0];
     const labMetadata = getWorkspaceRouteMetadata(createRouteForSection("performance"));
 
-    expect(projectMetadata).toMatchObject({
-      title: "CI/CD Quality Gates",
-      alternates: {
-        canonical: "/projects/cicd-quality-gates"
-      }
-    });
+    if (firstProject) {
+      const projectMetadata = getWorkspaceRouteMetadata(
+        createRouteForSection("projects", {
+          projectSlug: firstProject.slug
+        })
+      );
+
+      expect(projectMetadata).toMatchObject({
+        title: firstProject.title,
+        alternates: {
+          canonical: `/projects/${firstProject.slug}`
+        }
+      });
+    }
+
     expect(labMetadata).toMatchObject({
       title: "Performance Lab",
       alternates: {
@@ -58,9 +74,15 @@ describe("SEO and production asset configuration", () => {
     });
   });
 
-  it("keeps CV unlinked until the real PDF exists", () => {
+  it("links CV only when the real public PDF is configured", () => {
+    if (isPortfolioValueConfigured(profile.contact.cv.href)) {
+      expect(profile.contact.cv.href).toBe("/cv.pdf");
+      expect(profile.contact.cv.value).not.toHaveLength(0);
+      expect(existsSync("public/cv.pdf")).toBe(true);
+      return;
+    }
+
     expect(profile.contact.cv.href).toBe("");
-    expect(profile.contact.cv.value).toBe("");
   });
 });
 

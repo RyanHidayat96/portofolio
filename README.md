@@ -1,8 +1,8 @@
-# RyanOS
+# Portfolio Workspace
 
-Interactive engineering portfolio for Ryan Hidayat, a Software Development Engineer in Test (SDET) and QA Automation Engineer.
+Interactive engineering portfolio for the configured portfolio owner.
 
-RyanOS is not a generic portfolio page. It is an operating-system-inspired engineering workspace where visitors can explore profile data, projects, simulations, API routes, pipeline gates, performance thresholds, architecture, and an interactive terminal.
+The app is not a generic portfolio page. It is an operating-system-inspired engineering workspace where visitors can explore profile data, projects, simulations, API routes, pipeline gates, performance thresholds, architecture, and an interactive terminal.
 
 ## Architecture
 
@@ -18,7 +18,6 @@ RyanOS is not a generic portfolio page. It is an operating-system-inspired engin
 - Next.js, React, TypeScript, Tailwind CSS
 - Lucide React icons
 - Vitest, React Testing Library
-- Playwright E2E
 - ESLint, Prettier
 
 ## Directory Structure
@@ -30,12 +29,12 @@ RyanOS is not a generic portfolio page. It is an operating-system-inspired engin
 - `src/features/automation-lab` - failure strategies and simulation engine
 - `src/features/pipeline` - pipeline state simulation
 - `src/features/performance-lab` - performance scenarios and threshold evaluation
-- `tests` - unit, component, and Playwright E2E tests
+- `tests` - unit and component tests
 - `docs/architecture` - architecture decision records
 
 ## Engineering Decisions
 
-- Verified portfolio data is centralized in `src/data`.
+- Verified portfolio data is loaded from environment variables through `src/data`.
 - Optional owner data such as GitHub URL and CV path is hidden until configured.
 - Simulations are explicitly labeled as demos and do not claim live infrastructure execution.
 - Terminal commands use a command registry instead of a giant UI switch.
@@ -58,24 +57,33 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
-npm run test:e2e
 ```
 
 Current suite coverage:
 
 - Unit tests cover portfolio data, route contracts, SEO metadata, terminal parsing/commands, automation scenarios, pipeline transitions, and performance thresholds.
 - Component tests cover Terminal, Automation Lab, Pipeline, Performance Lab, API Playground, Architecture, Challenge, Command Palette, and workspace routing behavior.
-- Playwright E2E tests cover recruiter journey, engineer journey, terminal workflow, pipeline success/failure paths, performance, API, architecture, challenge, deep links, refresh, and mobile smoke coverage.
 
 ## Environment Variables
 
 - `NEXT_PUBLIC_SITE_URL` - production origin used for canonical URLs, sitemap, robots, OpenGraph, Twitter cards, and JSON-LD. Example: `https://portfolio.example.com`.
+- `NEXT_PUBLIC_RYANOS_BRANDING_JSON` - public brand and landing hero text.
+- `NEXT_PUBLIC_RYANOS_PROFILE_JSON` - public profile identity, headline, summary, focus areas, and contact links.
+- `NEXT_PUBLIC_RYANOS_EDUCATION_JSON` - public education credentials.
+- `NEXT_PUBLIC_RYANOS_EXPERIENCE_JSON` - public experience timeline.
+- `NEXT_PUBLIC_RYANOS_PROJECTS_JSON` - public project case studies.
+- `NEXT_PUBLIC_RYANOS_SKILLS_JSON` - public skill groups.
+- `NEXT_PUBLIC_RYANOS_API_ENDPOINTS_JSON` - public API playground metadata.
+- `NEXT_PUBLIC_RYANOS_PIPELINE_PANEL_JSON` - public pipeline panel copy and stack labels.
+- `NEXT_PUBLIC_RYANOS_ARCHITECTURE_JSON` - public architecture map data.
+- `NEXT_PUBLIC_RYANOS_CHALLENGES_JSON` - public challenge scenarios.
 
 Local development falls back to `http://localhost:3000` when `NEXT_PUBLIC_SITE_URL` is not set.
 
 ## Production Assets
 
 - `public/favicon.svg` and `public/ryanos-mark.svg` provide static brand assets.
+- `public/cv.pdf` provides the owner-approved CV download when `contact.cv.href` is configured.
 - Next.js metadata routes generate `/icon`, `/apple-icon`, `/opengraph-image`, and `/twitter-image`.
 - `src/app/robots.ts` and `src/app/sitemap.ts` use the centralized site URL configuration.
 
@@ -87,13 +95,13 @@ Deployment checklist:
 
 - Install dependencies with `npm install`.
 - Set `NEXT_PUBLIC_SITE_URL` to the final production origin.
-- Run `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `npm run test:e2e`.
+- Run `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`.
 - Verify generated metadata routes: `/robots.txt`, `/sitemap.xml`, `/opengraph-image`, `/twitter-image`, `/icon`, and `/apple-icon`.
 - Confirm owner-approved public links before launch.
 
 ## Owner Actions
 
-- No actual CV PDF is present in this repository yet. Add the owner-approved PDF under `public/` and then set `profile.contact.cv` in `src/data/profile.ts` to its public path. Keep the CV link hidden until the real asset exists.
+- Keep `contact.cv` inside `NEXT_PUBLIC_RYANOS_PROFILE_JSON` pointed at `/cv.pdf` when the owner-approved CV should be downloadable.
 - GitHub URL is not configured because no verified public profile URL exists in the repository.
 - Final portfolio domain must be supplied through `NEXT_PUBLIC_SITE_URL`.
 - Add confidential-safe project screenshots only after owner review.

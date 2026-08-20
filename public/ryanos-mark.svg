@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">RyanOS mark</title>
-  <desc id="desc">Square RyanOS mark with an R monogram.</desc>
+  <title id="title">Portfolio mark</title>
+  <desc id="desc">Square portfolio mark with an R monogram.</desc>
   <rect width="64" height="64" fill="#06070a"/>
   <rect x="6" y="6" width="52" height="52" fill="none" stroke="#37f2a5" stroke-width="4"/>
   <path fill="#f4f7fb" d="M20 47V17h15c6.8 0 11 3.7 11 9.7 0 4.2-2.1 7.2-5.8 8.6L47 47h-8.5l-5.7-10.4h-5V47H20Zm7.8-17h6.5c2.5 0 4-1.2 4-3.3s-1.5-3.3-4-3.3h-6.5V30Z"/>

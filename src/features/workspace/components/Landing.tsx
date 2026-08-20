@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { branding } from "@/data/branding";
 import { profile } from "@/data/profile";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import { Activity, FileText, Power, UserRound } from "lucide-react";
@@ -21,17 +22,17 @@ export function Landing({
       <section className="relative z-10 flex min-h-screen items-center px-5 py-10 sm:px-8 lg:px-12">
         <div className="w-full max-w-6xl">
           <div className="mono mb-8 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.26em] text-[var(--accent)]">
-            <span>RyanOS</span>
+            <span>{branding.appName}</span>
             <span className="h-px w-12 bg-[var(--accent-strong)]" />
-            <span>SDET Workspace</span>
+            <span>{branding.workspaceLabel}</span>
           </div>
 
           <h1 className="max-w-5xl text-5xl font-semibold leading-none sm:text-7xl lg:text-8xl">
             {profile.name.toUpperCase()}
           </h1>
           <p className="mt-7 max-w-3xl text-3xl font-semibold leading-tight text-[var(--text-primary)] sm:text-5xl">
-            I don&apos;t just test software.
-            <span className="block text-[var(--accent)]">I engineer confidence.</span>
+            {branding.heroStatementLead}
+            <span className="block text-[var(--accent)]">{branding.heroStatementAccent}</span>
           </p>
           <p className="mt-6 text-base text-[var(--text-muted)] sm:text-lg">{profile.headline}</p>
 
@@ -55,6 +56,7 @@ export function Landing({
             {hasCv ? (
               <a
                 href={cvLink.href}
+                download="cv.pdf"
                 className="inline-flex min-h-10 w-full items-center justify-center gap-2 border border-transparent px-4 py-2 text-sm font-semibold text-[var(--text-muted)] transition hover:border-[var(--border)] hover:text-[var(--text-primary)] sm:w-auto"
               >
                 <FileText aria-hidden="true" size={18} />
