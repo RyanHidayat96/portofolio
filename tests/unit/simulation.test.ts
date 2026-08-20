@@ -191,7 +191,7 @@ describe("pipeline simulator", () => {
         event: {
           type: "stage.started",
           stageId: "automation",
-          label: "Automation Test"
+          label: "E2E Automation"
         }
       },
       {
@@ -208,7 +208,7 @@ describe("pipeline simulator", () => {
         event: {
           type: "stage.skipped",
           stageId: "performance",
-          reason: "Skipped because Automation Test already failed."
+          reason: "Skipped because E2E Automation already failed."
         }
       },
       {

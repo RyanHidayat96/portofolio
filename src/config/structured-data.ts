@@ -16,6 +16,7 @@ export function createPortfolioJsonLd(): JsonLdGraph {
   const personId = `${getAbsoluteUrl("/")}#person`;
   const websiteId = `${getAbsoluteUrl("/")}#website`;
   const profilePageId = `${getAbsoluteUrl("/")}#profile`;
+  const currentExperience = experience[0];
   const sameAs = [profile.contact.linkedIn.href, profile.contact.github.href].filter(Boolean);
   const knowsAbout = uniqueValues([
     ...profile.focusAreas,
@@ -31,6 +32,7 @@ export function createPortfolioJsonLd(): JsonLdGraph {
         name: siteConfig.name,
         url: getAbsoluteUrl("/"),
         description: siteConfig.description,
+        inLanguage: "en",
         publisher: {
           "@id": personId
         }
@@ -41,6 +43,7 @@ export function createPortfolioJsonLd(): JsonLdGraph {
         name: siteConfig.title,
         url: getAbsoluteUrl("/profile"),
         description: profile.summary,
+        inLanguage: "en",
         isPartOf: {
           "@id": websiteId
         },
@@ -52,8 +55,8 @@ export function createPortfolioJsonLd(): JsonLdGraph {
         "@type": "Person",
         "@id": personId,
         name: profile.name,
-        jobTitle: profile.headline,
-        description: profile.summary,
+        jobTitle: profile.role,
+        description: `${profile.headline}. ${profile.summary}`,
         url: getAbsoluteUrl("/"),
         email: profile.contact.email.value,
         address: {
@@ -62,10 +65,14 @@ export function createPortfolioJsonLd(): JsonLdGraph {
         },
         sameAs,
         knowsAbout,
-        worksFor: uniqueValues(experience.map((role) => role.company)).map((company) => ({
-          "@type": "Organization",
-          name: company
-        })),
+        ...(currentExperience
+          ? {
+              worksFor: {
+                "@type": "Organization",
+                name: currentExperience.company
+              }
+            }
+          : {}),
         alumniOf: education.map((credential) => ({
           "@type": "EducationalOrganization",
           name: credential.institution,

@@ -6,6 +6,12 @@ export interface ContactLink {
   readonly isPrimary?: boolean;
 }
 
+export type EngineeringDomain = "build" | "quality" | "data" | "delivery";
+
+export type PortfolioMode = "build" | "quality" | "full-cycle";
+
+export type ProjectCategory = "build" | "quality" | "devops";
+
 export interface Branding {
   readonly appName: string;
   readonly workspaceLabel: string;
@@ -48,6 +54,11 @@ export interface SkillGroup {
   readonly skills: readonly Skill[];
 }
 
+export interface Company {
+  readonly name: string;
+  readonly location: string;
+}
+
 export interface ExperienceRole {
   readonly id: string;
   readonly company: string;
@@ -57,6 +68,26 @@ export interface ExperienceRole {
   readonly responsibilities: readonly string[];
   readonly impact: readonly string[];
   readonly technologies: readonly string[];
+}
+
+export interface Capability {
+  readonly id: string;
+  readonly domain: EngineeringDomain;
+  readonly title: string;
+  readonly description: string;
+  readonly technologies: readonly string[];
+  readonly relatedExperience: readonly string[];
+  readonly relatedProjects: readonly string[];
+}
+
+export interface FullCycleNode {
+  readonly id: "idea" | "frontend" | "api" | "backend" | "data" | "quality" | "cicd" | "production";
+  readonly label: string;
+  readonly description: string;
+  readonly technologies: readonly string[];
+  readonly relatedExperience: readonly string[];
+  readonly relatedProjects: readonly string[];
+  readonly domain: EngineeringDomain;
 }
 
 export interface EducationCredential {
@@ -70,15 +101,37 @@ export interface EducationCredential {
 export interface ProjectCaseStudy {
   readonly slug: string;
   readonly title: string;
+  readonly categories: readonly ProjectCategory[];
+  readonly label?: string;
+  readonly role?: string;
+  readonly engineered?: string;
+  readonly overview?: string;
   readonly status: "content-needed" | "portfolio-safe";
   readonly problem: string;
   readonly context: string;
   readonly responsibility: string;
   readonly architecture: string;
+  readonly keyCapabilities?: readonly string[];
+  readonly architectureLayers?: readonly ProjectArchitectureLayer[];
+  readonly architectureBranches?: readonly ProjectArchitectureBranch[];
   readonly engineeringDecisions: readonly string[];
   readonly testingStrategy: readonly string[];
   readonly outcome: string;
   readonly lessons: readonly string[];
+  readonly technologies: readonly string[];
+}
+
+export interface ProjectArchitectureLayer {
+  readonly id: string;
+  readonly label: string;
+  readonly stack: string;
+  readonly purpose: string;
+}
+
+export interface ProjectArchitectureBranch {
+  readonly id: string;
+  readonly label: string;
+  readonly purpose: string;
   readonly technologies: readonly string[];
 }
 
@@ -136,4 +189,13 @@ export interface PipelinePanelMetadata {
 export interface ArchitectureMap {
   readonly nodes: readonly ArchitectureNode[];
   readonly edges: readonly ArchitectureEdge[];
+}
+
+export type ArchitecturePresetId =
+  "full-stack-application" | "quality-engineering" | "cicd-delivery";
+
+export interface ArchitecturePreset extends ArchitectureMap {
+  readonly id: ArchitecturePresetId;
+  readonly title: string;
+  readonly description: string;
 }

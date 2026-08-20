@@ -1,13 +1,16 @@
 import { apiEndpoints } from "@/data/api-endpoints";
-import { experience as experienceData } from "@/data/experience";
 import { profile } from "@/data/profile";
+import { publicExperience } from "@/data/public-experience";
 import { projects as projectData } from "@/data/projects";
 import { skillGroups as skillGroupData } from "@/data/skills";
 import { GET as getContact } from "@/app/api/contact/route";
+import { GET as getArchitecture } from "@/app/api/architecture/route";
+import { GET as getCareer } from "@/app/api/career/route";
 import { GET as getExperience } from "@/app/api/experience/route";
 import { GET as getProjects } from "@/app/api/projects/route";
 import { GET as getRyan } from "@/app/api/ryan/route";
 import { GET as getSkills } from "@/app/api/skills/route";
+import { architecturePresets } from "@/data/architecture";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import { describe, expect, it } from "vitest";
 
@@ -15,7 +18,15 @@ describe("portfolio API contracts", () => {
   it("defines portfolio-safe GET endpoints", () => {
     expect(apiEndpoints.length).toBeGreaterThan(0);
     expect(apiEndpoints.map((endpoint) => endpoint.path)).toEqual(
-      expect.arrayContaining(["/api/skills", "/api/projects", "/api/experience", "/api/contact"])
+      expect.arrayContaining([
+        "/api/ryan",
+        "/api/skills",
+        "/api/projects",
+        "/api/experience",
+        "/api/architecture",
+        "/api/career",
+        "/api/contact"
+      ])
     );
     expect(apiEndpoints.every((endpoint) => endpoint.method === "GET")).toBe(true);
     expect(apiEndpoints.every((endpoint) => endpoint.responseShape.length > 0)).toBe(true);
@@ -63,6 +74,31 @@ describe("portfolio API contracts", () => {
     expect(contact.contact.length).toBeGreaterThan(0);
   });
 
+  it("returns architecture and career contracts for engineer exploration", async () => {
+    const architectureResponse = getArchitecture();
+    const architecture = (await architectureResponse.json()) as {
+      readonly defaultPresetId: string | null;
+      readonly architecture: typeof architecturePresets;
+    };
+    const careerResponse = getCareer();
+    const career = (await careerResponse.json()) as {
+      readonly journey: readonly { readonly role: string; readonly period: string }[];
+      readonly currentRole: string;
+      readonly engineeringProfile: string;
+    };
+
+    expect(architectureResponse.status).toBe(200);
+    expect(architecture.defaultPresetId).toBe(architecturePresets[0]?.id ?? null);
+    expect(architecture.architecture).toHaveLength(architecturePresets.length);
+    expect(careerResponse.status).toBe(200);
+    expect(career.currentRole).toBe(profile.role);
+    expect(career.engineeringProfile).toBe(profile.headline);
+    expect(career.journey[0]).toMatchObject({
+      role: "Full Stack Developer",
+      period: "Mar 2026 - Present"
+    });
+  });
+
   it("returns skills API contract with grouped skill metadata", async () => {
     const response = getSkills();
     const body = (await response.json()) as {
@@ -87,22 +123,23 @@ describe("portfolio API contracts", () => {
   it("returns experience API contract with timeline-safe fields", async () => {
     const response = getExperience();
     const body = (await response.json()) as {
-      readonly experience: typeof experienceData;
+      readonly experience: typeof publicExperience;
     };
     const firstRole = body.experience[0];
 
     expect(response.status).toBe(200);
-    expect(body.experience).toHaveLength(experienceData.length);
+    expect(body.experience).toHaveLength(publicExperience.length);
     expect(firstRole).toMatchObject({
       id: expect.any(String),
       company: expect.any(String),
       role: expect.any(String),
       period: expect.any(String),
       location: expect.any(String),
-      responsibilities: expect.any(Array),
-      impact: expect.any(Array),
+      summary: expect.any(String),
       technologies: expect.any(Array)
     });
+    expect(firstRole).not.toHaveProperty("responsibilities");
+    expect(firstRole).not.toHaveProperty("impact");
   });
 
   it("returns project API contract with portfolio-safe case studies", async () => {

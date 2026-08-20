@@ -94,10 +94,11 @@ export function AutomationLab(): React.ReactElement {
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
       <Panel className="p-5">
-        <p className="mono text-sm text-[#55d7ff]">interactive.simulation</p>
-        <h1 className="mt-3 text-2xl font-semibold">Break My Automation</h1>
+        <p className="mono text-sm text-[#55d7ff]">quality.engineering.demo</p>
+        <h1 className="mt-3 text-2xl font-semibold">Quality Automation Lab</h1>
         <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
-          Deterministic workflow demo. Browser, API, and self-healing activity are simulated.
+          Deterministic workflow demo. Browser, API, failure inspection, and quality-gate impact are
+          simulated.
         </p>
 
         <label className="mt-6 block text-sm font-semibold text-[#c8d4e6]" htmlFor="failure-type">

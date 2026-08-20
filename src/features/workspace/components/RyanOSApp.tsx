@@ -10,7 +10,11 @@ import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
 import { ProfilePanel } from "@/features/workspace/components/ProfilePanel";
 import { ProjectsPanel } from "@/features/workspace/components/ProjectsPanel";
 import { WorkspaceShell } from "@/features/workspace/components/WorkspaceShell";
-import { getPaletteActions, modeDefaultSection } from "@/features/workspace/navigation";
+import {
+  getPaletteActions,
+  modeDefaultSection,
+  type PaletteAction
+} from "@/features/workspace/navigation";
 import {
   createRouteForSection,
   getWorkspacePath,
@@ -25,6 +29,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 type AppPhase = "landing" | "boot" | "workspace";
 
 const bootStorageKey = "ryanos.booted";
+const modeStorageKey = "ryanos.mode";
 const bootStateChangeEvent = "ryanos.boot-state-change";
 
 const AutomationLab = dynamic(
@@ -103,6 +108,7 @@ export function RyanOSApp({
   initialRoute?: WorkspaceRouteState;
 }>): React.ReactElement {
   const [phase, setPhase] = useState<AppPhase>(initialRoute.isDeepLink ? "workspace" : "landing");
+  const [postBootMode, setPostBootMode] = useState<WorkspaceMode>("engineer");
   const hasBooted = useSyncExternalStore(
     subscribeToBootState,
     getClientBootState,
@@ -157,12 +163,7 @@ export function RyanOSApp({
   const navigateToSection = useCallback(
     (targetSection: WorkspaceSection) => {
       const nextRoute = createRouteForSection(targetSection, {
-        mode:
-          targetSection === "overview" && mode === "engineer"
-            ? "engineer"
-            : targetSection === "projects"
-              ? "recruiter"
-              : undefined,
+        mode: targetSection === "overview" || mode === "engineer" ? mode : undefined,
         projectSlug: targetSection === "projects" ? projectSlug : undefined
       });
 
@@ -175,12 +176,34 @@ export function RyanOSApp({
     (targetProjectSlug: string) => {
       applyWorkspaceRoute(
         createRouteForSection("projects", {
-          mode: "recruiter",
+          mode,
           projectSlug: targetProjectSlug
         })
       );
     },
-    [applyWorkspaceRoute]
+    [applyWorkspaceRoute, mode]
+  );
+
+  const runPaletteAction = useCallback(
+    (action: PaletteAction) => {
+      if (action.href) {
+        window.open(action.href, action.isExternal ? "_blank" : "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      if (!action.section) {
+        return;
+      }
+
+      const targetMode = action.mode ?? mode;
+      applyWorkspaceRoute(
+        createRouteForSection(action.section, {
+          mode: targetMode,
+          projectSlug: action.section === "projects" ? action.projectSlug : undefined
+        })
+      );
+    },
+    [applyWorkspaceRoute, mode]
   );
 
   useEffect(() => {
@@ -209,20 +232,45 @@ export function RyanOSApp({
     return () => window.removeEventListener("popstate", onPopState);
   }, [applyWorkspaceRoute]);
 
-  const enterWorkspace = useCallback(
-    (targetSection: WorkspaceSection = "overview") => {
-      applyWorkspaceRoute(createRouteForSection(targetSection));
+  const enterMode = useCallback(
+    (targetMode: WorkspaceMode) => {
+      persistBootState();
+      persistModePreference(targetMode);
+      applyWorkspaceRoute(
+        createRouteForSection(modeDefaultSection[targetMode], {
+          mode: targetMode
+        }),
+        { history: "push" }
+      );
     },
     [applyWorkspaceRoute]
   );
 
+  const enterRecruiterMode = useCallback(() => {
+    persistBootState();
+    persistModePreference("recruiter");
+    applyWorkspaceRoute(
+      createRouteForSection("overview", {
+        mode: "recruiter"
+      }),
+      { history: "push" }
+    );
+  }, [applyWorkspaceRoute]);
+
   const completeBoot = useCallback(() => {
     persistBootState();
-    applyWorkspaceRoute(createRouteForSection("overview"), { history: "replace" });
-  }, [applyWorkspaceRoute]);
+    persistModePreference(postBootMode);
+    applyWorkspaceRoute(
+      createRouteForSection(modeDefaultSection[postBootMode], {
+        mode: postBootMode
+      }),
+      { history: "replace" }
+    );
+  }, [applyWorkspaceRoute, postBootMode]);
 
   const changeMode = useCallback(
     (nextMode: WorkspaceMode) => {
+      persistModePreference(nextMode);
       applyWorkspaceRoute(
         createRouteForSection(modeDefaultSection[nextMode], {
           mode: nextMode
@@ -241,7 +289,13 @@ export function RyanOSApp({
       case "experience":
         return <ExperiencePanel />;
       case "projects":
-        return <ProjectsPanel activeSlug={projectSlug} onActiveSlugChange={navigateToProject} />;
+        return (
+          <ProjectsPanel
+            activeSlug={projectSlug}
+            onActiveSlugChange={navigateToProject}
+            onExploreArchitecture={() => navigateToSection("architecture")}
+          />
+        );
       case "automation":
         return <AutomationLab />;
       case "pipeline":
@@ -264,15 +318,15 @@ export function RyanOSApp({
   if (phase === "landing") {
     return (
       <Landing
-        hasBooted={hasBooted}
         onInitialize={() => {
           if (hasBooted) {
-            enterWorkspace("overview");
+            enterMode(getPreferredMode());
           } else {
+            setPostBootMode("engineer");
             setPhase("boot");
           }
         }}
-        onViewProfile={() => enterWorkspace("profile")}
+        onRecruiterMode={enterRecruiterMode}
       />
     );
   }
@@ -296,7 +350,7 @@ export function RyanOSApp({
         isOpen={isPaletteOpen}
         actions={paletteActions}
         onClose={() => setIsPaletteOpen(false)}
-        onSelect={navigateToSection}
+        onSelect={runPaletteAction}
       />
     </>
   );
@@ -323,6 +377,18 @@ function getServerBootState(): boolean {
 function persistBootState(): void {
   window.sessionStorage.setItem(bootStorageKey, "true");
   window.dispatchEvent(new Event(bootStateChangeEvent));
+}
+
+function persistModePreference(mode: WorkspaceMode): void {
+  window.sessionStorage.setItem(modeStorageKey, mode);
+}
+
+function getPreferredMode(): WorkspaceMode {
+  if (typeof window === "undefined") {
+    return "recruiter";
+  }
+
+  return window.sessionStorage.getItem(modeStorageKey) === "recruiter" ? "recruiter" : "engineer";
 }
 
 function WorkspacePanelLoading({ label }: Readonly<{ label: string }>): React.ReactElement {

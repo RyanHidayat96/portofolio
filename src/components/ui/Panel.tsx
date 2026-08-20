@@ -12,7 +12,7 @@ export function Panel({
   return (
     <Component
       className={cn(
-        "border border-[var(--border)] bg-[var(--panel)] shadow-[0_24px_80px_rgba(0,0,0,0.22)]",
+        "rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--panel)] shadow-[var(--shadow-panel)]",
         className
       )}
     >

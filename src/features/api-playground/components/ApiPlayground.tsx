@@ -59,8 +59,12 @@ export function ApiPlayground(): React.ReactElement {
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
       <Panel className="p-4">
-        <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.workflow.demo</p>
+        <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
+        <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
+          Public RyanOS route handlers for profile, career, projects, architecture, and contact
+          data.
+        </p>
         <div className="space-y-2">
           {apiEndpoints.map((item) => (
             <EndpointButton

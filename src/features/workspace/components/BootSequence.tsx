@@ -6,13 +6,13 @@ import { CheckCircle2, FastForward } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 const bootSteps = [
-  "Loading engineering profile",
-  "Loading automation engine",
-  "Loading mobile testing",
-  "Loading API testing",
-  "Loading performance engine",
-  "Loading CI/CD pipelines",
-  "Loading projects"
+  "Frontend systems",
+  "Backend services",
+  "API boundary",
+  "Data layer",
+  "Quality engineering",
+  "Performance engineering",
+  "CI/CD delivery"
 ] as const;
 
 export function BootSequence({
@@ -31,7 +31,7 @@ export function BootSequence({
 
     if (prefersReducedMotion) {
       const completeImmediatelyId = window.setTimeout(() => setCompletedCount(bootSteps.length), 0);
-      const timeoutId = window.setTimeout(onComplete, 250);
+      const timeoutId = window.setTimeout(onComplete, 180);
       return () => {
         window.clearTimeout(completeImmediatelyId);
         window.clearTimeout(timeoutId);
@@ -40,14 +40,14 @@ export function BootSequence({
 
     const intervalId = window.setInterval(() => {
       setCompletedCount((current) => Math.min(current + 1, bootSteps.length));
-    }, 170);
+    }, 120);
 
     return () => window.clearInterval(intervalId);
   }, [onComplete]);
 
   useEffect(() => {
     if (completedCount >= bootSteps.length) {
-      const timeoutId = window.setTimeout(onComplete, 420);
+      const timeoutId = window.setTimeout(onComplete, 280);
       return () => window.clearTimeout(timeoutId);
     }
 
@@ -56,11 +56,11 @@ export function BootSequence({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-5 text-[var(--text-primary)]">
-      <section className="w-full max-w-2xl border border-[var(--border)] bg-[#0d1119] p-5 sm:p-8">
+      <section className="w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--border)] bg-[#0d1119] p-5 shadow-[var(--shadow-panel)] sm:p-8">
         <div className="mb-7 flex items-center justify-between gap-4">
           <div>
             <p className="mono text-sm text-[var(--accent)]">Initializing {branding.appName}...</p>
-            <h1 className="mt-2 text-2xl font-semibold">Engineering workspace boot</h1>
+            <h1 className="mt-2 text-2xl font-semibold">Full-cycle workspace boot</h1>
           </div>
           <Button
             variant="ghost"
@@ -75,7 +75,7 @@ export function BootSequence({
           {rows.map((row) => (
             <li
               key={row.label}
-              className="flex items-center justify-between gap-4 border border-[var(--border)] bg-[var(--surface-elevated)] p-3"
+              className="flex items-center justify-between gap-4 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-elevated)] p-3"
             >
               <span className="mono text-sm text-[#c8d4e6]">{row.label.padEnd(32, ".")}</span>
               {row.isDone ? (
@@ -87,9 +87,14 @@ export function BootSequence({
           ))}
         </ul>
 
-        <p className="mono mt-7 text-sm text-[var(--success)]">
-          {completedCount >= bootSteps.length ? "System ready." : "Running checks..."}
-        </p>
+        <div className="mt-7 border-t border-[var(--border)] pt-5">
+          <p className="mono text-sm text-[var(--success)]">
+            {completedCount >= bootSteps.length ? "SYSTEM READY" : "Running checks..."}
+          </p>
+          <p className="mono mt-2 text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
+            Full Stack × Quality Engineering
+          </p>
+        </div>
       </section>
     </main>
   );

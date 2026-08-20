@@ -1,4 +1,5 @@
 import type { WorkspaceSection } from "@/features/workspace/types";
+import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import type { TerminalCommand, TerminalContext, TerminalOutput } from "./types";
 
 function lines(...values: readonly string[]): TerminalOutput {
@@ -15,11 +16,23 @@ function navigate(section: WorkspaceSection, ...values: readonly string[]): Term
   };
 }
 
+function openLink(href: string, label: string, ...values: readonly string[]): TerminalOutput {
+  return {
+    lines: values,
+    action: {
+      type: "open-link",
+      href,
+      label
+    }
+  };
+}
+
 class StaticCommand implements TerminalCommand {
   constructor(
     readonly name: string,
     readonly description: string,
-    private readonly run: (args: readonly string[], context: TerminalContext) => TerminalOutput
+    private readonly run: (args: readonly string[], context: TerminalContext) => TerminalOutput,
+    readonly aliases?: readonly string[]
   ) {}
 
   execute(args: readonly string[], context: TerminalContext): TerminalOutput {
@@ -77,8 +90,17 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   registry.register(new ClearCommand());
 
   registry.register(
-    new StaticCommand("whoami", "Show profile.", (_args, context) =>
-      lines(context.profile.name, context.profile.headline, context.profile.tagline)
+    new StaticCommand("whoami", "Show Full Stack x SDET identity.", (_args, context) =>
+      lines(
+        context.profile.name,
+        context.profile.headline,
+        "",
+        "Current focus:",
+        "Building enterprise applications while applying quality engineering across delivery.",
+        "",
+        `Current role: ${context.profile.role}`,
+        `Location: ${context.profile.location}`
+      )
     )
   );
 
@@ -100,6 +122,22 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   );
 
   registry.register(
+    new StaticCommand("career", "Show career evolution.", (_args, context) => {
+      const chronologicalRoles = [...context.experience].reverse();
+      const currentRole = context.experience[0];
+
+      return navigate(
+        "experience",
+        ...chronologicalRoles.map((role) => `${getStartYear(role.period)} - ${role.role}`),
+        "",
+        currentRole
+          ? `Current: ${currentRole.role} at ${currentRole.company} (${currentRole.period})`
+          : "Current role not configured."
+      );
+    })
+  );
+
+  registry.register(
     new StaticCommand("experience", "Open experience timeline.", (_args, context) =>
       navigate(
         "experience",
@@ -110,37 +148,110 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
 
   registry.register(
     new StaticCommand("projects", "Open project case studies.", (_args, context) =>
-      navigate("projects", ...context.projects.map((project) => project.title))
+      navigate(
+        "projects",
+        ...context.projects.map((project) => `${project.title} [${project.categories.join(", ")}]`)
+      )
     )
   );
 
   registry.register(
-    new StaticCommand("stack", "Show core stack.", () =>
-      lines("Next.js", "React", "TypeScript", "Tailwind CSS", "Vitest", "React Testing Library")
+    new StaticCommand("stack", "Show build, quality, data, and delivery stack.", (_args, context) =>
+      lines(
+        `Build: ${getTechnologiesForCategory(context, "build").join(", ")}`,
+        `Quality: ${getTechnologiesForCategory(context, "quality").join(", ")}`,
+        `Delivery: ${getTechnologiesForCategory(context, "devops").join(", ")}`
+      )
     )
   );
 
   registry.register(
-    new StaticCommand("contact", "Open contact channel.", () =>
-      navigate("contact", "Opening contact workspace...")
+    new StaticCommand("build", "Show build-side evidence.", (_args, context) => {
+      const buildGroup = context.skillGroups.find((group) => group.id === "build");
+      const buildProjects = context.projects.filter((project) =>
+        project.categories.includes("build")
+      );
+
+      return navigate(
+        "projects",
+        "Build evidence:",
+        ...(buildGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
+        "",
+        "Build projects:",
+        ...buildProjects.map((project) => project.title)
+      );
+    })
+  );
+
+  registry.register(
+    new StaticCommand("quality", "Show quality engineering evidence.", (_args, context) => {
+      const qualityGroup = context.skillGroups.find((group) => group.id === "quality");
+      const deliveryGroup = context.skillGroups.find((group) => group.id === "delivery");
+      const qualityProjects = context.projects.filter(
+        (project) => project.categories.includes("quality") || project.categories.includes("devops")
+      );
+
+      return navigate(
+        "automation",
+        "Quality evidence:",
+        ...(qualityGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
+        ...(deliveryGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
+        "",
+        "Quality and delivery projects:",
+        ...qualityProjects.map((project) => project.title)
+      );
+    })
+  );
+
+  registry.register(
+    new StaticCommand("contact", "Open contact channel.", (_args, context) =>
+      navigate(
+        "contact",
+        "Opening contact workspace...",
+        ...Object.values(context.profile.contact)
+          .filter(
+            (link) =>
+              isPortfolioValueConfigured(link.href) && isPortfolioValueConfigured(link.value)
+          )
+          .map((link) => `${link.label}: ${link.value}`)
+      )
     )
   );
 
   registry.register(
-    new StaticCommand("architecture", "Open architecture explorer.", () =>
-      navigate("architecture", "Opening engineering topology...")
+    new StaticCommand("cv", "Open CV download.", (_args, context) => {
+      const cv = context.profile.contact.cv;
+
+      if (!isPortfolioValueConfigured(cv.href)) {
+        return navigate("contact", "CV download not configured. Opening contact workspace.");
+      }
+
+      return openLink(cv.href, cv.label, `Opening ${cv.value}...`, cv.href);
+    })
+  );
+
+  registry.register(
+    new StaticCommand("architecture", "Open architecture explorer.", (_args, context) =>
+      navigate(
+        "architecture",
+        "Opening engineering topology...",
+        ...context.architecturePresets.map((preset) => preset.title)
+      )
     )
   );
 
   registry.register(
-    new StaticCommand("test", "Open automation lab.", () =>
-      navigate("automation", "Automation lab ready. Run or break demo suite.")
+    new StaticCommand(
+      "test",
+      "Open automation lab.",
+      () => navigate("automation", "Automation lab ready. Run or break demo suite."),
+      ["automation"]
     )
   );
 
   registry.register(
     new StaticCommand("pipeline", "Open pipeline simulator.", () =>
-      navigate("pipeline", "Quality pipeline console ready.")
+      navigate("pipeline", "Software delivery pipeline ready.")
     )
   );
 
@@ -176,4 +287,21 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   );
 
   return registry;
+}
+
+function getStartYear(period: string): string {
+  return period.match(/\d{4}/)?.[0] ?? period;
+}
+
+function getTechnologiesForCategory(
+  context: TerminalContext,
+  category: "build" | "quality" | "devops"
+): readonly string[] {
+  return [
+    ...new Set(
+      context.projects
+        .filter((project) => project.categories.includes(category))
+        .flatMap((project) => project.technologies)
+    )
+  ].slice(0, 12);
 }

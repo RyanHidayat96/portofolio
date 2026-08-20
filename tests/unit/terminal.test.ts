@@ -2,6 +2,7 @@ import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
 import { skillGroups } from "@/data/skills";
+import { architecturePresets } from "@/data/architecture";
 import { createPortfolioCommandRegistry } from "@/features/terminal/domain/commands";
 import { parseTerminalInput } from "@/features/terminal/domain/parser";
 import type { TerminalContext } from "@/features/terminal/domain/types";
@@ -13,6 +14,7 @@ function createTerminalContext(history: readonly string[] = []): TerminalContext
     skillGroups,
     projects,
     experience,
+    architecturePresets,
     history
   };
 }
@@ -46,8 +48,11 @@ describe("portfolio command registry", () => {
     expect(commandNames).toEqual([
       "about",
       "architecture",
+      "build",
+      "career",
       "clear",
       "contact",
+      "cv",
       "experience",
       "help",
       "hire",
@@ -55,6 +60,7 @@ describe("portfolio command registry", () => {
       "performance",
       "pipeline",
       "projects",
+      "quality",
       "skills",
       "stack",
       "test",
@@ -83,12 +89,15 @@ describe("portfolio command registry", () => {
     const registry = createPortfolioCommandRegistry();
     const expectedRoutes = new Map([
       ["about", "profile"],
+      ["build", "projects"],
+      ["career", "experience"],
       ["skills", "profile"],
       ["experience", "experience"],
       ["projects", "projects"],
       ["contact", "contact"],
       ["architecture", "architecture"],
       ["test", "automation"],
+      ["quality", "automation"],
       ["pipeline", "pipeline"],
       ["performance", "performance"]
     ]);
@@ -114,9 +123,8 @@ describe("portfolio command registry", () => {
     });
     expect(emptyHistory?.lines).toEqual(["No command history yet."]);
     expect(populatedHistory?.lines).toEqual(["whoami", "projects"]);
-    expect(stackOutput?.lines).toEqual(
-      expect.arrayContaining(["Next.js", "React Testing Library"])
-    );
+    expect(stackOutput?.lines.join("\n")).toContain("Build:");
+    expect(stackOutput?.lines.join("\n")).toContain("Quality:");
     expect(registry.find("not-real")).toBeNull();
   });
 });

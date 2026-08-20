@@ -1,9 +1,8 @@
 "use client";
 
-import type { WorkspaceSection } from "@/features/workspace/types";
 import type { PaletteAction } from "@/features/workspace/navigation";
 import { Command, Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const paletteListId = "command-palette-options";
 
@@ -16,7 +15,7 @@ export function CommandPalette({
   isOpen: boolean;
   actions: readonly PaletteAction[];
   onClose: () => void;
-  onSelect: (section: WorkspaceSection) => void;
+  onSelect: (action: PaletteAction) => void;
 }>): React.ReactElement | null {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -30,7 +29,9 @@ export function CommandPalette({
     }
 
     return actions.filter((action) =>
-      `${action.label} ${action.description}`.toLowerCase().includes(normalizedQuery)
+      `${action.label} ${action.description} ${action.keywords?.join(" ") ?? ""}`
+        .toLowerCase()
+        .includes(normalizedQuery)
     );
   }, [actions, query]);
   const clampedActiveIndex =
@@ -40,6 +41,13 @@ export function CommandPalette({
     activeAction && clampedActiveIndex >= 0
       ? createPaletteOptionId(activeAction.id, clampedActiveIndex)
       : undefined;
+
+  const closePalette = useCallback((): void => {
+    setQuery("");
+    setActiveIndex(0);
+    onClose();
+    window.setTimeout(() => previousActiveElementRef.current?.focus(), 0);
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -51,7 +59,7 @@ export function CommandPalette({
     const focusTimerId = window.setTimeout(() => inputRef.current?.focus(), 0);
 
     return () => window.clearTimeout(focusTimerId);
-  }, [isOpen]);
+  }, [closePalette, isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -60,24 +68,17 @@ export function CommandPalette({
 
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === "Escape") {
-        onClose();
+        closePalette();
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
   }
-
-  const closePalette = (): void => {
-    setQuery("");
-    setActiveIndex(0);
-    onClose();
-    window.setTimeout(() => previousActiveElementRef.current?.focus(), 0);
-  };
 
   const moveActiveIndex = (direction: "previous" | "next"): void => {
     if (filteredActions.length === 0) {
@@ -99,18 +100,18 @@ export function CommandPalette({
       return;
     }
 
-    onSelect(activeAction.section);
+    onSelect(activeAction);
     closePalette();
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-3 backdrop-blur-sm sm:p-4"
       role="presentation"
       onMouseDown={closePalette}
     >
       <section
-        className="mx-auto mt-20 max-w-2xl border border-[var(--border)] bg-[var(--surface-raised)] shadow-2xl"
+        className="palette-dialog mx-auto mt-4 w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-raised)] shadow-2xl sm:mt-20"
         role="dialog"
         aria-modal="true"
         aria-labelledby="command-palette-title"
@@ -119,7 +120,7 @@ export function CommandPalette({
         <h2 id="command-palette-title" className="sr-only">
           Command palette
         </h2>
-        <div className="flex items-center gap-3 border-b border-[var(--border)] p-4">
+        <div className="flex items-center gap-3 border-b border-[var(--border)] p-3 sm:p-4">
           <Search aria-hidden="true" className="text-[var(--accent)]" size={20} />
           <input
             ref={inputRef}
@@ -149,7 +150,7 @@ export function CommandPalette({
                 selectActiveAction();
               }
             }}
-            className="min-h-11 flex-1 bg-transparent text-base text-[var(--text-primary)] outline-none placeholder:text-[#6d788a]"
+            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-base text-[var(--text-primary)] outline-none placeholder:text-[#6d788a]"
             placeholder="Search actions, labs, profile..."
             aria-label="Search commands"
           />
@@ -158,7 +159,7 @@ export function CommandPalette({
 
         <div
           id={paletteListId}
-          className="max-h-[420px] overflow-y-auto p-2"
+          className="max-h-[70vh] overflow-y-auto p-2 sm:max-h-[420px]"
           role="listbox"
           aria-label="Command palette actions"
         >
@@ -173,12 +174,12 @@ export function CommandPalette({
                   role="option"
                   aria-selected={isActive}
                   onClick={() => {
-                    onSelect(action.section);
+                    onSelect(action);
                     closePalette();
                   }}
                   onFocus={() => setActiveIndex(index)}
                   onMouseEnter={() => setActiveIndex(index)}
-                  className={`w-full border p-4 text-left ${
+                  className={`min-h-[var(--touch-target)] w-full rounded-[var(--radius-control)] border p-4 text-left transition ${
                     isActive
                       ? "border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)]"
                       : "border-transparent hover:border-[var(--accent-strong)] hover:bg-[var(--accent-soft)]"
@@ -188,6 +189,11 @@ export function CommandPalette({
                   <span className="mt-1 block text-sm text-[var(--text-muted)]">
                     {action.description}
                   </span>
+                  {action.href ? (
+                    <span className="mono mt-2 block text-xs text-[var(--accent)]">
+                      {action.isExternal ? "external" : "link"} {action.href}
+                    </span>
+                  ) : null}
                 </button>
               );
             })

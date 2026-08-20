@@ -1,5 +1,11 @@
 import type { WorkspaceSection } from "@/features/workspace/types";
-import type { ExperienceRole, Profile, ProjectCaseStudy, SkillGroup } from "@/data/types";
+import type {
+  ArchitecturePreset,
+  ExperienceRole,
+  Profile,
+  ProjectCaseStudy,
+  SkillGroup
+} from "@/data/types";
 
 export interface ParsedTerminalInput {
   readonly commandName: string;
@@ -14,10 +20,16 @@ export interface TerminalLine {
   readonly value: string;
 }
 
-export interface TerminalAction {
-  readonly type: "navigate";
-  readonly section: WorkspaceSection;
-}
+export type TerminalAction =
+  | {
+      readonly type: "navigate";
+      readonly section: WorkspaceSection;
+    }
+  | {
+      readonly type: "open-link";
+      readonly href: string;
+      readonly label: string;
+    };
 
 export interface TerminalOutput {
   readonly lines: readonly string[];
@@ -31,6 +43,7 @@ export interface TerminalContext {
   readonly skillGroups: readonly SkillGroup[];
   readonly projects: readonly ProjectCaseStudy[];
   readonly experience: readonly ExperienceRole[];
+  readonly architecturePresets: readonly ArchitecturePreset[];
   readonly history: readonly string[];
 }
 

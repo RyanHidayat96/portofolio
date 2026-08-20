@@ -31,7 +31,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex min-h-10 items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition",
+        "inline-flex min-h-[var(--touch-target)] items-center justify-center gap-2 rounded-[var(--radius-control)] border px-4 py-2 text-sm font-semibold leading-tight transition",
         "disabled:cursor-not-allowed disabled:opacity-45",
         variantClass[variant],
         className
@@ -39,7 +39,7 @@ export function Button({
       {...props}
     >
       {icon}
-      <span>{children}</span>
+      <span className="min-w-0 break-words text-center">{children}</span>
     </button>
   );
 }

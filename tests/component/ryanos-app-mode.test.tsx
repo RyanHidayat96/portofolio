@@ -16,12 +16,13 @@ describe("RyanOSApp mode switching", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it("keeps landing SSR stable when browser boot state is persisted", () => {
+  it("keeps landing SSR CTA stable when browser boot state is persisted", () => {
     window.sessionStorage.setItem("ryanos.booted", "true");
 
     const html = renderToString(<RyanOSApp />);
 
-    expect(html).toContain("INITIALIZE PORTFOLIO");
+    expect(html).toContain("Explore RyanOS");
+    expect(html).not.toContain("INITIALIZE PORTFOLIO");
     expect(html).not.toContain("ENTER WORKSPACE");
   });
 
@@ -30,16 +31,24 @@ describe("RyanOSApp mode switching", () => {
 
     render(<RyanOSApp />);
 
-    await user.click(screen.getByRole("button", { name: "VIEW PROFILE" }));
-    expect(screen.getByText("Education")).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/profile");
+    await user.click(screen.getByRole("button", { name: "Recruiter Mode" }));
+    expect(
+      screen.getByRole("heading", { name: /60-second overview for hiring teams/i })
+    ).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/overview");
 
-    await user.click(screen.getByRole("button", { name: "engineer" }));
-    expect(await screen.findByText("Break My Automation")).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/labs/automation");
+    await user.click(screen.getByRole("button", { name: /^Engineer\b/i }));
+    expect(
+      await screen.findByRole("heading", {
+        name: /Explore RyanOS as a full-cycle engineering workspace/i
+      })
+    ).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/labs");
 
-    await user.click(screen.getByRole("button", { name: "recruiter" }));
-    expect(await screen.findByText("Professional Snapshot")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Recruiter\b/i }));
+    expect(
+      await screen.findByRole("heading", { name: /60-second overview for hiring teams/i })
+    ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/overview");
   }, 10_000);
 
@@ -51,7 +60,7 @@ describe("RyanOSApp mode switching", () => {
     );
 
     expect(await screen.findByText("Performance Lab")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "engineer" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /^Engineer\b/i })).toHaveAttribute(
       "aria-pressed",
       "true"
     );

@@ -2,7 +2,7 @@ export type PipelineStageStatus =
   "pending" | "running" | "passed" | "failed" | "skipped" | "blocked";
 
 export type PipelineStageId =
-  "commit" | "build" | "unit" | "automation" | "performance" | "quality" | "deploy";
+  "commit" | "build" | "unit" | "integration" | "automation" | "performance" | "quality" | "deploy";
 
 export type PipelineScenarioId = "success" | "regression-failure" | "performance-gate-failure";
 export type PipelineQualityGateStatus = "pending" | "passed" | "blocked";
@@ -109,10 +109,16 @@ export const pipelineStageDefinitions: readonly PipelineStageDefinition[] = [
     successSummary: "Fast TypeScript and domain checks passed."
   },
   {
+    id: "integration",
+    label: "Integration",
+    durationMs: 740,
+    successSummary: "API and service contract checks passed."
+  },
+  {
     id: "automation",
-    label: "Automation Test",
+    label: "E2E Automation",
     durationMs: 920,
-    successSummary: "Web and mobile regression signal passed."
+    successSummary: "Web, mobile, and API-adjacent regression signal passed."
   },
   {
     id: "performance",

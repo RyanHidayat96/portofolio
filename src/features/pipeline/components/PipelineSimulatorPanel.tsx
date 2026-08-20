@@ -134,7 +134,7 @@ export function PipelineSimulatorPanel(): React.ReactElement {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="mono text-sm text-[#55d7ff]">PIPELINE EXECUTION</p>
-              <h2 className="mt-2 text-2xl font-semibold">Release Pipeline</h2>
+              <h2 className="mt-2 text-2xl font-semibold">Software Delivery Lifecycle</h2>
               <p className="mt-2 text-sm text-[#8a96a8]">
                 {pipelinePanelMetadata.flow.join(" | ")}
               </p>

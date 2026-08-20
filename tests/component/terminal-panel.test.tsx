@@ -35,7 +35,9 @@ describe("TerminalPanel", () => {
 
     await user.type(screen.getByLabelText("Terminal command"), "help{enter}");
 
-    expect(await screen.findByText(/whoami\s+Show profile\./)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/whoami\s+Show Full Stack x SDET identity\./)
+    ).toBeInTheDocument();
     expect(screen.getByText(/pipeline\s+Open pipeline simulator\./)).toBeInTheDocument();
 
     await user.type(screen.getByLabelText("Terminal command"), "wat{enter}");

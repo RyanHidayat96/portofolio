@@ -1,6 +1,7 @@
 "use client";
 
 import { Panel } from "@/components/ui/Panel";
+import { architecturePresets } from "@/data/architecture";
 import { branding } from "@/data/branding";
 import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
@@ -30,7 +31,7 @@ export function TerminalPanel({
 }>): React.ReactElement {
   const registry = useMemo(() => createPortfolioCommandRegistry(), []);
   const [lines, setLines] = useState<readonly TerminalLine[]>([
-    createLine("system", `${branding.appName} terminal ready. Type "help" or "hire".`)
+    createLine("system", `${branding.appName} terminal ready. Type "help", "whoami", or "career".`)
   ]);
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<readonly string[]>([]);
@@ -67,6 +68,7 @@ export function TerminalPanel({
       skillGroups,
       projects,
       experience,
+      architecturePresets,
       history
     });
 
@@ -82,6 +84,10 @@ export function TerminalPanel({
 
     if (output.action?.type === "navigate") {
       onNavigate(output.action.section);
+    }
+
+    if (output.action?.type === "open-link") {
+      window.open(output.action.href, "_blank", "noopener,noreferrer");
     }
   }
 
@@ -119,14 +125,14 @@ export function TerminalPanel({
 
   return (
     <Panel className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[var(--border)] bg-[#0b0f16] px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3">
         <div>
           <p className="mono text-sm text-[#55d7ff]">terminal</p>
           <h1 className="text-xl font-semibold">Command Interface</h1>
         </div>
         <button
           type="button"
-          className="mono text-xs text-[#8a96a8] hover:text-[#55d7ff]"
+          className="mono min-h-9 rounded-[var(--radius-control)] px-2 text-xs text-[#8a96a8] hover:text-[#55d7ff]"
           onClick={() => inputRef.current?.focus()}
         >
           focus
@@ -134,26 +140,26 @@ export function TerminalPanel({
       </div>
 
       <div
-        className="mono min-h-[520px] overflow-auto bg-[#05070b] p-4 text-sm leading-6"
+        className="mono max-h-[72vh] min-h-[360px] overflow-auto bg-[var(--surface-deeper)] p-4 text-sm leading-6 sm:min-h-[520px]"
         role="log"
         aria-live="polite"
         aria-label="Terminal output"
         onClick={() => inputRef.current?.focus()}
       >
         {lines.map((line) => (
-          <div key={line.id} className={lineClass(line.kind)}>
+          <div key={line.id} className={`${lineClass(line.kind)} whitespace-pre-wrap break-words`}>
             {line.value === "" ? "\u00a0" : line.value}
           </div>
         ))}
 
         <form
-          className="mt-3 flex items-center gap-2"
+          className="mt-3 flex min-w-0 items-center gap-2"
           onSubmit={(event) => {
             event.preventDefault();
             void executeInput(input);
           }}
         >
-          <label className="text-[#55d7ff]" htmlFor="terminal-input">
+          <label className="shrink-0 text-[#55d7ff]" htmlFor="terminal-input">
             $
           </label>
           <input
@@ -175,7 +181,7 @@ export function TerminalPanel({
                 autocomplete();
               }
             }}
-            className="min-h-8 flex-1 bg-transparent text-[#eef5ff] outline-none placeholder:text-[#556174]"
+            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-[#eef5ff] outline-none placeholder:text-[#556174]"
             placeholder="help"
             aria-label="Terminal command"
             autoComplete="off"

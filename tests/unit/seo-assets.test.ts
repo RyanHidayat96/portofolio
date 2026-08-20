@@ -1,5 +1,6 @@
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
+import manifest from "@/app/manifest";
 import { createPortfolioJsonLd, serializeJsonLd } from "@/config/structured-data";
 import {
   getAbsoluteUrl,
@@ -7,6 +8,7 @@ import {
   resolveSiteUrl,
   siteConfig
 } from "@/config/site";
+import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
 import { createRouteForSection } from "@/features/workspace/routing";
@@ -15,6 +17,21 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("SEO and production asset configuration", () => {
+  it("uses canonical Full Stack x SDET metadata text", () => {
+    const webManifest = manifest();
+
+    expect(siteConfig.title).toBe("Ryan Hidayat — Full Stack Engineer × SDET");
+    expect(siteConfig.description).toBe(
+      "Full Stack Engineer and SDET experienced in enterprise application development, Next.js, React, Node.js, Java Spring Boot, APIs, databases, test automation, performance engineering, Docker, and GitLab CI/CD."
+    );
+    expect(webManifest).toMatchObject({
+      name: siteConfig.title,
+      short_name: siteConfig.name,
+      description: siteConfig.description,
+      display: "standalone"
+    });
+  });
+
   it("normalizes production site URLs and falls back locally", () => {
     expect(resolveSiteUrl("https://portfolio.example.com/some/path").toString()).toBe(
       "https://portfolio.example.com/"
@@ -32,6 +49,12 @@ describe("SEO and production asset configuration", () => {
       expect.arrayContaining([
         expect.objectContaining({
           url: `${siteConfig.siteUrl.origin}/`
+        }),
+        expect.objectContaining({
+          url: `${siteConfig.siteUrl.origin}/labs`
+        }),
+        expect.objectContaining({
+          url: `${siteConfig.siteUrl.origin}/terminal`
         })
       ])
     );
@@ -97,8 +120,13 @@ describe("portfolio JSON-LD", () => {
     );
     expect(person).toMatchObject({
       name: profile.name,
-      email: profile.contact.email.value
+      jobTitle: profile.role,
+      email: profile.contact.email.value,
+      worksFor: {
+        name: experience[0]?.company
+      }
     });
+    expect(String(person?.description)).toContain(profile.headline);
     expect(person?.sameAs).toEqual([profile.contact.linkedIn.href]);
   });
 

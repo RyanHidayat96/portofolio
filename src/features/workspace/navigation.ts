@@ -1,5 +1,7 @@
 import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
 import { profile } from "@/data/profile";
+import { projects } from "@/data/projects";
+import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import {
   Activity,
   BadgeCheck,
@@ -31,8 +33,13 @@ export interface WorkspaceNavigationGroup {
 export interface PaletteAction {
   readonly id: string;
   readonly label: string;
-  readonly section: WorkspaceSection;
   readonly description: string;
+  readonly section?: WorkspaceSection;
+  readonly mode?: WorkspaceMode;
+  readonly projectSlug?: string;
+  readonly href?: string;
+  readonly isExternal?: boolean;
+  readonly keywords?: readonly string[];
 }
 
 const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
@@ -46,13 +53,13 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "profile",
     label: "Profile",
     icon: UserRound,
-    description: "Identity, summary, education, and skill groups."
+    description: "Identity, education, and engineering capability matrix."
   },
   experience: {
     id: "experience",
     label: "Experience",
     icon: BriefcaseBusiness,
-    description: "Verified professional timeline."
+    description: "Career evolution, Jasa Marga role growth, and role evidence."
   },
   projects: {
     id: "projects",
@@ -70,7 +77,7 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "pipeline",
     label: "Pipeline",
     icon: GitBranch,
-    description: "Inspect CI/CD quality gate behavior."
+    description: "Inspect delivery lifecycle and quality gate behavior."
   },
   performance: {
     id: "performance",
@@ -88,7 +95,7 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "architecture",
     label: "Architecture",
     icon: Network,
-    description: "Explore quality engineering topology."
+    description: "Explore full-cycle engineering topology."
   },
   terminal: {
     id: "terminal",
@@ -118,37 +125,27 @@ const recruiterPrimary: readonly WorkspaceSection[] = [
   "contact"
 ];
 
-const recruiterSecondary: readonly WorkspaceSection[] = [
-  "automation",
-  "pipeline",
-  "performance",
-  "api",
-  "architecture",
-  "terminal",
-  "challenge"
-];
-
 const engineerPrimary: readonly WorkspaceSection[] = [
-  "automation",
-  "pipeline",
-  "performance",
-  "api",
+  "overview",
   "architecture",
-  "terminal",
-  "challenge"
+  "projects",
+  "api",
+  "automation",
+  "performance",
+  "pipeline",
+  "terminal"
 ];
 
 const engineerSecondary: readonly WorkspaceSection[] = [
-  "overview",
-  "projects",
   "profile",
   "experience",
+  "challenge",
   "contact"
 ];
 
 export const modeDefaultSection: Record<WorkspaceMode, WorkspaceSection> = {
   recruiter: "overview",
-  engineer: "automation"
+  engineer: "overview"
 };
 
 export function getNavigationItem(section: WorkspaceSection): WorkspaceNavigationItem {
@@ -156,19 +153,23 @@ export function getNavigationItem(section: WorkspaceSection): WorkspaceNavigatio
 }
 
 export function getNavigationGroups(mode: WorkspaceMode): readonly WorkspaceNavigationGroup[] {
-  const [primaryLabel, secondaryLabel, primary, secondary] =
-    mode === "recruiter"
-      ? ["Recruiter Path", "Engineering Labs", recruiterPrimary, recruiterSecondary]
-      : ["Engineering Labs", "Profile Context", engineerPrimary, engineerSecondary];
+  if (mode === "recruiter") {
+    return [
+      {
+        label: "Recruiter Path",
+        items: recruiterPrimary.map((section) => navigationItems[section])
+      }
+    ];
+  }
 
   return [
     {
-      label: primaryLabel,
-      items: primary.map((section) => navigationItems[section])
+      label: "Engineer Path",
+      items: engineerPrimary.map((section) => navigationItems[section])
     },
     {
-      label: secondaryLabel,
-      items: secondary.map((section) => navigationItems[section])
+      label: "Profile Context",
+      items: engineerSecondary.map((section) => navigationItems[section])
     }
   ];
 }
@@ -178,17 +179,151 @@ export function getNavigationItemsForMode(mode: WorkspaceMode): readonly Workspa
 }
 
 export function getPaletteActions(mode: WorkspaceMode): readonly PaletteAction[] {
-  return getNavigationItemsForMode(mode).map((item) => ({
+  const flagshipProject =
+    projects.find((project) => project.slug === "enterprise-audit-monitoring-platform") ??
+    projects[0];
+  const quickActions: PaletteAction[] = [
+    {
+      id: "quick-recruiter",
+      label: "Open Recruiter Mode",
+      section: "overview",
+      mode: "recruiter",
+      description: "Switch to the 60-second hiring overview.",
+      keywords: ["overview", "summary", "hr"]
+    },
+    {
+      id: "quick-engineer",
+      label: "Open Engineer Mode",
+      section: "overview",
+      mode: "engineer",
+      description: "Switch to the deeper RyanOS engineering workspace.",
+      keywords: ["workspace", "technical", "labs"]
+    },
+    {
+      id: "quick-full-cycle",
+      label: "Explore Full Cycle",
+      section: "overview",
+      mode: "engineer",
+      description: "Open the Build, Quality, and Full Cycle engineering experience.",
+      keywords: ["build", "quality", "data", "delivery"]
+    },
+    {
+      id: "quick-current-role",
+      label: "View Current Role",
+      section: "experience",
+      description: `${profile.role} career evidence and role evolution.`,
+      keywords: ["career", "experience"]
+    },
+    {
+      id: "quick-flagship",
+      label: "Open Flagship Project",
+      section: "projects",
+      projectSlug: flagshipProject?.slug,
+      description: flagshipProject
+        ? flagshipProject.title
+        : "Open portfolio-safe project case studies.",
+      keywords: ["project", "case study", "full stack"]
+    },
+    {
+      id: "quick-architecture",
+      label: "Explore Architecture",
+      section: "architecture",
+      mode: "engineer",
+      description: "Inspect full stack, quality, and CI/CD architecture presets.",
+      keywords: ["topology", "system", "ci/cd"]
+    },
+    {
+      id: "quick-terminal",
+      label: "Open Terminal",
+      section: "terminal",
+      mode: "engineer",
+      description: "Run RyanOS commands like whoami, career, build, quality, cv.",
+      keywords: ["commands", "cli"]
+    },
+    {
+      id: "quick-contact",
+      label: `Contact ${profile.name}`,
+      section: "contact",
+      description: "Open verified contact channels.",
+      keywords: ["email", "hire"]
+    }
+  ];
+
+  if (isPortfolioValueConfigured(profile.contact.cv.href)) {
+    quickActions.push({
+      id: "quick-cv",
+      label: "Download CV",
+      href: profile.contact.cv.href,
+      description: profile.contact.cv.value,
+      keywords: ["resume", "pdf"]
+    });
+  }
+
+  if (isPortfolioValueConfigured(profile.contact.linkedIn.href)) {
+    quickActions.push({
+      id: "quick-linkedin",
+      label: "Open LinkedIn",
+      href: profile.contact.linkedIn.href,
+      isExternal: true,
+      description: profile.contact.linkedIn.value,
+      keywords: ["social", "profile"]
+    });
+  }
+
+  const navigationActions = getNavigationItemsForMode(mode).map((item) => ({
     id: `${mode}-${item.id}`,
-    label:
-      item.id === "automation"
-        ? "Run Automation"
-        : item.id === "pipeline"
-          ? "Run Pipeline"
-          : item.id === "contact"
-            ? `Contact ${profile.name}`
-            : `Go to ${item.label}`,
+    label: mode === "recruiter" ? getRecruiterActionLabel(item) : getEngineerActionLabel(item),
     section: item.id,
     description: item.description
   }));
+
+  return [...quickActions, ...navigationActions];
+}
+
+function getRecruiterActionLabel(item: WorkspaceNavigationItem): string {
+  if (item.id === "overview") {
+    return "Open Recruiter Mode";
+  }
+
+  if (item.id === "experience") {
+    return "View Current Role";
+  }
+
+  if (item.id === "projects") {
+    return "View Featured Work";
+  }
+
+  if (item.id === "contact") {
+    return `Contact ${profile.name}`;
+  }
+
+  return `Go to ${item.label}`;
+}
+
+function getEngineerActionLabel(item: WorkspaceNavigationItem): string {
+  if (item.id === "overview") {
+    return "Open Engineer Mode";
+  }
+
+  if (item.id === "architecture") {
+    return "Explore Full Cycle";
+  }
+
+  if (item.id === "automation") {
+    return "Run Quality Lab";
+  }
+
+  if (item.id === "pipeline") {
+    return "Run Delivery Pipeline";
+  }
+
+  if (item.id === "api") {
+    return "Open API Playground";
+  }
+
+  if (item.id === "terminal") {
+    return "Open Terminal";
+  }
+
+  return `Go to ${item.label}`;
 }

@@ -15,7 +15,7 @@ interface RouteMetadataText {
 
 export const siteConfig = {
   name: branding.appName,
-  title: `${profile.name} - ${profile.headline}`,
+  title: `${profile.name} — ${profile.headline}`,
   description: branding.metadataDescription,
   shortDescription: profile.tagline,
   ownerName: profile.name,

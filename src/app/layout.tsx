@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { branding } from "@/data/branding";
 import { getAbsoluteUrl, siteConfig } from "@/config/site";
 import { StructuredData } from "./StructuredData";
 import "./globals.css";
@@ -30,6 +29,7 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.ownerName }],
   creator: siteConfig.ownerName,
   publisher: siteConfig.ownerName,
+  manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "/"
   },
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: siteConfig.title,
-    description: siteConfig.shortDescription,
+    description: siteConfig.description,
     type: "website",
     url: "/",
     siteName: siteConfig.name,
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: siteConfig.title,
-    description: branding.twitterDescription,
+    description: siteConfig.description,
     images: [getAbsoluteUrl(siteConfig.twitterImagePath)]
   },
   category: "technology"

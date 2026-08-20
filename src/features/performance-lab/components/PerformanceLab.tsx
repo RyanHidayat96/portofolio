@@ -47,7 +47,8 @@ export function PerformanceLab(): React.ReactElement {
         <p className="mono text-sm text-[#55d7ff]">k6.workflow.demo</p>
         <h1 className="mt-3 text-2xl font-semibold">Performance Lab</h1>
         <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
-          K6-inspired deterministic simulation. No live load is generated from this portfolio.
+          K6-inspired deterministic simulation for latency, reliability, and release-risk thinking.
+          No live load is generated from this portfolio.
         </p>
 
         <div className="mt-6 flex items-center gap-3">
@@ -114,8 +115,8 @@ export function PerformanceLab(): React.ReactElement {
               </p>
               <h2 className="mt-2 text-2xl font-semibold">{result.scenario.label}</h2>
               <p className="mt-2 text-sm text-[#8a96a8]">
-                Requests, latency, errors, checks, and threshold outcome are computed
-                deterministically.
+                Requests, latency, errors, checks, and threshold outcomes become delivery signals,
+                computed deterministically.
               </p>
             </div>
             <Badge tone={result.qualityGate === "passed" ? "success" : "danger"}>

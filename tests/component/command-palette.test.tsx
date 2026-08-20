@@ -48,7 +48,7 @@ describe("CommandPalette", () => {
 
     await user.keyboard("{ArrowDown}{Enter}");
 
-    expect(onSelect).toHaveBeenCalledWith("profile");
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ section: "profile" }));
   });
 
   it("filters commands, exposes active option, and ignores Enter without a match", async () => {
@@ -90,7 +90,7 @@ describe("CommandPalette", () => {
     );
     await user.keyboard("{ArrowUp}{Enter}");
 
-    expect(onSelect).toHaveBeenCalledWith("contact");
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ section: "contact" }));
 
     onClose.mockClear();
     await user.keyboard("{Escape}");
@@ -103,14 +103,15 @@ describe("CommandPalette", () => {
 
     render(<RyanOSApp />);
 
-    await user.click(screen.getByRole("button", { name: "ENTER WORKSPACE" }));
+    await user.click(screen.getByRole("button", { name: "Explore RyanOS" }));
     await user.keyboard("{Control>}k{/Control}");
 
     expect(screen.getByRole("dialog", { name: "Command palette" })).toBeInTheDocument();
 
-    await user.keyboard("{ArrowDown}{Enter}");
+    await user.type(screen.getByRole("combobox", { name: "Search commands" }), "architecture");
+    await user.keyboard("{Enter}");
 
-    expect(await screen.findByText("Education")).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/profile");
+    expect(await screen.findByText("Full Stack Application")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/labs/architecture");
   });
 });

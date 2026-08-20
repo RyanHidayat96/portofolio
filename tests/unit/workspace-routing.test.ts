@@ -40,10 +40,10 @@ describe("workspace routing", () => {
     expect(
       getWorkspacePath(
         createRouteForSection("projects", {
-          projectSlug: "cicd-quality-gates"
+          projectSlug: "enterprise-audit-monitoring-platform"
         })
       )
-    ).toBe("/projects/cicd-quality-gates");
+    ).toBe("/projects/enterprise-audit-monitoring-platform");
     expect(getWorkspacePath(createRouteForSection("api"))).toBe("/labs/api");
     expect(
       getWorkspacePath(
@@ -74,7 +74,7 @@ describe("workspace routing", () => {
       expect.arrayContaining([
         "/",
         "/projects",
-        "/projects/cicd-quality-gates",
+        "/projects/enterprise-audit-monitoring-platform",
         "/labs/automation",
         "/labs/pipeline",
         "/labs/performance",
