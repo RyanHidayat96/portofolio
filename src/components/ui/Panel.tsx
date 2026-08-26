@@ -9,14 +9,5 @@ export function Panel({
   className?: string;
   as?: "section" | "article" | "div";
 }>): React.ReactElement {
-  return (
-    <Component
-      className={cn(
-        "rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--panel)] shadow-[var(--shadow-panel)]",
-        className
-      )}
-    >
-      {children}
-    </Component>
-  );
+  return <Component className={cn("panel-surface", className)}>{children}</Component>;
 }

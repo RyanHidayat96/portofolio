@@ -3,11 +3,11 @@ import { cn } from "@/lib/cn";
 type BadgeTone = "neutral" | "info" | "success" | "warning" | "danger";
 
 const toneClass: Record<BadgeTone, string> = {
-  neutral: "border-[var(--border)] text-[var(--text-muted)]",
-  info: "border-[rgba(85,215,255,0.4)] text-[var(--accent)]",
-  success: "border-[rgba(110,231,168,0.4)] text-[var(--success)]",
-  warning: "border-[rgba(255,211,110,0.4)] text-[var(--warning)]",
-  danger: "border-[rgba(255,111,125,0.4)] text-[var(--danger)]"
+  neutral: "badge-neutral",
+  info: "badge-info",
+  success: "badge-success",
+  warning: "badge-warning",
+  danger: "badge-danger"
 };
 
 export function Badge({
@@ -19,15 +19,5 @@ export function Badge({
   tone?: BadgeTone;
   className?: string;
 }>): React.ReactElement {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-[var(--radius-badge)] border px-2.5 py-1 text-xs font-semibold leading-tight",
-        toneClass[tone],
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
+  return <span className={cn("badge-base", toneClass[tone], className)}>{children}</span>;
 }

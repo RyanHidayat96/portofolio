@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import {
   architecturePresets,
@@ -9,31 +8,88 @@ import {
   getConnectedArchitectureNodeIds
 } from "@/data/architecture";
 import type { ArchitectureEdge, ArchitectureNode, ArchitecturePresetId } from "@/data/types";
-import { cn } from "@/lib/cn";
-import { Network } from "lucide-react";
+import { ArrowRight, Boxes, GitBranch, Layers3, Network } from "lucide-react";
+import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
+
+const emptyArchitectureNodes: readonly ArchitectureNode[] = [];
+const emptyArchitectureEdges: readonly ArchitectureEdge[] = [];
+
+type NodeStatus = "selected" | "connected" | "idle";
+
+type NodeStyle = CSSProperties & {
+  readonly "--node-x": string;
+  readonly "--node-y": string;
+  readonly "--node-depth": string;
+};
+
+const presetMeta: Record<
+  ArchitecturePresetId,
+  { readonly label: string; readonly icon: typeof Boxes }
+> = {
+  "full-stack-application": { label: "Build", icon: Boxes },
+  "quality-engineering": { label: "Quality", icon: Layers3 },
+  "cicd-delivery": { label: "Ship", icon: GitBranch }
+};
 
 export function ArchitectureExplorer(): React.ReactElement {
   const [presetId, setPresetId] = useState<ArchitecturePresetId>(
     architecturePresets[0]?.id ?? "full-stack-application"
   );
   const activePreset = architecturePresets.find((preset) => preset.id === presetId);
-  const activeNodes = activePreset?.nodes ?? [];
-  const activeEdges = activePreset?.edges ?? [];
+  const activeNodes = activePreset?.nodes ?? emptyArchitectureNodes;
+  const activeEdges = activePreset?.edges ?? emptyArchitectureEdges;
   const [selectedId, setSelectedId] = useState(activeNodes[0]?.id ?? "");
   const selectedNode = activeNodes.find((node) => node.id === selectedId) ?? activeNodes[0];
+
   const connectedNodeIds = useMemo(
-    () => getConnectedArchitectureNodeIds(selectedNode?.id ?? "", activeEdges),
-    [activeEdges, selectedNode?.id]
+    () => (selectedNode ? getConnectedArchitectureNodeIds(selectedNode.id, activeEdges) : []),
+    [activeEdges, selectedNode]
   );
-  const connectedNodes = connectedNodeIds
-    .map((nodeId) => findArchitectureNode(nodeId, activeNodes))
-    .filter((node): node is ArchitectureNode => Boolean(node));
+  const connectedNodes = useMemo(
+    () =>
+      connectedNodeIds
+        .map((nodeId) => findArchitectureNode(nodeId, activeNodes))
+        .filter((node): node is ArchitectureNode => Boolean(node)),
+    [activeNodes, connectedNodeIds]
+  );
+  const activeConnections = useMemo(
+    () =>
+      selectedNode
+        ? activeEdges.filter(
+            (edge) => edge.source === selectedNode.id || edge.target === selectedNode.id
+          )
+        : [],
+    [activeEdges, selectedNode]
+  );
+  const activeEdgeIds = useMemo(
+    () => new Set(activeConnections.map((edge) => edge.id)),
+    [activeConnections]
+  );
 
   const selectPreset = (nextPresetId: ArchitecturePresetId): void => {
     const nextPreset = architecturePresets.find((preset) => preset.id === nextPresetId);
     setPresetId(nextPresetId);
     setSelectedId(nextPreset?.nodes[0]?.id ?? "");
+  };
+
+  const selectNodeByOffset = (currentNodeId: string, offset: number): void => {
+    if (activeNodes.length === 0) {
+      return;
+    }
+
+    const currentIndex = activeNodes.findIndex((node) => node.id === currentNodeId);
+    const nextIndex = (currentIndex + offset + activeNodes.length) % activeNodes.length;
+    const nextNode = activeNodes[nextIndex];
+
+    if (!nextNode) {
+      return;
+    }
+
+    setSelectedId(nextNode.id);
+    window.requestAnimationFrame(() =>
+      document.getElementById(`architecture-node-${nextNode.id}`)?.focus()
+    );
   };
 
   const onPresetKeyDown = (
@@ -61,31 +117,44 @@ export function ArchitectureExplorer(): React.ReactElement {
     );
   };
 
+  const onNodeKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    currentNodeId: string
+  ): void => {
+    if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    selectNodeByOffset(
+      currentNodeId,
+      event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1
+    );
+  };
+
   return (
-    <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-      <Panel className="overflow-hidden p-5 sm:p-7">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex items-center gap-3">
-            <Network className="text-[#55d7ff]" aria-hidden="true" size={22} />
+    <div className="architecture-explorer">
+      <Panel className="architecture-stage-panel">
+        <header className="architecture-header">
+          <div className="architecture-heading">
+            <span className="architecture-heading-icon" aria-hidden="true">
+              <Network size={22} />
+            </span>
             <div>
-              <p className="mono text-sm text-[#55d7ff]">architecture.presets</p>
-              <h1 className="mt-1 text-2xl font-semibold">
-                {activePreset?.title ?? "Architecture Explorer"}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#8a96a8]">
+              <p className="eyebrow">architecture.presets</p>
+              <h1>{activePreset?.title ?? "Architecture Explorer"}</h1>
+              <p>
                 {activePreset?.description ??
                   "Architecture data is not configured for this workspace."}
               </p>
             </div>
           </div>
 
-          <div
-            className="grid gap-2 sm:grid-cols-3 lg:min-w-[430px]"
-            role="tablist"
-            aria-label="Architecture presets"
-          >
+          <div className="architecture-presets" role="tablist" aria-label="Architecture presets">
             {architecturePresets.map((preset) => {
               const isActive = preset.id === presetId;
+              const meta = presetMeta[preset.id];
+              const Icon = meta.icon;
 
               return (
                 <button
@@ -97,68 +166,58 @@ export function ArchitectureExplorer(): React.ReactElement {
                   aria-controls="architecture-topology-panel"
                   onClick={() => selectPreset(preset.id)}
                   onKeyDown={(event) => onPresetKeyDown(event, preset.id)}
-                  className={cn(
-                    "min-h-[var(--touch-target)] rounded-[var(--radius-control)] border px-3 py-2 text-left transition",
-                    isActive
-                      ? "border-[#55d7ff]/70 bg-[#55d7ff]/14 text-[#eef5ff]"
-                      : "border-[var(--border)] bg-[#10141d] text-[#8a96a8] hover:border-[#55d7ff]/50"
-                  )}
+                  className="architecture-preset-button"
+                  data-active={isActive}
                 >
-                  <span className="mono block text-[11px] uppercase">{preset.id}</span>
-                  <span className="mt-1 block text-sm font-semibold">{preset.title}</span>
+                  <Icon aria-hidden="true" size={16} />
+                  <span>{meta.label}</span>
+                  <strong>{preset.title}</strong>
                 </button>
               );
             })}
           </div>
-        </div>
+        </header>
 
         <div
           id="architecture-topology-panel"
           role="tabpanel"
           aria-labelledby={`architecture-preset-${presetId}`}
-          className="mt-6"
+          className="architecture-topology-panel"
         >
-          <div className="grid gap-3 md:hidden" aria-label="Architecture nodes">
+          <div className="architecture-mobile-list" aria-label="Architecture nodes">
             {activeNodes.map((node) => {
-              const isSelected = node.id === selectedNode?.id;
+              const status = getNodeStatus(node, selectedNode, connectedNodeIds);
 
               return (
-                <button
+                <MobileNodeButton
                   key={node.id}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => setSelectedId(node.id)}
-                  className={cn(
-                    "min-h-[var(--touch-target)] rounded-[var(--radius-control)] border p-4 text-left transition",
-                    isSelected
-                      ? "border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)]"
-                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)]"
-                  )}
-                >
-                  <span className="mono block text-xs uppercase text-[var(--accent)]">
-                    {node.layer}
-                  </span>
-                  <span className="mt-2 block font-semibold">{node.label}</span>
-                  <span className="mt-2 block text-sm leading-6">{node.purpose}</span>
-                </button>
+                  node={node}
+                  status={status}
+                  onSelect={() => setSelectedId(node.id)}
+                />
               );
             })}
           </div>
 
-          <div className="hidden overflow-x-auto pb-2 md:block">
+          <div className="architecture-map-shell">
             <div
-              className="relative min-h-[620px] min-w-[720px] rounded-[var(--radius-panel)] border border-[var(--border)] bg-[#090d14]"
+              className="architecture-map"
+              data-preset={presetId}
               aria-label="Architecture topology map"
             >
+              <div className="architecture-plane architecture-plane-back" aria-hidden="true" />
+              <div className="architecture-plane architecture-plane-mid" aria-hidden="true" />
+              <div className="architecture-plane architecture-plane-front" aria-hidden="true" />
+
               <svg
-                className="absolute inset-0 h-full w-full"
+                className="architecture-edges"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
                 aria-hidden="true"
               >
                 <defs>
                   <marker
-                    id="architecture-arrow"
+                    id="architecture-arrow-active"
                     viewBox="0 0 10 10"
                     refX="7"
                     refY="5"
@@ -166,7 +225,7 @@ export function ArchitectureExplorer(): React.ReactElement {
                     markerHeight="4"
                     orient="auto-start-reverse"
                   >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#55d7ff" opacity="0.9" />
+                    <path d="M 0 0 L 10 5 L 0 10 z" />
                   </marker>
                 </defs>
                 {activeEdges.map((edge) => (
@@ -174,19 +233,19 @@ export function ArchitectureExplorer(): React.ReactElement {
                     key={edge.id}
                     edge={edge}
                     nodes={activeNodes}
-                    isActive={edge.source === selectedNode?.id || edge.target === selectedNode?.id}
+                    isActive={activeEdgeIds.has(edge.id)}
                   />
                 ))}
               </svg>
 
-              <div className="absolute inset-0">
+              <div className="architecture-nodes">
                 {activeNodes.map((node) => (
                   <TopologyNodeButton
                     key={node.id}
                     node={node}
-                    isSelected={node.id === selectedNode?.id}
-                    isConnected={connectedNodeIds.includes(node.id)}
+                    status={getNodeStatus(node, selectedNode, connectedNodeIds)}
                     onSelect={() => setSelectedId(node.id)}
+                    onKeyDown={(event) => onNodeKeyDown(event, node.id)}
                   />
                 ))}
               </div>
@@ -195,10 +254,12 @@ export function ArchitectureExplorer(): React.ReactElement {
         </div>
       </Panel>
 
-      <Panel className="p-5 sm:p-7">
+      <Panel className="architecture-details-panel">
         {selectedNode ? (
           <TopologyDetails
             node={selectedNode}
+            nodes={activeNodes}
+            connections={activeConnections}
             connectedNodes={connectedNodes}
             onSelectNode={setSelectedId}
           />
@@ -208,6 +269,30 @@ export function ArchitectureExplorer(): React.ReactElement {
       </Panel>
     </div>
   );
+}
+
+function getNodeStatus(
+  node: ArchitectureNode,
+  selectedNode: ArchitectureNode | undefined,
+  connectedNodeIds: readonly string[]
+): NodeStatus {
+  if (node.id === selectedNode?.id) {
+    return "selected";
+  }
+
+  if (connectedNodeIds.includes(node.id)) {
+    return "connected";
+  }
+
+  return "idle";
+}
+
+function getNodeStyle(node: ArchitectureNode): NodeStyle {
+  return {
+    "--node-x": `${node.x}%`,
+    "--node-y": `${node.y}%`,
+    "--node-depth": `${Math.round((node.y - 50) * 1.1)}px`
+  };
 }
 
 function TopologyEdge({
@@ -226,98 +311,134 @@ function TopologyEdge({
     return null;
   }
 
+  const controlOffset = Math.max(7, Math.abs(source.y - target.y) * 0.22);
+  const path = `M ${source.x} ${source.y} C ${source.x} ${source.y + controlOffset}, ${target.x} ${target.y - controlOffset}, ${target.x} ${target.y}`;
+  const labelX = (source.x + target.x) / 2;
+  const labelY = (source.y + target.y) / 2;
+
   return (
-    <g>
-      <line
-        x1={source.x}
-        y1={source.y}
-        x2={target.x}
-        y2={target.y}
-        className={cn("motion-safe:transition", isActive ? "stroke-[#55d7ff]" : "stroke-[#2e3a4d]")}
-        strokeWidth={isActive ? 0.45 : 0.28}
-        strokeDasharray={isActive ? "0" : "1.2 1.1"}
-        markerEnd={isActive ? "url(#architecture-arrow)" : undefined}
-      />
+    <g className="architecture-edge" data-active={isActive}>
+      <path d={path} markerEnd={isActive ? "url(#architecture-arrow-active)" : undefined} />
+      {isActive ? (
+        <text x={labelX} y={labelY} textAnchor="middle">
+          {edge.label}
+        </text>
+      ) : null}
     </g>
   );
 }
 
 function TopologyNodeButton({
   node,
-  isSelected,
-  isConnected,
+  status,
+  onSelect,
+  onKeyDown
+}: Readonly<{
+  node: ArchitectureNode;
+  status: NodeStatus;
+  onSelect: () => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+}>): React.ReactElement {
+  return (
+    <button
+      id={`architecture-node-${node.id}`}
+      type="button"
+      aria-pressed={status === "selected"}
+      aria-label={`${node.label} architecture node`}
+      onClick={onSelect}
+      onKeyDown={onKeyDown}
+      className="architecture-node"
+      data-status={status}
+      style={getNodeStyle(node)}
+    >
+      <span>{node.layer}</span>
+      <strong>{node.label}</strong>
+    </button>
+  );
+}
+
+function MobileNodeButton({
+  node,
+  status,
   onSelect
 }: Readonly<{
   node: ArchitectureNode;
-  isSelected: boolean;
-  isConnected: boolean;
+  status: NodeStatus;
   onSelect: () => void;
 }>): React.ReactElement {
   return (
     <button
       type="button"
-      aria-pressed={isSelected}
-      aria-label={`${node.label} architecture node`}
+      aria-pressed={status === "selected"}
       onClick={onSelect}
-      className={cn(
-        "absolute min-h-20 w-36 -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-control)] border p-3 text-left shadow-[0_18px_50px_rgba(0,0,0,0.3)] motion-safe:transition motion-safe:duration-200",
-        isSelected
-          ? "border-[#55d7ff] bg-[#55d7ff]/18 text-[#eef5ff]"
-          : isConnected
-            ? "border-[#6ee7a8]/60 bg-[#6ee7a8]/12 text-[#eef5ff]"
-            : "border-[var(--border)] bg-[#10141d] text-[#c8d4e6] hover:border-[#55d7ff]/60"
-      )}
-      style={{ left: `${node.x}%`, top: `${node.y}%` }}
+      className="architecture-mobile-node"
+      data-status={status}
     >
-      <span className="mono block text-[10px] uppercase text-[#8a96a8]">{node.layer}</span>
-      <span className="mt-2 block text-sm font-semibold leading-5">{node.label}</span>
-      <span className={cn("mt-2 block h-1.5 w-10", isSelected ? "bg-[#55d7ff]" : "bg-[#2e3a4d]")} />
+      <span>{node.layer}</span>
+      <strong>{node.label}</strong>
+      <small>{node.purpose}</small>
     </button>
   );
 }
 
 function TopologyDetails({
   node,
+  nodes,
+  connections,
   connectedNodes,
   onSelectNode
 }: Readonly<{
   node: ArchitectureNode;
+  nodes: readonly ArchitectureNode[];
+  connections: readonly ArchitectureEdge[];
   connectedNodes: readonly ArchitectureNode[];
   onSelectNode: (nodeId: string) => void;
 }>): React.ReactElement {
   return (
-    <>
-      <Badge tone="info">{node.layer}</Badge>
-      <h2 className="mt-4 text-2xl font-semibold">{node.label}</h2>
-      <p className="mt-4 leading-7 text-[#b7c2d2]">{node.purpose}</p>
+    <div className="architecture-details">
+      <div className="architecture-details-kicker">
+        <Badge tone="info">{node.layer}</Badge>
+        <span>{node.id}</span>
+      </div>
+      <h2>{node.label}</h2>
+      <p>{node.purpose}</p>
 
-      <section className="mt-7">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a96a8]">
-          Connected Nodes
-        </h3>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {connectedNodes.length > 0 ? (
-            connectedNodes.map((connectedNode) => (
-              <Button
-                key={connectedNode.id}
-                variant="ghost"
-                className="px-3 py-1 text-xs"
-                onClick={() => onSelectNode(connectedNode.id)}
-              >
-                {connectedNode.label}
-              </Button>
+      <section className="architecture-detail-section">
+        <h3>Dependency Path</h3>
+        <div className="architecture-path-list">
+          {connections.length > 0 ? (
+            connections.map((connection) => (
+              <ConnectionRow key={connection.id} connection={connection} nodes={nodes} />
             ))
           ) : (
-            <p className="text-sm text-[#8a96a8]">No connected nodes configured.</p>
+            <p>No connected edges configured.</p>
           )}
         </div>
       </section>
 
-      <section className="mt-7">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a96a8]">
-          Related Skills
-        </h3>
-        <div className="mt-3 flex flex-wrap gap-2">
+      <section className="architecture-detail-section">
+        <h3>Connected Nodes</h3>
+        <div className="architecture-connected-list">
+          {connectedNodes.length > 0 ? (
+            connectedNodes.map((connectedNode) => (
+              <button
+                key={connectedNode.id}
+                type="button"
+                className="architecture-connected-button"
+                onClick={() => onSelectNode(connectedNode.id)}
+              >
+                {connectedNode.label}
+              </button>
+            ))
+          ) : (
+            <p>No connected nodes configured.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="architecture-detail-section">
+        <h3>Related Skills</h3>
+        <div className="architecture-badge-list">
           {node.relatedSkills.map((skill) => (
             <Badge key={skill} tone="success">
               {skill}
@@ -326,18 +447,39 @@ function TopologyDetails({
         </div>
       </section>
 
-      <section className="mt-7">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a96a8]">
-          Engineering Highlights
-        </h3>
-        <div className="mt-3 grid gap-2">
+      <section className="architecture-detail-section">
+        <h3>Engineering Highlights</h3>
+        <div className="architecture-project-list">
           {node.relatedProjects.map((project) => (
-            <div key={project} className="border border-[var(--border)] bg-[#0b0f16] p-3 text-sm">
-              {project}
-            </div>
+            <div key={project}>{project}</div>
           ))}
         </div>
       </section>
-    </>
+    </div>
+  );
+}
+
+function ConnectionRow({
+  connection,
+  nodes
+}: Readonly<{
+  connection: ArchitectureEdge;
+  nodes: readonly ArchitectureNode[];
+}>): React.ReactElement | null {
+  const source = findArchitectureNode(connection.source, nodes);
+  const target = findArchitectureNode(connection.target, nodes);
+
+  if (!source || !target) {
+    return null;
+  }
+
+  return (
+    <div className="architecture-path-row">
+      <span>{source.label}</span>
+      <ArrowRight aria-hidden="true" size={15} />
+      <strong>{connection.label}</strong>
+      <ArrowRight aria-hidden="true" size={15} />
+      <span>{target.label}</span>
+    </div>
   );
 }

@@ -32,13 +32,13 @@ const bootStorageKey = "ryanos.booted";
 const modeStorageKey = "ryanos.mode";
 const bootStateChangeEvent = "ryanos.boot-state-change";
 
-const AutomationLab = dynamic(
+const QualityEngineeringHub = dynamic(
   () =>
-    import("@/features/automation-lab/components/AutomationLab").then(
-      (module) => module.AutomationLab
+    import("@/features/quality/components/QualityEngineeringHub").then(
+      (module) => module.QualityEngineeringHub
     ),
   {
-    loading: () => <WorkspacePanelLoading label="Automation Lab" />
+    loading: () => <WorkspacePanelLoading label="Quality Lab" />
   }
 );
 
@@ -297,7 +297,7 @@ export function RyanOSApp({
           />
         );
       case "automation":
-        return <AutomationLab />;
+        return <QualityEngineeringHub />;
       case "pipeline":
         return <PipelineSimulatorPanel />;
       case "performance":

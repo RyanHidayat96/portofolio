@@ -37,6 +37,16 @@ export function TerminalPanel({
   const [history, setHistory] = useState<readonly string[]>([]);
   const [historyCursor, setHistoryCursor] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const suggestedCommands = [
+    "help",
+    "whoami",
+    "stack",
+    "api",
+    "quality",
+    "performance",
+    "pipeline",
+    "challenge"
+  ] as const;
 
   async function executeInput(rawInput: string): Promise<void> {
     const trimmedInput = rawInput.trim();
@@ -137,6 +147,21 @@ export function TerminalPanel({
         >
           focus
         </button>
+      </div>
+
+      <div className="flex flex-wrap gap-2 border-b border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3">
+        {suggestedCommands.map((command) => (
+          <button
+            key={command}
+            type="button"
+            className="mono min-h-9 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] px-3 text-xs text-[var(--text-muted)] transition hover:border-[var(--accent-strong)] hover:text-[var(--accent)]"
+            onClick={() => {
+              void executeInput(command);
+            }}
+          >
+            {command}
+          </button>
+        ))}
       </div>
 
       <div

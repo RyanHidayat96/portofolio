@@ -3,6 +3,7 @@ import { Panel } from "@/components/ui/Panel";
 import { experience } from "@/data/experience";
 import type { ExperienceRole } from "@/data/types";
 import { cn } from "@/lib/cn";
+import { ArrowRight, Building2, CheckCircle2 } from "lucide-react";
 
 interface CareerMilestone {
   readonly id: string;
@@ -58,68 +59,53 @@ export function CareerEvolution(): React.ReactElement {
   const fullStackRole = experience.find((role) => role.id === "jasa-marga-full-stack");
 
   return (
-    <Panel className="p-5 sm:p-7">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <Panel className="career-evolution p-5 sm:p-7">
+      <div className="career-evolution-header">
         <div>
           <p className="mono text-sm text-[var(--accent)]">career.evolution</p>
-          <h1 className="mt-2 text-3xl font-semibold">Career Evolution</h1>
+          <h1>Premium career timeline.</h1>
+          <p>
+            A concise public path from software engineering, into quality engineering, then current
+            full-stack ownership.
+          </p>
         </div>
         <Badge tone="success">Full Stack is current</Badge>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
-        <article className="border border-[var(--border)] bg-[var(--surface)] p-4">
-          <p className="mono text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
-            build.foundation
-          </p>
-          <p className="mt-3 text-xl font-semibold">
-            Building software taught Ryan how systems are constructed.
-          </p>
+      <div className="career-evolution-thesis" aria-label="Career thesis">
+        <article>
+          <Building2 aria-hidden="true" size={20} />
+          <h2>Build foundation</h2>
+          <p>Software engineering created the base: backend, APIs, SQL, and production support.</p>
         </article>
-        <article className="border border-[var(--border)] bg-[var(--surface)] p-4">
-          <p className="mono text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
-            quality.instinct
-          </p>
-          <p className="mt-3 text-xl font-semibold">
-            Quality engineering taught Ryan where systems fail.
+        <ArrowRight aria-hidden="true" className="career-evolution-arrow" size={22} />
+        <article>
+          <CheckCircle2 aria-hidden="true" size={20} />
+          <h2>Quality instinct</h2>
+          <p>
+            SDET work added failure analysis, automation, performance, reports, and gate thinking.
           </p>
         </article>
       </div>
 
-      <ol className="mt-7 grid gap-4 lg:grid-cols-4">
+      <ol className="career-timeline" aria-label="Career timeline">
         {timelineItems.map(({ milestone, role }, index) => {
           const isCurrent = role.id === "jasa-marga-full-stack";
 
           return (
-            <li key={role.id} className="relative">
-              {index > 0 ? (
-                <span
-                  aria-hidden="true"
-                  className="absolute -top-4 left-6 h-4 w-px bg-[var(--accent-strong)] lg:-left-4 lg:top-12 lg:h-px lg:w-4"
-                />
-              ) : null}
-              <article
-                className={cn(
-                  "min-h-full border p-4",
-                  isCurrent
-                    ? "border-[var(--accent-strong)] bg-[var(--accent-soft)]"
-                    : "border-[var(--border)] bg-[var(--surface)]"
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="mono text-2xl font-semibold text-[var(--accent)]">
-                    {milestone.year}
-                  </span>
+            <li key={role.id}>
+              {index > 0 ? <span aria-hidden="true" className="career-timeline-connector" /> : null}
+              <article className={cn("career-timeline-card", isCurrent && "is-current")}>
+                <div className="career-timeline-card-top">
+                  <span>{milestone.year}</span>
                   {isCurrent ? <Badge tone="success">Current</Badge> : null}
                 </div>
-                <p className="mono mt-4 text-xs uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                  {milestone.stage}
-                </p>
-                <h2 className="mt-3 text-xl font-semibold">{role.role}</h2>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{role.company}</p>
-                <p className="mono mt-3 text-xs text-[var(--accent)]">{role.period}</p>
-                <p className="mt-4 text-sm leading-6 text-[#c8d4e6]">{milestone.story}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <p className="career-timeline-stage">{milestone.stage}</p>
+                <h2>{role.role}</h2>
+                <p className="career-timeline-company">{role.company}</p>
+                <p className="career-timeline-period">{role.period}</p>
+                <p className="career-timeline-story">{milestone.story}</p>
+                <div>
                   {milestone.domains.map((domain) => (
                     <Badge key={domain} tone={isCurrent ? "success" : "info"}>
                       {domain}
@@ -133,20 +119,19 @@ export function CareerEvolution(): React.ReactElement {
       </ol>
 
       {sdetRole && fullStackRole ? (
-        <section className="mt-7 border border-[var(--accent-strong)] bg-[#080d14] p-5">
-          <p className="mono text-sm text-[var(--accent)]">jasa_marga.role_evolution</p>
-          <h2 className="mt-3 text-2xl font-semibold">PT Jasa Marga (Persero) Tbk</h2>
-          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_180px_1fr] lg:items-stretch">
+        <section className="role-evolution" aria-label="Role evolution at Jasa Marga">
+          <div>
+            <p className="mono text-sm text-[var(--accent)]">jasa_marga.role_evolution</p>
+            <h2>One company, broader ownership.</h2>
+            <p>
+              Same enterprise context, expanded from quality systems into current product delivery.
+            </p>
+          </div>
+          <div className="role-evolution-grid">
             <RoleEvolutionCard role={sdetRole} label="Quality systems" />
-            <div className="flex items-center justify-center border border-[var(--border)] bg-[var(--surface)] p-4 text-center">
-              <div>
-                <p className="mono text-xs uppercase tracking-[0.2em] text-[var(--warning)]">
-                  role evolution
-                </p>
-                <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
-                  Sequential growth inside same company.
-                </p>
-              </div>
+            <div className="role-evolution-bridge">
+              <ArrowRight aria-hidden="true" size={22} />
+              <span>role growth</span>
             </div>
             <RoleEvolutionCard role={fullStackRole} label="Product delivery" isCurrent />
           </div>
@@ -166,21 +151,14 @@ function RoleEvolutionCard({
   isCurrent?: boolean;
 }>): React.ReactElement {
   return (
-    <article
-      className={cn(
-        "border p-4",
-        isCurrent
-          ? "border-[var(--accent-strong)] bg-[var(--accent-soft)]"
-          : "border-[var(--border)] bg-[var(--surface)]"
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
+    <article className={cn("role-evolution-card", isCurrent && "is-current")}>
+      <div>
         <Badge tone={isCurrent ? "success" : "info"}>{label}</Badge>
         {isCurrent ? <Badge tone="success">Current</Badge> : null}
       </div>
-      <h3 className="mt-4 text-xl font-semibold">{role.role}</h3>
-      <p className="mono mt-3 text-sm text-[var(--accent)]">{role.period}</p>
-      <p className="mt-4 text-sm leading-6 text-[#c8d4e6]">{role.impact[0]}</p>
+      <h3>{role.role}</h3>
+      <p className="role-evolution-period">{role.period}</p>
+      <p>{role.impact[0]}</p>
     </article>
   );
 }

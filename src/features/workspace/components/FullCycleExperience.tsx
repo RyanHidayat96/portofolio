@@ -7,7 +7,7 @@ import { experience } from "@/data/experience";
 import { projects } from "@/data/projects";
 import type { FullCycleNode, PortfolioMode } from "@/data/types";
 import { cn } from "@/lib/cn";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 type FullCycleNodeId = FullCycleNode["id"];
 
@@ -58,22 +58,18 @@ export function FullCycleExperience(): React.ReactElement {
   const [mode, setMode] = useState<PortfolioMode>("full-cycle");
   const [activeNodeId, setActiveNodeId] = useState<FullCycleNodeId>("frontend");
   const visibleNodeIds = modeNodeIds[mode];
-  const visibleNodes = useMemo(
-    () => fullCycleNodes.filter((node) => visibleNodeIds.includes(node.id)),
-    [visibleNodeIds]
-  );
+  const visibleNodes = fullCycleNodes.filter((node) => visibleNodeIds.includes(node.id));
+  const resolvedActiveNodeId = visibleNodeIds.includes(activeNodeId)
+    ? activeNodeId
+    : (visibleNodeIds[0] ?? "idea");
   const activeNode =
-    visibleNodes.find((node) => node.id === activeNodeId) ?? visibleNodes[0] ?? fullCycleNodes[0];
+    visibleNodes.find((node) => node.id === resolvedActiveNodeId) ??
+    visibleNodes[0] ??
+    fullCycleNodes[0];
   const relatedRoles = experience.filter((role) => activeNode?.relatedExperience.includes(role.id));
   const relatedProjects = projects.filter((project) =>
     activeNode?.relatedProjects.includes(project.slug)
   );
-
-  useEffect(() => {
-    if (!visibleNodeIds.includes(activeNodeId)) {
-      setActiveNodeId(visibleNodeIds[0] ?? "idea");
-    }
-  }, [activeNodeId, visibleNodeIds]);
 
   const selectMode = (nextMode: PortfolioMode): void => {
     setMode(nextMode);

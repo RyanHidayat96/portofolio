@@ -69,9 +69,9 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
   },
   automation: {
     id: "automation",
-    label: "Automation Lab",
+    label: "Quality Lab",
     icon: FlaskConical,
-    description: "Run automation and self-healing simulation."
+    description: "Integrate automation, self-healing, performance, and quality gates."
   },
   pipeline: {
     id: "pipeline",

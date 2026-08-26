@@ -262,6 +262,21 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   );
 
   registry.register(
+    new StaticCommand("api", "Open API playground.", () =>
+      navigate("api", "API playground ready. Public route handlers available.")
+    )
+  );
+
+  registry.register(
+    new StaticCommand(
+      "challenge",
+      "Open engineering challenge.",
+      () => navigate("challenge", "Engineering challenge ready. Pick a scenario."),
+      ["test-me"]
+    )
+  );
+
+  registry.register(
     new StaticCommand("hire", "Run candidate evaluation.", (_args, context) => {
       const evidenceLines = context.skillGroups
         .flatMap((group) => group.skills.map((skill) => `${skill.name.padEnd(24)} strong`))

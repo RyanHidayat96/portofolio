@@ -1,21 +1,31 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
+import { apiEndpoints } from "@/data/api-endpoints";
 import { capabilities } from "@/data/capabilities";
+import { challengeScenarios } from "@/data/challenges";
 import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
 import { FullCycleExperience } from "@/features/workspace/components/FullCycleExperience";
 import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
+import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import {
   BadgeCheck,
   Brain,
   BriefcaseBusiness,
+  Code2,
+  Download,
+  ExternalLink,
   FlaskConical,
   Gauge,
   GitBranch,
+  Layers3,
   Mail,
+  MapPin,
   Network,
+  PlayCircle,
+  Route,
   Send,
   TerminalSquare,
   UserRound
@@ -41,198 +51,231 @@ function RecruiterOverviewPanel({
   onNavigate: (section: WorkspaceSection) => void;
 }>): React.ReactElement {
   const currentRole = experience.find((role) => role.id === "jasa-marga-full-stack");
-  const previousRoles = experience.filter((role) => role.id !== "jasa-marga-full-stack");
-  const featuredProject =
-    projects.find((project) => project.slug === "enterprise-audit-monitoring-platform") ??
-    projects[0];
-  const recruiterFlow: readonly {
-    readonly step: string;
-    readonly title: string;
-    readonly summary: string;
-    readonly section: WorkspaceSection;
-    readonly icon: React.ElementType;
+  const sdetRole = experience.find((role) => role.id === "jasa-marga-sdet");
+  const softwareEngineerRole = experience.find((role) => role.id === "adira-software-engineer");
+  const selectedProjects = [
+    "enterprise-audit-monitoring-platform",
+    "enterprise-backend-development",
+    "enterprise-web-automation-ecosystem"
+  ]
+    .map((slug) => projects.find((project) => project.slug === slug))
+    .filter((project): project is (typeof projects)[number] => Boolean(project));
+  const recruiterProjects = selectedProjects.length > 0 ? selectedProjects : projects.slice(0, 3);
+  const cv = profile.contact.cv;
+  const contactLinks = [
+    profile.contact.email,
+    profile.contact.phone,
+    profile.contact.linkedIn
+  ].filter(
+    (link) => isPortfolioValueConfigured(link.href) && isPortfolioValueConfigured(link.value)
+  );
+  const hiringSignals: readonly {
+    readonly label: string;
+    readonly value: string;
+    readonly detail: string;
   }[] = [
     {
-      step: "01",
-      title: "Who I Am",
-      summary: `${profile.name}. ${profile.headline}. ${profile.location}.`,
-      section: "profile",
-      icon: UserRound
+      label: "Target",
+      value: profile.availability,
+      detail: "Full Stack development with SDET-level quality ownership."
     },
     {
-      step: "02",
-      title: "Current Role",
-      summary: `${currentRole?.role ?? profile.role} at ${
-        currentRole?.company ?? "PT Jasa Marga (Persero) Tbk"
-      }.`,
-      section: "experience",
-      icon: BriefcaseBusiness
+      label: "Experience",
+      value: profile.yearsOfExperience,
+      detail: "Enterprise apps, backend/API, automation, performance, and CI/CD."
     },
     {
-      step: "03",
-      title: "Career Evolution",
-      summary: "Software Engineer, SQA Manual & Automation, SDET, then Full Stack Developer.",
-      section: "experience",
-      icon: GitBranch
+      label: "Location",
+      value: profile.location,
+      detail: "Ready for recruiter follow-up through email, phone, LinkedIn, or CV."
+    }
+  ];
+  const careerSnapshot: readonly {
+    readonly label: string;
+    readonly title: string;
+    readonly meta: string;
+    readonly section: WorkspaceSection;
+  }[] = [
+    {
+      label: "Now",
+      title: currentRole?.role ?? profile.role,
+      meta: `${currentRole?.company ?? "PT Jasa Marga (Persero) Tbk"} - ${
+        currentRole?.period ?? "Present"
+      }`,
+      section: "experience"
     },
     {
-      step: "04",
-      title: "Featured Engineering Work",
-      summary: featuredProject?.title ?? "Enterprise Audit Monitoring Platform.",
-      section: "projects",
-      icon: BadgeCheck
+      label: "Quality depth",
+      title: sdetRole?.role ?? "Software Development Engineer in Test (SDET)",
+      meta: sdetRole?.period ?? "Automation, mobile, API, performance, CI/CD",
+      section: "experience"
     },
     {
-      step: "05",
-      title: "Core Capabilities",
-      summary: "Build, Quality, Data, and Delivery across full-cycle engineering.",
-      section: "profile",
-      icon: Network
-    },
-    {
-      step: "06",
-      title: "Contact",
-      summary: "Email, LinkedIn, phone, and downloadable CV.",
-      section: "contact",
-      icon: Mail
+      label: "Engineering base",
+      title: softwareEngineerRole?.role ?? "Software Engineer",
+      meta: softwareEngineerRole?.period ?? "Backend, SQL, production support",
+      section: "experience"
     }
   ];
 
   return (
-    <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_420px]">
-      <Panel className="p-5 sm:p-7">
-        <Badge tone="info">Recruiter Mode</Badge>
-        <h1 className="mt-5 max-w-4xl text-3xl font-semibold leading-tight sm:text-5xl">
-          60-second overview for hiring teams.
-          <span className="block text-[var(--accent)]">{profile.headline}</span>
-        </h1>
-        <p className="mt-5 max-w-3xl text-base leading-7 text-[#b7c2d2]">{profile.summary}</p>
-
-        <section className="mt-7 border border-[var(--accent-strong)] bg-[var(--accent-soft)] p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="mono text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
-                current_role
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold">{currentRole?.role ?? profile.role}</h2>
-              <p className="mt-2 text-sm text-[#c8d4e6]">
-                {currentRole?.company ?? "PT Jasa Marga (Persero) Tbk"}
-              </p>
-              <p className="mono mt-3 text-sm text-[var(--accent)]">
-                {currentRole?.period ?? "Mar 2026 - Present"}
-              </p>
-            </div>
-            <Badge tone="success">Current</Badge>
+    <div className="recruiter-scan">
+      <Panel className="recruiter-scan-hero p-5 sm:p-7">
+        <section>
+          <Badge tone="info">Recruiter Mode</Badge>
+          <h1>{profile.name}</h1>
+          <p className="recruiter-scan-headline">{profile.headline}</p>
+          <p className="recruiter-scan-summary">{profile.summary}</p>
+          <div className="recruiter-scan-actions">
+            {isPortfolioValueConfigured(cv.href) ? (
+              <a className="button-base button-primary" href={cv.href} download="cv.pdf">
+                <Download aria-hidden="true" size={18} />
+                <span>Download CV</span>
+              </a>
+            ) : null}
+            <Button
+              icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
+              onClick={() => onNavigate("experience")}
+            >
+              View Experience
+            </Button>
+            <Button
+              icon={<Mail aria-hidden="true" size={18} />}
+              onClick={() => onNavigate("contact")}
+            >
+              Contact
+            </Button>
           </div>
         </section>
 
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <section className="recruiter-scan-fit" aria-label="Recruiter fit summary">
+          <div className="recruiter-scan-fit-header">
+            <p className="mono">30.sec.fit</p>
+            <MapPin aria-hidden="true" size={18} />
+          </div>
+          <dl>
+            {hiringSignals.map((signal) => (
+              <div key={signal.label}>
+                <dt>{signal.label}</dt>
+                <dd>
+                  <strong>{signal.value}</strong>
+                  <span>{signal.detail}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </Panel>
+
+      <div className="recruiter-scan-grid">
+        <Panel className="recruiter-scan-priority p-5 sm:p-6">
+          <p className="mono text-sm text-[var(--accent)]">quick.summary</p>
+          <h2>What hiring teams should remember.</h2>
+          <ul>
+            <li>Current Full Stack Developer building enterprise workflow applications.</li>
+            <li>SDET background across web, mobile, API, performance, and quality gates.</li>
+            <li>Comfortable across frontend, backend, data, automation, and delivery signals.</li>
+          </ul>
+        </Panel>
+
+        <Panel className="recruiter-scan-career p-5 sm:p-6">
+          <p className="mono text-sm text-[var(--accent)]">career.path</p>
+          <div className="recruiter-scan-career-list">
+            {careerSnapshot.map((item) => (
+              <button key={item.label} type="button" onClick={() => onNavigate(item.section)}>
+                <span>{item.label}</span>
+                <strong>{item.title}</strong>
+                <small>{item.meta}</small>
+              </button>
+            ))}
+          </div>
+        </Panel>
+      </div>
+
+      <Panel className="recruiter-scan-skills p-5 sm:p-7">
+        <div className="recruiter-scan-section-header">
+          <div>
+            <p className="mono text-sm text-[var(--accent)]">strongest.skills</p>
+            <h2>Build, Quality, Data, Delivery.</h2>
+          </div>
           <Button
-            variant="primary"
-            icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
-            onClick={() => onNavigate("experience")}
+            icon={<UserRound aria-hidden="true" size={17} />}
+            onClick={() => onNavigate("profile")}
           >
-            View Current Role
+            Full Profile
           </Button>
+        </div>
+        <div className="recruiter-scan-skill-grid">
+          {capabilities.map((capability) => (
+            <article key={capability.id}>
+              <h3>{capability.title}</h3>
+              <p>{capability.description}</p>
+              <div>
+                {capability.technologies.slice(0, 5).map((technology) => (
+                  <Badge key={technology}>{technology}</Badge>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel className="recruiter-scan-projects p-5 sm:p-7">
+        <div className="recruiter-scan-section-header">
+          <div>
+            <p className="mono text-sm text-[var(--accent)]">selected.work</p>
+            <h2>Relevant projects, not every detail.</h2>
+          </div>
           <Button
-            icon={<BadgeCheck aria-hidden="true" size={18} />}
+            icon={<BadgeCheck aria-hidden="true" size={17} />}
             onClick={() => onNavigate("projects")}
           >
-            Featured Work
+            View Projects
           </Button>
-          <Button
-            icon={<Mail aria-hidden="true" size={18} />}
-            onClick={() => onNavigate("contact")}
-          >
-            Contact {profile.name}
-          </Button>
+        </div>
+        <div className="recruiter-scan-project-grid">
+          {recruiterProjects.map((project) => (
+            <article key={project.slug}>
+              <Badge tone={project.categories.includes("build") ? "info" : "success"}>
+                {project.role ?? project.label ?? "Project"}
+              </Badge>
+              <h3>{project.title}</h3>
+              <p>{project.engineered ?? project.responsibility}</p>
+              <div>
+                {project.technologies.slice(0, 5).map((technology) => (
+                  <span key={technology}>{technology}</span>
+                ))}
+              </div>
+            </article>
+          ))}
         </div>
       </Panel>
 
-      <Panel className="p-5 sm:p-7">
-        <p className="mono text-sm text-[var(--accent)]">recruiter.path</p>
-        <div className="mt-5 grid gap-3">
-          {recruiterFlow.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.step}
-                type="button"
-                onClick={() => onNavigate(item.section)}
-                className="grid grid-cols-[44px_1fr] gap-3 border border-[var(--border)] bg-[var(--surface)] p-3 text-left transition hover:border-[var(--accent-strong)] hover:bg-[var(--accent-soft)]"
-              >
-                <span className="mono text-sm text-[var(--accent)]">{item.step}</span>
-                <span>
-                  <span className="flex items-center gap-2 font-semibold text-[var(--text-primary)]">
-                    <Icon aria-hidden="true" size={16} />
-                    {item.title}
-                  </span>
-                  <span className="mt-2 block text-sm leading-6 text-[var(--text-muted)]">
-                    {item.summary}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+      <Panel className="recruiter-scan-contact p-5 sm:p-7">
+        <div>
+          <p className="mono text-sm text-[var(--accent)]">cv.contact</p>
+          <h2>Need full details?</h2>
+          <p>Download CV for full responsibility detail, then contact directly.</p>
         </div>
-      </Panel>
-
-      <Panel className="p-5 sm:p-7 2xl:col-span-2">
-        <div className="grid gap-5 lg:grid-cols-[1fr_1fr_1fr]">
-          <section>
-            <p className="mono text-sm text-[var(--accent)]">previously</p>
-            <div className="mt-4 space-y-3">
-              {previousRoles.slice(0, 3).map((role) => (
-                <article
-                  key={role.id}
-                  className="border border-[var(--border)] bg-[var(--surface)] p-4"
-                >
-                  <h2 className="font-semibold">{role.role}</h2>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">{role.company}</p>
-                  <p className="mono mt-2 text-xs text-[var(--accent)]">{role.period}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <p className="mono text-sm text-[var(--accent)]">featured.work</p>
-            {featuredProject ? (
-              <article className="mt-4 border border-[var(--border)] bg-[var(--surface)] p-4">
-                {featuredProject.label ? (
-                  <Badge tone="success">{featuredProject.label}</Badge>
-                ) : null}
-                <h2 className="mt-3 text-lg font-semibold">{featuredProject.title}</h2>
-                <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
-                  {featuredProject.responsibility}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onNavigate("projects")}
-                  className="mono mt-4 text-sm font-semibold text-[var(--accent)]"
-                >
-                  Open project
-                </button>
-              </article>
-            ) : null}
-          </section>
-
-          <section>
-            <p className="mono text-sm text-[var(--accent)]">core.capabilities</p>
-            <div className="mt-4 grid gap-2">
-              {capabilities.map((capability) => (
-                <article
-                  key={capability.id}
-                  className="border border-[var(--border)] bg-[var(--surface)] p-3"
-                >
-                  <h2 className="font-semibold">{capability.title}</h2>
-                  <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">
-                    {capability.description}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
+        <div className="recruiter-scan-contact-actions">
+          {isPortfolioValueConfigured(cv.href) ? (
+            <a className="button-base button-primary" href={cv.href} download="cv.pdf">
+              <Download aria-hidden="true" size={18} />
+              <span>{cv.value}</span>
+            </a>
+          ) : null}
+          {contactLinks.map((link) => (
+            <a
+              key={link.id}
+              className="button-base button-secondary"
+              href={link.href}
+              target={link.id === "phone" || link.id === "email" ? undefined : "_blank"}
+              rel={link.id === "phone" || link.id === "email" ? undefined : "noreferrer"}
+            >
+              <ExternalLink aria-hidden="true" size={17} />
+              <span>{link.label}</span>
+            </a>
+          ))}
         </div>
       </Panel>
     </div>
@@ -248,100 +291,174 @@ function EngineerOverviewPanel({
     readonly section: WorkspaceSection;
     readonly title: string;
     readonly description: string;
+    readonly command: string;
+    readonly signal: string;
     readonly icon: React.ElementType;
   }[] = [
     {
-      section: "architecture",
-      title: "Full-Cycle Engineering",
-      description: "Trace how build, API, backend, data, quality, and delivery connect.",
-      icon: Network
-    },
-    {
-      section: "projects",
-      title: "Projects",
-      description: "Inspect portfolio-safe build and quality case studies.",
-      icon: BadgeCheck
+      section: "terminal",
+      title: "Terminal",
+      description: "Command router for profile, stack, project, quality, CV, and navigation flows.",
+      command: "help",
+      signal: "history + autocomplete",
+      icon: TerminalSquare
     },
     {
       section: "api",
       title: "API Playground",
-      description: "Call actual Next.js route handlers with public-safe data.",
+      description: `Probe ${apiEndpoints.length} public route handlers and inspect typed JSON contracts.`,
+      command: "GET /api/ryan",
+      signal: "live route handlers",
       icon: Send
     },
     {
+      section: "architecture",
+      title: "Architecture Explorer",
+      description: "Inspect build, API, data, quality, and delivery topology as a visual system.",
+      command: "architecture",
+      signal: "interactive topology",
+      icon: Network
+    },
+    {
       section: "automation",
-      title: "Quality Engineering",
-      description: "Run automation and recovery simulations.",
+      title: "Quality Lab",
+      description: "Run automation, healing, API failure, auth failure, and recovery simulations.",
+      command: "quality",
+      signal: "self-healing loop",
       icon: FlaskConical
     },
     {
       section: "performance",
       title: "Performance Lab",
       description: "Evaluate threshold decisions and load-test signals.",
+      command: "performance",
+      signal: "pass/fail gates",
       icon: Gauge
     },
     {
       section: "pipeline",
       title: "Pipeline / Delivery",
       description: "Inspect build, checks, gates, and deploy-readiness flow.",
+      command: "pipeline",
+      signal: "delivery states",
       icon: GitBranch
-    },
-    {
-      section: "terminal",
-      title: "Terminal",
-      description: "Use command-driven navigation and profile discovery.",
-      icon: TerminalSquare
     },
     {
       section: "challenge",
       title: "Engineering Challenges",
-      description: "Try build, data, quality, and delivery reasoning scenarios.",
+      description: `Test reasoning across ${challengeScenarios.length} build, data, quality, and delivery scenarios.`,
+      command: "test-me",
+      signal: "decision critique",
       icon: Brain
+    },
+    {
+      section: "projects",
+      title: "Case Studies",
+      description: "Open portfolio-safe implementation stories with problem, role, and outcomes.",
+      command: "projects",
+      signal: "evidence trail",
+      icon: BadgeCheck
+    }
+  ];
+
+  const developerFlow: readonly {
+    readonly label: string;
+    readonly detail: string;
+    readonly icon: React.ElementType;
+  }[] = [
+    {
+      label: "Build",
+      detail: "Frontend, backend, API, data, and integration evidence.",
+      icon: Code2
+    },
+    {
+      label: "Quality",
+      detail: "Automation, healing, contract failure, performance, and gate decisions.",
+      icon: FlaskConical
+    },
+    {
+      label: "Ship",
+      detail: "Pipeline state, release confidence, and production asset readiness.",
+      icon: Layers3
     }
   ];
 
   return (
-    <div className="grid gap-5 2xl:grid-cols-[0.9fr_1.1fr]">
-      <Panel className="p-5 sm:p-7">
-        <Badge tone="info">Engineer Mode</Badge>
-        <h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-5xl">
-          Explore RyanOS as a full-cycle engineering workspace.
-        </h1>
-        <p className="mt-5 text-base leading-7 text-[#b7c2d2]">
-          Engineer Mode opens the deeper system: architecture, projects, API routes, quality
-          engineering, performance thresholds, CI/CD delivery, terminal commands, and reasoning
-          challenges.
-        </p>
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button
-            variant="primary"
-            icon={<Network aria-hidden="true" size={18} />}
-            onClick={() => onNavigate("architecture")}
-          >
-            Explore Full Cycle
-          </Button>
-          <Button
-            icon={<BadgeCheck aria-hidden="true" size={18} />}
-            onClick={() => onNavigate("projects")}
-          >
-            Open Projects
-          </Button>
-          <Button
-            icon={<TerminalSquare aria-hidden="true" size={18} />}
-            onClick={() => onNavigate("terminal")}
-          >
-            Open Terminal
-          </Button>
+    <div className="engineer-playground">
+      <Panel className="engineer-playground-hero p-5 sm:p-7">
+        <div className="engineer-playground-hero-grid">
+          <section>
+            <Badge tone="info">Engineer Mode</Badge>
+            <h1>Developer playground for the full portfolio system.</h1>
+            <p>
+              Explore architecture, live route handlers, deterministic simulations, terminal
+              commands, and reasoning challenges without adding noise to recruiter mode.
+            </p>
+            <div className="engineer-playground-actions">
+              <Button
+                variant="primary"
+                icon={<PlayCircle aria-hidden="true" size={18} />}
+                onClick={() => onNavigate("terminal")}
+              >
+                Start Terminal
+              </Button>
+              <Button
+                icon={<Send aria-hidden="true" size={18} />}
+                onClick={() => onNavigate("api")}
+              >
+                Probe API
+              </Button>
+              <Button
+                icon={<FlaskConical aria-hidden="true" size={18} />}
+                onClick={() => onNavigate("automation")}
+              >
+                Run Simulations
+              </Button>
+            </div>
+          </section>
+
+          <section className="engineer-playground-console" aria-label="Engineer mode command map">
+            <div className="engineer-playground-console-bar">
+              <span />
+              <span />
+              <span />
+              <p>ryanos.engineer</p>
+            </div>
+            <ol>
+              <li>
+                <span>$ architecture</span>
+                <strong>visualize full stack flow</strong>
+              </li>
+              <li>
+                <span>$ quality</span>
+                <strong>simulate automation recovery</strong>
+              </li>
+              <li>
+                <span>$ performance</span>
+                <strong>evaluate load threshold</strong>
+              </li>
+              <li>
+                <span>$ pipeline</span>
+                <strong>inspect release gate</strong>
+              </li>
+            </ol>
+          </section>
         </div>
       </Panel>
 
-      <div className="2xl:col-span-2">
+      <section aria-label="Full-cycle technical visualization">
         <FullCycleExperience />
-      </div>
+      </section>
 
-      <Panel className="p-5 sm:p-7">
-        <p className="mono text-sm text-[var(--accent)]">engineer.entry_points</p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <Panel className="engineer-playground-panel p-5 sm:p-7">
+        <div className="engineer-playground-section-header">
+          <div>
+            <p className="mono text-sm text-[var(--accent)]">technical.playground</p>
+            <h2>Open one surface, follow the system.</h2>
+          </div>
+          <Badge tone="success">Recruiter-safe deep mode</Badge>
+        </div>
+        <div className="engineer-playground-grid">
           {engineerEntryPoints.map((action) => {
             const Icon = action.icon;
             return (
@@ -349,14 +466,43 @@ function EngineerOverviewPanel({
                 key={action.section}
                 type="button"
                 onClick={() => onNavigate(action.section)}
-                className="min-h-36 border border-[var(--border)] bg-[var(--surface)] p-4 text-left transition hover:border-[var(--accent-strong)] hover:bg-[var(--accent-soft)]"
+                className="engineer-playground-card"
               >
-                <Icon aria-hidden="true" className="text-[var(--accent)]" size={20} />
-                <span className="mt-4 block font-semibold">{action.title}</span>
-                <span className="mt-2 block text-sm leading-6 text-[var(--text-muted)]">
-                  {action.description}
+                <span className="engineer-playground-card-top">
+                  <Icon aria-hidden="true" size={20} />
+                  <span>{action.signal}</span>
                 </span>
+                <strong>{action.title}</strong>
+                <span>{action.description}</span>
+                <code>{action.command}</code>
               </button>
+            );
+          })}
+        </div>
+      </Panel>
+
+      <Panel className="engineer-playground-flow p-5 sm:p-7">
+        <div className="engineer-playground-section-header">
+          <div>
+            <p className="mono text-sm text-[var(--accent)]">developer.flow</p>
+            <h2>Designed as layers, not isolated toys.</h2>
+          </div>
+          <Button
+            icon={<Route aria-hidden="true" size={17} />}
+            onClick={() => onNavigate("architecture")}
+          >
+            Open System Map
+          </Button>
+        </div>
+        <div className="engineer-playground-flow-grid">
+          {developerFlow.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.label}>
+                <Icon aria-hidden="true" size={20} />
+                <h3>{item.label}</h3>
+                <p>{item.detail}</p>
+              </article>
             );
           })}
         </div>

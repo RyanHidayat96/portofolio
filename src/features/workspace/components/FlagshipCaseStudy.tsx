@@ -3,9 +3,27 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { ProjectCaseStudy } from "@/data/types";
-import { cn } from "@/lib/cn";
-import { Network } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Network } from "lucide-react";
+import { useMemo, useState } from "react";
+
+type CaseStudyStepId =
+  "problem" | "architecture" | "implementation" | "testing" | "performance" | "impact";
+
+interface CaseStudyStep {
+  readonly id: CaseStudyStepId;
+  readonly label: string;
+  readonly title: string;
+  readonly body: string;
+}
+
+const stepOrder: readonly CaseStudyStepId[] = [
+  "problem",
+  "architecture",
+  "implementation",
+  "testing",
+  "performance",
+  "impact"
+];
 
 export function FlagshipCaseStudy({
   project,
@@ -15,22 +33,30 @@ export function FlagshipCaseStudy({
   onExploreArchitecture?: () => void;
 }>): React.ReactElement {
   const layers = project.architectureLayers ?? [];
+  const [activeStepId, setActiveStepId] = useState<CaseStudyStepId>("problem");
   const [activeLayerId, setActiveLayerId] = useState(layers[1]?.id ?? layers[0]?.id ?? "");
+  const steps = useMemo(() => getCaseStudySteps(project), [project]);
+  const activeStep = steps.find((step) => step.id === activeStepId) ?? steps[0];
   const activeLayer = layers.find((layer) => layer.id === activeLayerId) ?? layers[0];
+  const primaryCategory = project.categories[0] ?? "build";
 
   return (
-    <article>
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <section>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="success">{project.label ?? "Full Stack Enterprise Application"}</Badge>
-            <Badge tone="info">{project.status}</Badge>
+    <article className="case-study-shell">
+      <header className="case-study-hero">
+        <section className="case-study-intro">
+          <div className="case-study-badge-row">
+            <Badge tone={primaryCategory === "quality" ? "success" : "info"}>
+              {project.label ?? project.role ?? "Project Case Study"}
+            </Badge>
+            <Badge tone={project.status === "portfolio-safe" ? "success" : "warning"}>
+              {project.status}
+            </Badge>
           </div>
-          <h1 className="mt-4 text-3xl font-semibold leading-tight sm:text-5xl">{project.title}</h1>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-[#b7c2d2]">
-            {project.overview ?? project.context}
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <p className="eyebrow">project.open</p>
+          <h1>{project.title}</h1>
+          <p>{project.overview ?? project.context}</p>
+
+          <div className="case-study-actions">
             {onExploreArchitecture ? (
               <Button
                 variant="primary"
@@ -40,168 +66,160 @@ export function FlagshipCaseStudy({
                 Explore Architecture
               </Button>
             ) : null}
-            <div className="border border-[var(--border)] bg-[var(--surface)] px-4 py-2">
-              <p className="mono text-xs uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                role
-              </p>
-              <p className="mt-1 font-semibold">{project.role ?? "Full Stack Developer"}</p>
+            <div className="case-study-role-card">
+              <span>role</span>
+              <strong>{project.role ?? "Engineer"}</strong>
             </div>
           </div>
         </section>
 
-        <section className="border border-[var(--accent-strong)] bg-[var(--accent-soft)] p-4">
-          <p className="mono text-xs uppercase tracking-[0.16em] text-[var(--accent)]">
-            current.full_stack_work
-          </p>
-          <h2 className="mt-3 text-2xl font-semibold">Build proof, not claim.</h2>
-          <p className="mt-3 text-sm leading-6 text-[#c8d4e6]">
-            This case study shows Ryan building product workflows while applying API, data, file,
-            reporting, validation, delivery, and quality-thinking discipline. Internal names,
-            endpoints, business rules, and company source details stay private.
-          </p>
-        </section>
-      </div>
+        <aside className="case-study-proof-card">
+          <span>engineered</span>
+          <p>{project.engineered ?? project.responsibility}</p>
+        </aside>
+      </header>
 
-      <div className="mt-7 grid gap-5 lg:grid-cols-3">
-        <CaseStudyField title="Overview" value={project.overview ?? project.context} />
-        <CaseStudyField title="Problem" value={project.problem} />
-        <CaseStudyField title="My Role" value={project.responsibility} />
-      </div>
+      <section className="case-study-sequence" aria-labelledby="case-study-sequence-title">
+        <div className="case-study-section-heading">
+          <p className="eyebrow">case-study.flow</p>
+          <h2 id="case-study-sequence-title">Problem to impact, inspectable step by step.</h2>
+        </div>
 
-      {project.keyCapabilities ? (
-        <section className="mt-7">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-            Key Capabilities
-          </h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {project.keyCapabilities.map((capability) => (
-              <div
-                key={capability}
-                className="border border-[var(--border)] bg-[var(--surface)] p-4 text-sm font-semibold"
+        <div className="case-study-tabs" role="tablist" aria-label="Case study sections">
+          {steps.map((step, index) => {
+            const isActive = step.id === activeStep.id;
+
+            return (
+              <button
+                key={step.id}
+                id={`case-study-tab-${step.id}`}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls="case-study-active-panel"
+                onClick={() => setActiveStepId(step.id)}
+                className="case-study-tab"
+                data-active={isActive}
               >
-                {capability}
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{step.label}</strong>
+              </button>
+            );
+          })}
+        </div>
 
-      {layers.length > 0 ? (
-        <section className="mt-7">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="mono text-sm text-[var(--accent)]">system.architecture</p>
-              <h2 className="mt-2 text-2xl font-semibold">Public-Safe Full Stack Architecture</h2>
-            </div>
-            <Badge tone="info">Inspectable layers</Badge>
-          </div>
+        <div
+          id="case-study-active-panel"
+          role="tabpanel"
+          aria-labelledby={`case-study-tab-${activeStep.id}`}
+          className="case-study-active-panel"
+        >
+          <span>{activeStep.label}</span>
+          <h3>{activeStep.title}</h3>
+          <p>{activeStep.body}</p>
+        </div>
+      </section>
 
-          <div className="mt-5 grid gap-4 2xl:grid-cols-[1.1fr_0.9fr]">
-            <ol className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+      <section className="case-study-system" aria-labelledby="case-study-system-title">
+        <div className="case-study-section-heading">
+          <p className="eyebrow">system.architecture</p>
+          <h2 id="case-study-system-title">Architecture and implementation surface.</h2>
+        </div>
+
+        {layers.length > 0 ? (
+          <div className="case-study-architecture-grid">
+            <ol className="case-study-layer-map">
               {layers.map((layer, index) => {
                 const isSelected = layer.id === activeLayer?.id;
 
                 return (
-                  <li key={layer.id} className="relative">
-                    {index > 0 ? (
-                      <span
-                        aria-hidden="true"
-                        className="absolute -top-3 left-5 h-3 w-px bg-[var(--accent-strong)] xl:-left-3 xl:top-1/2 xl:h-px xl:w-3"
-                      />
-                    ) : null}
+                  <li key={layer.id}>
                     <button
                       type="button"
                       aria-pressed={isSelected}
                       onClick={() => setActiveLayerId(layer.id)}
                       onFocus={() => setActiveLayerId(layer.id)}
-                      className={cn(
-                        "min-h-40 w-full border p-4 text-left transition",
-                        isSelected
-                          ? "border-[var(--accent-strong)] bg-[var(--accent-soft)]"
-                          : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent-strong)]"
-                      )}
+                      className="case-study-layer-button"
+                      data-active={isSelected}
                     >
-                      <span className="mono text-xs text-[var(--accent)]">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="mt-3 block text-sm font-semibold leading-5">
-                        {layer.label}
-                      </span>
-                      <span className="mt-3 block text-xs leading-5 text-[var(--text-muted)]">
-                        {layer.stack}
-                      </span>
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <strong>{layer.label}</strong>
+                      <small>{layer.stack}</small>
                     </button>
+                    {index < layers.length - 1 ? <ArrowRight aria-hidden="true" size={15} /> : null}
                   </li>
                 );
               })}
             </ol>
 
-            <aside className="border border-[var(--border)] bg-[var(--surface)] p-5">
+            <aside className="case-study-layer-detail">
               {activeLayer ? (
                 <>
-                  <p className="mono text-sm text-[var(--accent)]">selected.layer</p>
-                  <h3 className="mt-3 text-2xl font-semibold">{activeLayer.label}</h3>
-                  <p className="mono mt-3 text-xs uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                    {activeLayer.stack}
-                  </p>
-                  <p className="mt-4 text-sm leading-6 text-[#c8d4e6]">{activeLayer.purpose}</p>
+                  <span>selected.layer</span>
+                  <h3>{activeLayer.label}</h3>
+                  <strong>{activeLayer.stack}</strong>
+                  <p>{activeLayer.purpose}</p>
                 </>
               ) : (
                 <p>No architecture layer configured.</p>
               )}
-
-              {project.architectureBranches ? (
-                <section className="mt-6">
-                  <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                    Verified Branches
-                  </h4>
-                  <div className="mt-3 grid gap-3">
-                    {project.architectureBranches.map((branch) => (
-                      <article
-                        key={branch.id}
-                        className="border border-[var(--border)] bg-[#0b1018] p-3"
-                      >
-                        <p className="font-semibold">{branch.label}</p>
-                        <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                          {branch.purpose}
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {branch.technologies.map((technology) => (
-                            <Badge key={technology} tone="info">
-                              {technology}
-                            </Badge>
-                          ))}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
             </aside>
           </div>
-        </section>
-      ) : (
-        <CaseStudyField title="System Architecture" value={project.architecture} />
-      )}
+        ) : (
+          <div className="case-study-architecture-note">
+            <span>public-safe architecture</span>
+            <p>{project.architecture}</p>
+          </div>
+        )}
 
-      <div className="mt-7 grid gap-5 lg:grid-cols-3">
-        <ListBlock title="Engineering Decisions" items={project.engineeringDecisions} />
-        <ListBlock title="Quality Strategy" items={project.testingStrategy} />
-        <ListBlock title="What I Learned" items={project.lessons} />
-      </div>
-
-      <section className="mt-7 border border-[var(--border)] bg-[var(--surface)] p-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-          Outcome
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-[#c8d4e6]">{project.outcome}</p>
+        {project.architectureBranches ? (
+          <div className="case-study-branch-grid" aria-label="Architecture branches">
+            {project.architectureBranches.map((branch) => (
+              <article key={branch.id}>
+                <h3>{branch.label}</h3>
+                <p>{branch.purpose}</p>
+                <div>
+                  {branch.technologies.map((technology) => (
+                    <Badge key={technology} tone="info">
+                      {technology}
+                    </Badge>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : null}
       </section>
 
-      <section className="mt-7">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-          Tech Stack
-        </h2>
-        <div className="mt-3 flex flex-wrap gap-2">
+      {project.keyCapabilities ? (
+        <section
+          className="case-study-capabilities"
+          aria-labelledby="case-study-capabilities-title"
+        >
+          <div className="case-study-section-heading">
+            <p className="eyebrow">capabilities</p>
+            <h2 id="case-study-capabilities-title">What this project proves.</h2>
+          </div>
+          <div>
+            {project.keyCapabilities.map((capability) => (
+              <span key={capability}>{capability}</span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="case-study-evidence-grid" aria-label="Project evidence details">
+        <ListBlock title="Engineering Decisions" items={project.engineeringDecisions} />
+        <ListBlock title="Testing Strategy" items={project.testingStrategy} />
+        <ListBlock title="Lessons" items={project.lessons} />
+      </section>
+
+      <section className="case-study-tech-stack" aria-labelledby="case-study-tech-title">
+        <div className="case-study-section-heading">
+          <p className="eyebrow">tech-stack</p>
+          <h2 id="case-study-tech-title">Verified tools and technologies.</h2>
+        </div>
+        <div>
           {project.technologies.map((technology) => (
             <Badge key={technology} tone="info">
               {technology}
@@ -213,18 +231,85 @@ export function FlagshipCaseStudy({
   );
 }
 
-function CaseStudyField({
-  title,
-  value
-}: Readonly<{ title: string; value: string }>): React.ReactElement {
-  return (
-    <section className="border border-[var(--border)] bg-[var(--surface)] p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-        {title}
-      </h2>
-      <p className="mt-3 text-sm leading-6 text-[#c8d4e6]">{value}</p>
-    </section>
+function getCaseStudySteps(project: ProjectCaseStudy): readonly CaseStudyStep[] {
+  return stepOrder.map((stepId) => {
+    if (stepId === "problem") {
+      return {
+        id: stepId,
+        label: "Problem",
+        title: "What needed solving",
+        body: project.problem
+      };
+    }
+
+    if (stepId === "architecture") {
+      return {
+        id: stepId,
+        label: "Architecture",
+        title: "How the system was shaped",
+        body: project.architecture
+      };
+    }
+
+    if (stepId === "implementation") {
+      return {
+        id: stepId,
+        label: "Implementation",
+        title: "What Ryan engineered",
+        body: project.engineered ?? project.responsibility
+      };
+    }
+
+    if (stepId === "testing") {
+      return {
+        id: stepId,
+        label: "Testing",
+        title: "How quality was handled",
+        body: project.testingStrategy.join(" ")
+      };
+    }
+
+    if (stepId === "performance") {
+      return {
+        id: stepId,
+        label: "Performance",
+        title: "Performance and reliability signal",
+        body: getPublicPerformanceSignal(project)
+      };
+    }
+
+    return {
+      id: stepId,
+      label: "Impact",
+      title: "Public-safe outcome",
+      body: project.outcome
+    };
+  });
+}
+
+function getPublicPerformanceSignal(project: ProjectCaseStudy): string {
+  const candidateTexts = [
+    project.engineered,
+    project.problem,
+    project.responsibility,
+    project.architecture,
+    project.outcome,
+    ...project.testingStrategy,
+    ...project.engineeringDecisions,
+    ...project.lessons,
+    ...project.technologies
+  ].filter((text): text is string => Boolean(text));
+  const explicitSignal = candidateTexts.find((text) =>
+    /performance|load|stress|latency|threshold|p95|p99|repeatable|reliable|reliability|production|risk/i.test(
+      text
+    )
   );
+
+  if (explicitSignal) {
+    return explicitSignal;
+  }
+
+  return "No public performance metric is published for this case study. The portfolio keeps the focus on public-safe reliability signals: maintainable boundaries, validation, repeatable checks, and delivery risk visibility.";
 }
 
 function ListBlock({
@@ -232,11 +317,9 @@ function ListBlock({
   items
 }: Readonly<{ title: string; items: readonly string[] }>): React.ReactElement {
   return (
-    <section className="border border-[var(--border)] bg-[var(--surface)] p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-        {title}
-      </h2>
-      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-[#c8d4e6]">
+    <section className="case-study-list-block">
+      <h2>{title}</h2>
+      <ul>
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}
