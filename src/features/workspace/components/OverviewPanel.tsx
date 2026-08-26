@@ -70,6 +70,7 @@ function RecruiterOverviewPanel({
   ].filter(
     (link) => isPortfolioValueConfigured(link.href) && isPortfolioValueConfigured(link.value)
   );
+  const primaryContactLink = contactLinks[0];
   const hiringSignals: readonly {
     readonly label: string;
     readonly value: string;
@@ -116,6 +117,43 @@ function RecruiterOverviewPanel({
       title: softwareEngineerRole?.role ?? "Software Engineer",
       meta: softwareEngineerRole?.period ?? "Backend, SQL, production support",
       section: "experience"
+    }
+  ];
+  const hiringPath: readonly {
+    readonly label: string;
+    readonly title: string;
+    readonly detail: string;
+    readonly cta: string;
+    readonly section?: WorkspaceSection;
+    readonly isCv?: boolean;
+  }[] = [
+    {
+      label: "01",
+      title: "Scan fit",
+      detail: "Full Stack Developer with SDET depth across build, quality, and delivery.",
+      cta: "View Profile",
+      section: "profile"
+    },
+    {
+      label: "02",
+      title: "Check proof",
+      detail: "Selected projects summarize implementation, testing, performance, and impact.",
+      cta: "View Projects",
+      section: "projects"
+    },
+    {
+      label: "03",
+      title: "Read details",
+      detail: "CV carries full responsibilities, timeline, and deeper role information.",
+      cta: "Download CV",
+      isCv: true
+    },
+    {
+      label: "04",
+      title: "Start contact",
+      detail: "Email, phone, and LinkedIn are available from the contact workspace.",
+      cta: "Contact",
+      section: "contact"
     }
   ];
 
@@ -166,6 +204,71 @@ function RecruiterOverviewPanel({
             ))}
           </dl>
         </section>
+      </Panel>
+
+      <Panel className="recruiter-scan-conversion p-5 sm:p-6">
+        <div>
+          <p className="mono text-sm text-[var(--accent)]">fast.hiring.path</p>
+          <h2>Everything HR needs is one click away.</h2>
+          <p>Start with the concise snapshot, then use CV or contact when deeper detail is needed.</p>
+        </div>
+        <div className="recruiter-scan-conversion-actions">
+          {isPortfolioValueConfigured(cv.href) ? (
+            <a
+              className="button-base button-primary"
+              href={cv.href}
+              download="cv.pdf"
+              data-cursor-intent="link"
+              data-cursor-label="CV"
+            >
+              <Download aria-hidden="true" size={18} />
+              <span>Download CV</span>
+            </a>
+          ) : null}
+          {primaryContactLink ? (
+            <a
+              className="button-base button-secondary"
+              href={primaryContactLink.href}
+              target={primaryContactLink.id === "phone" || primaryContactLink.id === "email" ? undefined : "_blank"}
+              rel={primaryContactLink.id === "phone" || primaryContactLink.id === "email" ? undefined : "noreferrer"}
+            >
+              <Mail aria-hidden="true" size={18} />
+              <span>{primaryContactLink.label}</span>
+            </a>
+          ) : null}
+          <Button icon={<BriefcaseBusiness aria-hidden="true" size={18} />} onClick={() => onNavigate("experience")}>
+            Experience
+          </Button>
+        </div>
+      </Panel>
+
+      <Panel className="recruiter-fast-path p-5 sm:p-6">
+        <div className="recruiter-scan-section-header">
+          <div>
+            <p className="mono text-sm text-[var(--accent)]">decision.path</p>
+            <h2>Four-step hiring scan.</h2>
+          </div>
+          <Badge tone="success">No WebGL required</Badge>
+        </div>
+        <div className="recruiter-fast-path-grid">
+          {hiringPath.map((item) => (
+            <article key={item.title}>
+              <span>{item.label}</span>
+              <h3>{item.title}</h3>
+              <p>{item.detail}</p>
+              {item.isCv && isPortfolioValueConfigured(cv.href) ? (
+                <a className="action-link" href={cv.href} download="cv.pdf">
+                  <Download aria-hidden="true" size={16} />
+                  {item.cta}
+                </a>
+              ) : item.section ? (
+                <Button variant="secondary" onClick={() => onNavigate(item.section)}>
+                  {item.cta}
+                </Button>
+              ) : null}
+            </article>
+          ))}
+        </div>
       </Panel>
 
       <div className="recruiter-scan-grid">

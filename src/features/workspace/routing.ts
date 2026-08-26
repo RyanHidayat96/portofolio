@@ -31,6 +31,7 @@ const standaloneSectionBySegment: Readonly<Record<string, WorkspaceSection>> = {
   experience: "experience",
   terminal: "terminal",
   "test-me": "challenge",
+  hire: "overview",
   contact: "contact"
 };
 
@@ -143,6 +144,7 @@ export function getStaticWorkspacePaths(): readonly string[] {
   return [
     "/",
     ...Object.values(pathBySection),
+    "/hire",
     "/labs",
     ...projects.map((project) => `/projects/${project.slug}`)
   ];
