@@ -2,11 +2,12 @@
 
 import { Panel } from "@/components/ui/Panel";
 import { CustomCursor } from "@/features/interaction/components/CustomCursor";
+import { useReducedMotion } from "@/features/interaction/hooks/useReducedMotion";
 import { BootSequence } from "@/features/workspace/components/BootSequence";
 import { Landing } from "@/features/workspace/components/Landing";
 import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
 import { WorkspaceShell } from "@/features/workspace/components/WorkspaceShell";
-import { getPaletteActions, type PaletteAction } from "@/features/workspace/navigation";
+import { getNavigationItem, getPaletteActions, type PaletteAction } from "@/features/workspace/navigation";
 import {
   createRouteForSection,
   getWorkspacePath,
@@ -14,14 +15,21 @@ import {
   resolveWorkspaceRouteFromPathname,
   type WorkspaceRouteState
 } from "@/features/workspace/routing";
-import type { WorkspaceSection } from "@/features/workspace/types";
+import type { WorkspaceSceneTransition, WorkspaceSection } from "@/features/workspace/types";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 type AppPhase = "landing" | "boot" | "workspace";
 
 const bootStorageKey = "ryanos.booted";
 const bootStateChangeEvent = "ryanos.boot-state-change";
+const sceneTransitionExitMs = 110;
+const sceneTransitionEnterMs = 240;
+const idleSceneTransition: WorkspaceSceneTransition = {
+  phase: "idle",
+  targetLabel: "Overview",
+  sequence: 0
+};
 
 const CommandPalette = dynamic<{
   readonly isOpen: boolean;
@@ -161,6 +169,11 @@ export function RyanOSApp({
   const [mode, setMode] = useState(initialRoute.mode);
   const [projectSlug, setProjectSlug] = useState<string | undefined>(initialRoute.projectSlug);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [sceneTransition, setSceneTransition] =
+    useState<WorkspaceSceneTransition>(idleSceneTransition);
+  const prefersReducedMotion = useReducedMotion();
+  const transitionSequenceRef = useRef(0);
+  const sceneTransitionTimerIdsRef = useRef<number[]>([]);
   const paletteActions = useMemo(() => getPaletteActions(), []);
 
   const writeBrowserRoute = useCallback(
@@ -203,26 +216,100 @@ export function RyanOSApp({
     [writeBrowserRoute]
   );
 
+  const clearSceneTransitionTimers = useCallback((): void => {
+    sceneTransitionTimerIdsRef.current.forEach((timerId) => window.clearTimeout(timerId));
+    sceneTransitionTimerIdsRef.current = [];
+  }, []);
+
+  const scheduleSceneTransitionTimer = useCallback(
+    (callback: () => void, delayMs: number): void => {
+      const timerId = window.setTimeout(() => {
+        sceneTransitionTimerIdsRef.current = sceneTransitionTimerIdsRef.current.filter(
+          (storedTimerId) => storedTimerId !== timerId
+        );
+        callback();
+      }, delayMs);
+
+      sceneTransitionTimerIdsRef.current.push(timerId);
+    },
+    []
+  );
+
+  const runWorkspaceTransition = useCallback(
+    (
+      route: WorkspaceRouteState,
+      options: Readonly<{
+        history?: "push" | "replace" | "none";
+      }> = {}
+    ) => {
+      const isSameRoute =
+        phase === "workspace" &&
+        route.section === section &&
+        route.mode === mode &&
+        (route.projectSlug ?? "") === (projectSlug ?? "");
+
+      if (prefersReducedMotion || phase !== "workspace" || isSameRoute) {
+        clearSceneTransitionTimers();
+        setSceneTransition((current) => ({
+          phase: "idle",
+          targetLabel: getNavigationItem(route.section).label,
+          sequence: current.sequence
+        }));
+        applyWorkspaceRoute(route, options);
+        return;
+      }
+
+      clearSceneTransitionTimers();
+      const targetLabel = getNavigationItem(route.section).label;
+      transitionSequenceRef.current += 1;
+      const exitSequence = transitionSequenceRef.current;
+
+      setSceneTransition({ phase: "exit", targetLabel, sequence: exitSequence });
+
+      scheduleSceneTransitionTimer(() => {
+        applyWorkspaceRoute(route, options);
+        transitionSequenceRef.current += 1;
+        const enterSequence = transitionSequenceRef.current;
+        setSceneTransition({ phase: "enter", targetLabel, sequence: enterSequence });
+
+        scheduleSceneTransitionTimer(() => {
+          setSceneTransition({ phase: "idle", targetLabel, sequence: enterSequence });
+        }, sceneTransitionEnterMs);
+      }, sceneTransitionExitMs);
+    },
+    [
+      applyWorkspaceRoute,
+      clearSceneTransitionTimers,
+      mode,
+      phase,
+      prefersReducedMotion,
+      projectSlug,
+      scheduleSceneTransitionTimer,
+      section
+    ]
+  );
+
+  useEffect(() => clearSceneTransitionTimers, [clearSceneTransitionTimers]);
   const navigateToSection = useCallback(
     (targetSection: WorkspaceSection) => {
-      applyWorkspaceRoute(
+      runWorkspaceTransition(
         createRouteForSection(targetSection, {
           projectSlug: targetSection === "projects" ? projectSlug : undefined
         })
       );
     },
-    [applyWorkspaceRoute, projectSlug]
+    [projectSlug, runWorkspaceTransition]
   );
 
   const navigateToProject = useCallback(
     (targetProjectSlug: string) => {
-      applyWorkspaceRoute(
+      runWorkspaceTransition(
         createRouteForSection("projects", {
           projectSlug: targetProjectSlug
         })
       );
     },
-    [applyWorkspaceRoute]
+    [runWorkspaceTransition]
   );
 
   const runPaletteAction = useCallback(
@@ -236,14 +323,14 @@ export function RyanOSApp({
         return;
       }
 
-      applyWorkspaceRoute(
+      runWorkspaceTransition(
         createRouteForSection(action.section, {
           mode: action.mode,
           projectSlug: action.section === "projects" ? action.projectSlug : undefined
         })
       );
     },
-    [applyWorkspaceRoute]
+    [runWorkspaceTransition]
   );
 
   useEffect(() => {
@@ -350,6 +437,8 @@ export function RyanOSApp({
         section={section}
         onSectionChange={navigateToSection}
         onOpenCommandPalette={() => setIsPaletteOpen(true)}
+        sceneTransition={sceneTransition}
+        sceneKey={`${section}:${projectSlug ?? "index"}`}
       >
         {renderedSection}
       </WorkspaceShell>
