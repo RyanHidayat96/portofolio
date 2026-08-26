@@ -12,6 +12,7 @@ import {
   BriefcaseBusiness,
   ExternalLink,
   FileText,
+  Mail,
   Power
 } from "lucide-react";
 
@@ -36,12 +37,15 @@ export function Landing({
   onInitialize: () => void;
 }>): React.ReactElement {
   const cvLink = profile.contact.cv;
+  const contactLink = profile.contact.email;
   const linkedInLink = profile.contact.linkedIn;
   const hasCv = isPortfolioValueConfigured(cvLink.value) && isPortfolioValueConfigured(cvLink.href);
+  const hasContact =
+    isPortfolioValueConfigured(contactLink.value) && isPortfolioValueConfigured(contactLink.href);
   const hasLinkedIn =
     isPortfolioValueConfigured(linkedInLink.value) && isPortfolioValueConfigured(linkedInLink.href);
   const currentRole = experience.find((role) => role.id === "jasa-marga-full-stack");
-  const ctaLinkClass = "action-link";
+  const ctaLinkClass = "action-link landing-action-link";
 
   return (
     <main className="landing-shell">
@@ -55,7 +59,13 @@ export function Landing({
               <span>Full Stack x SDET</span>
             </div>
 
-            <p className="landing-role">{profile.role}</p>
+            <div className="landing-system-kicker" aria-label="Build Quality Ship system signal">
+              {heroCapabilities.map((item) => (
+                <span key={item.label}>{item.label}</span>
+              ))}
+            </div>
+
+            <p className="landing-role">Full Stack x SDET</p>
             <h1 id="landing-title" className="landing-title">
               {profile.name}
             </h1>
@@ -66,8 +76,8 @@ export function Landing({
             </p>
 
             <p className="landing-summary">
-              Full Stack Developer building enterprise applications across frontend, backend, APIs,
-              databases, test automation, performance engineering, and CI/CD delivery.
+              Full Stack Developer with SDET depth across application build, API/backend work,
+              database validation, automation, performance signals, and release gates.
             </p>
 
             <div className="landing-current" aria-label="Current role">
@@ -92,14 +102,31 @@ export function Landing({
                 onClick={onInitialize}
                 cursorLabel="OPEN"
                 magnetic
-                className="w-full sm:w-auto"
+                className="landing-action-primary"
               >
                 Open Portfolio
               </Button>
               {hasCv ? (
-                <a href={cvLink.href} download="cv.pdf" className={ctaLinkClass}>
+                <a
+                  href={cvLink.href}
+                  download="cv.pdf"
+                  className={ctaLinkClass}
+                  data-cursor-intent="link"
+                  data-cursor-label="CV"
+                >
                   <FileText aria-hidden="true" size={18} />
                   <span>Download CV</span>
+                </a>
+              ) : null}
+              {hasContact ? (
+                <a
+                  href={contactLink.href}
+                  className={ctaLinkClass}
+                  data-cursor-intent="link"
+                  data-cursor-label="MAIL"
+                >
+                  <Mail aria-hidden="true" size={18} />
+                  <span>Contact</span>
                 </a>
               ) : null}
               {hasLinkedIn ? (
@@ -108,6 +135,8 @@ export function Landing({
                   className={ctaLinkClass}
                   rel="noreferrer"
                   target="_blank"
+                  data-cursor-intent="link"
+                  data-cursor-label="LINK"
                 >
                   <ExternalLink aria-hidden="true" size={18} />
                   <span>LinkedIn</span>
@@ -115,7 +144,7 @@ export function Landing({
               ) : null}
             </div>
 
-            <a className="landing-scroll-cue" href="#build-quality-ship">
+            <a className="landing-scroll-cue" href="#build-quality-ship" data-cursor-intent="link">
               <ArrowDown aria-hidden="true" size={16} />
               <span>Follow Build Quality Ship</span>
             </a>
