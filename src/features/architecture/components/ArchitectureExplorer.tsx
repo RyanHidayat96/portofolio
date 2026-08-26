@@ -373,6 +373,8 @@ function TopologyNodeButton({
       onClick={onSelect}
       onKeyDown={onKeyDown}
       className="architecture-node"
+      data-cursor-intent="node"
+      data-cursor-label="NODE"
       data-status={status}
       style={getNodeStyle(node)}
     >

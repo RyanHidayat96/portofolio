@@ -1,6 +1,7 @@
 "use client";
 
 import { Panel } from "@/components/ui/Panel";
+import { CustomCursor } from "@/features/interaction/components/CustomCursor";
 import { BootSequence } from "@/features/workspace/components/BootSequence";
 import { Landing } from "@/features/workspace/components/Landing";
 import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
@@ -318,24 +319,33 @@ export function RyanOSApp({
 
   if (phase === "landing") {
     return (
-      <Landing
-        onInitialize={() => {
-          if (hasBooted) {
-            enterWorkspace();
-          } else {
-            setPhase("boot");
-          }
-        }}
-      />
+      <>
+        <CustomCursor />
+        <Landing
+          onInitialize={() => {
+            if (hasBooted) {
+              enterWorkspace();
+            } else {
+              setPhase("boot");
+            }
+          }}
+        />
+      </>
     );
   }
 
   if (phase === "boot") {
-    return <BootSequence onComplete={completeBoot} />;
+    return (
+      <>
+        <CustomCursor />
+        <BootSequence onComplete={completeBoot} />
+      </>
+    );
   }
 
   return (
     <>
+      <CustomCursor />
       <WorkspaceShell
         section={section}
         onSectionChange={navigateToSection}

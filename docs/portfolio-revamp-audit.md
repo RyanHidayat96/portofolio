@@ -8,26 +8,26 @@
 - UI: feature-oriented React components under `src/features`, with RyanOS workspace shell, landing, panels, and labs.
 - Styling: Tailwind CSS through global tokens in `src/app/globals.css`; dark RyanOS visual identity already present.
 - Fonts: local Geist sans and mono loaded through `next/font/local`.
-- State: local React state for workspace mode, terminal, simulations, selected projects, architecture nodes, and panels.
+- State: local React state for workspace routing, terminal, simulations, selected projects, architecture nodes, and panels.
 - Tests: Vitest unit/component tests cover data, API contracts, terminal, workspace routing, simulations, panels, SEO, and interactions.
-- Data: Step 1 moved public portfolio content from large JSON environment variables into typed TypeScript modules under `src/data`.
+- Data: public portfolio content is centralized in typed TypeScript modules under `src/data`.
 - Environment: `NEXT_PUBLIC_SITE_URL` remains environment-specific. Public static portfolio data is no longer treated as env CMS content.
 
 ## RyanOS Feature Inventory
 
-- Hero / Landing: EVOLVE. Strong RyanOS first impression exists, but copy needed Full Stack x SDET positioning.
-- Workspace Shell: KEEP. OS-style shell and mode switch are useful foundations.
-- Recruiter Mode / Engineer Mode: EVOLVE. Existing mode structure exists but needs clearer recruiter/current-role hierarchy in later steps.
-- Terminal: EVOLVE. Command registry is solid; later steps should add career/build/quality/cv commands.
+- Hero / Landing: KEEP+EVOLVE. Full Stack x SDET positioning and single `Open Portfolio` CTA exist; later stages should improve system awakening and visual depth.
+- Workspace Shell: KEEP. OS-style shell and unified menu are useful foundations.
+- Unified workspace: EVOLVE. Old Recruiter/Engineer buttons are removed; keep fast hiring scan and deeper technical proof in one menu.
+- Terminal: KEEP+EVOLVE. Command registry already covers career, build, quality, CV, navigation, and labs; later stages should polish presentation.
 - Command Palette: KEEP. Keyboard navigation value is real.
-- Architecture Explorer: EVOLVE. Existing graph works; needs full-stack presets and lifecycle language later.
+- Architecture Explorer: KEEP+EVOLVE. Preset graph covers Build, Quality, and Ship; later stages should improve depth and transition quality.
 - API Playground: KEEP. Actual route handlers make it stronger than decorative UI.
 - Pipeline Simulator: EVOLVE. Should represent delivery lifecycle, not only QA gate behavior.
 - Performance Lab: KEEP. Good proof of performance reasoning.
 - Automation Lab: KEEP. Quality engineering evidence should remain, but not dominate identity.
 - Challenge Panel: EVOLVE. Should include build, API, data, and delivery reasoning, not only test scenarios.
 - Profile / Experience / Projects: REFACTOR. Content now uses typed canonical data; later steps should improve presentation.
-- SEO / Metadata: EVOLVE. Step 10 should finalize canonical metadata.
+- SEO / Metadata: KEEP. Central metadata, sitemap, robots, OpenGraph, Twitter image, and JSON-LD exist.
 - Footer: REMOVE/DEFER. No dedicated footer found in the current workspace; not needed for Step 1.
 
 ## SDET-Only Positioning Audit
@@ -56,10 +56,10 @@ Incorrect current-identity risk after Step 1:
 ## Technical Debt Relevant to Redesign
 
 - Some panels still lead with quality/automation interaction priority. Later steps should rebalance hierarchy without deleting RyanOS features.
-- Workspace mode currently uses `recruiter` and `engineer`; planned Build / Quality / Full Cycle concepts need a separate mode model or careful reuse.
+- Routing still keeps internal `recruiter`/`engineer` route state for legacy `/overview` and `/labs`; future UI should treat this as compatibility, not user-facing modes.
 - Architecture Explorer still renders one graph. Step 7 should add presets rather than overloading one topology.
-- Terminal commands are useful but incomplete for the new story. Step 8 should add `career`, `build`, `quality`, and `cv`.
-- Project filtering is not implemented yet. Step 7 should add Build / Quality / DevOps filters from typed project data.
+- Terminal commands are useful and already support the new story; later work should improve interaction polish rather than add noisy commands.
+- Project filtering already supports Build / Quality / DevOps; Stage 7 should focus on richer project-world interaction, not basic filtering.
 - `next build` can rewrite `next-env.d.ts` generated imports. Keep generated churn out of intentional changes.
 - GitHub Pages deployment needs static export and base path decisions if it remains the target host.
 

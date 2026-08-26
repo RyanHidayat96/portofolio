@@ -235,6 +235,8 @@ export function EngineeringCore(): React.ReactElement {
               aria-pressed={isActive}
               className={cn("hero-core-node", isActive && "hero-core-node-active")}
               data-tone={node.tone}
+              data-cursor-intent="node"
+              data-cursor-label="NODE"
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
               onClick={() => setActiveNodeId(node.id)}
               onFocus={() => setActiveNodeId(node.id)}

@@ -90,6 +90,8 @@ export function Landing({
                 variant="primary"
                 icon={<Power aria-hidden="true" size={18} />}
                 onClick={onInitialize}
+                cursorLabel="OPEN"
+                magnetic
                 className="w-full sm:w-auto"
               >
                 Open Portfolio

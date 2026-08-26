@@ -105,6 +105,8 @@ export function ProjectsPanel({
                 aria-current={isActive ? "true" : undefined}
                 aria-label={`Open ${project.title} case study`}
                 className="project-card-button"
+                data-cursor-intent="project"
+                data-cursor-label="OPEN"
                 data-active={isActive}
               >
                 <span className="project-card-kicker">
