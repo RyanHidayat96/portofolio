@@ -122,7 +122,7 @@ function RecruiterOverviewPanel({
     <div className="recruiter-scan">
       <Panel className="recruiter-scan-hero p-5 sm:p-7">
         <section>
-          <Badge tone="info">Recruiter Mode</Badge>
+          <Badge tone="info">Portfolio Snapshot</Badge>
           <h1>{profile.name}</h1>
           <p className="recruiter-scan-headline">{profile.headline}</p>
           <p className="recruiter-scan-summary">{profile.summary}</p>
@@ -388,11 +388,11 @@ function EngineerOverviewPanel({
       <Panel className="engineer-playground-hero p-5 sm:p-7">
         <div className="engineer-playground-hero-grid">
           <section>
-            <Badge tone="info">Engineer Mode</Badge>
+            <Badge tone="info">Interactive Workspace</Badge>
             <h1>Developer playground for the full portfolio system.</h1>
             <p>
               Explore architecture, live route handlers, deterministic simulations, terminal
-              commands, and reasoning challenges without adding noise to recruiter mode.
+              commands, and reasoning challenges without burying the quick hiring path.
             </p>
             <div className="engineer-playground-actions">
               <Button
@@ -417,12 +417,12 @@ function EngineerOverviewPanel({
             </div>
           </section>
 
-          <section className="engineer-playground-console" aria-label="Engineer mode command map">
+          <section className="engineer-playground-console" aria-label="Portfolio command map">
             <div className="engineer-playground-console-bar">
               <span />
               <span />
               <span />
-              <p>ryanos.engineer</p>
+              <p>ryanos.workspace</p>
             </div>
             <ol>
               <li>
@@ -456,7 +456,7 @@ function EngineerOverviewPanel({
             <p className="mono text-sm text-[var(--accent)]">technical.playground</p>
             <h2>Open one surface, follow the system.</h2>
           </div>
-          <Badge tone="success">Recruiter-safe deep mode</Badge>
+          <Badge tone="success">Recruiter-safe depth</Badge>
         </div>
         <div className="engineer-playground-grid">
           {engineerEntryPoints.map((action) => {

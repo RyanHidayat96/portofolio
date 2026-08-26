@@ -113,7 +113,7 @@ export function ScrollNarrative(): React.ReactElement {
           <h2 id="scroll-narrative-title">Build, quality, and ship as one system.</h2>
           <p>
             Short path for humans first. Every section maps back to real portfolio data, then deeper
-            labs remain available inside Engineer Mode.
+            labs remain available inside the portfolio workspace.
           </p>
 
           <div className="narrative-sections">

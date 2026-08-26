@@ -1,88 +1,31 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
+import { Button } from "@/components/ui/Button";
+import { branding } from "@/data/branding";
+import { profile } from "@/data/profile";
 import {
   getNavigationGroups,
   getNavigationItem,
-  getNavigationItemsForMode
+  getNavigationItems
 } from "@/features/workspace/navigation";
-import { branding } from "@/data/branding";
-import { profile } from "@/data/profile";
+import type { WorkspaceSection } from "@/features/workspace/types";
 import { Command } from "lucide-react";
-
-const modeOptions: readonly {
-  readonly id: WorkspaceMode;
-  readonly label: string;
-  readonly description: string;
-}[] = [
-  {
-    id: "recruiter",
-    label: "Recruiter",
-    description: "60 sec overview"
-  },
-  {
-    id: "engineer",
-    label: "Engineer",
-    description: "Explore RyanOS"
-  }
-];
 
 export function WorkspaceShell({
   section,
-  mode,
   onSectionChange,
-  onModeChange,
   onOpenCommandPalette,
   children
 }: Readonly<{
   section: WorkspaceSection;
-  mode: WorkspaceMode;
   onSectionChange: (section: WorkspaceSection) => void;
-  onModeChange: (mode: WorkspaceMode) => void;
   onOpenCommandPalette: () => void;
   children: React.ReactNode;
 }>): React.ReactElement {
   const activeLabel = getNavigationItem(section).label;
-  const navGroups = getNavigationGroups(mode);
-  const navItems = getNavigationItemsForMode(mode);
-  const switchWorkspaceMode = (nextMode: WorkspaceMode): void => {
-    if (nextMode !== mode) {
-      onModeChange(nextMode);
-    }
-  };
-  const onModeKeyDown = (
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    currentMode: WorkspaceMode
-  ): void => {
-    const currentIndex = modeOptions.findIndex((modeOption) => modeOption.id === currentMode);
-    const lastIndex = modeOptions.length - 1;
-    const keyToIndex: Partial<Record<string, number>> = {
-      ArrowLeft: currentIndex <= 0 ? lastIndex : currentIndex - 1,
-      ArrowUp: currentIndex <= 0 ? lastIndex : currentIndex - 1,
-      ArrowRight: currentIndex >= lastIndex ? 0 : currentIndex + 1,
-      ArrowDown: currentIndex >= lastIndex ? 0 : currentIndex + 1,
-      Home: 0,
-      End: lastIndex
-    };
-    const nextIndex = keyToIndex[event.key];
-
-    if (nextIndex === undefined) {
-      return;
-    }
-
-    event.preventDefault();
-    const nextMode = modeOptions[nextIndex]?.id;
-    if (!nextMode) {
-      return;
-    }
-
-    switchWorkspaceMode(nextMode);
-    window.requestAnimationFrame(() =>
-      document.getElementById(`workspace-mode-${nextMode}`)?.focus()
-    );
-  };
+  const navGroups = getNavigationGroups();
+  const navItems = getNavigationItems();
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--text-primary)]">
@@ -90,7 +33,7 @@ export function WorkspaceShell({
         Skip to workspace content
       </a>
       <p id="workspace-status" className="sr-only" aria-live="polite">
-        Current section: {activeLabel}. Current mode: {mode}.
+        Current section: {activeLabel}.
       </p>
       <div aria-hidden="true" className="engineering-grid fixed inset-x-0 top-0 h-96 opacity-35" />
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[280px_1fr]">
@@ -101,7 +44,7 @@ export function WorkspaceShell({
             </p>
             <h1 className="mt-2 text-xl font-semibold">{branding.workspaceLabel}</h1>
             <Badge tone="success" className="mt-4">
-              System Online
+              Portfolio Online
             </Badge>
           </div>
 
@@ -162,40 +105,9 @@ export function WorkspaceShell({
                   ))}
                 </select>
 
-                <div>
-                  <p className="mono mb-1 hidden text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)] sm:block">
-                    Choose interface
-                  </p>
-                  <div
-                    className="flex rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] p-1"
-                    role="radiogroup"
-                    aria-label="Workspace mode"
-                  >
-                    {modeOptions.map((modeOption) => (
-                      <button
-                        key={modeOption.id}
-                        id={`workspace-mode-${modeOption.id}`}
-                        type="button"
-                        role="radio"
-                        onClick={() => switchWorkspaceMode(modeOption.id)}
-                        onKeyDown={(event) => onModeKeyDown(event, modeOption.id)}
-                        aria-checked={mode === modeOption.id}
-                        aria-label={`${modeOption.label} mode: ${modeOption.description}`}
-                        tabIndex={mode === modeOption.id ? 0 : -1}
-                        className={`min-h-[var(--touch-target)] rounded-[var(--radius-control)] px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.12em] transition ${
-                          mode === modeOption.id
-                            ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
-                            : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                        }`}
-                      >
-                        <span className="block">{modeOption.label}</span>
-                        <span className="mt-0.5 hidden text-[10px] normal-case tracking-normal sm:block">
-                          {modeOption.description}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <Badge tone="info" className="hidden sm:inline-flex">
+                  Full Stack + SDET
+                </Badge>
 
                 <Button
                   variant="secondary"

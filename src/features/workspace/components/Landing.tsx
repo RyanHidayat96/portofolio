@@ -12,8 +12,7 @@ import {
   BriefcaseBusiness,
   ExternalLink,
   FileText,
-  Power,
-  UserRound
+  Power
 } from "lucide-react";
 
 const heroCapabilities = [
@@ -32,11 +31,9 @@ const heroCapabilities = [
 ] as const;
 
 export function Landing({
-  onInitialize,
-  onRecruiterMode
+  onInitialize
 }: Readonly<{
   onInitialize: () => void;
-  onRecruiterMode: () => void;
 }>): React.ReactElement {
   const cvLink = profile.contact.cv;
   const linkedInLink = profile.contact.linkedIn;
@@ -95,15 +92,7 @@ export function Landing({
                 onClick={onInitialize}
                 className="w-full sm:w-auto"
               >
-                Explore RyanOS
-              </Button>
-              <Button
-                variant="secondary"
-                icon={<UserRound aria-hidden="true" size={18} />}
-                onClick={onRecruiterMode}
-                className="w-full sm:w-auto"
-              >
-                Recruiter Mode
+                Open Portfolio
               </Button>
               {hasCv ? (
                 <a href={cvLink.href} download="cv.pdf" className={ctaLinkClass}>
