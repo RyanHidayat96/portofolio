@@ -229,14 +229,25 @@ function RecruiterOverviewPanel({
             <a
               className="button-base button-secondary"
               href={primaryContactLink.href}
-              target={primaryContactLink.id === "phone" || primaryContactLink.id === "email" ? undefined : "_blank"}
-              rel={primaryContactLink.id === "phone" || primaryContactLink.id === "email" ? undefined : "noreferrer"}
+              target={
+                primaryContactLink.id === "phone" || primaryContactLink.id === "email"
+                  ? undefined
+                  : "_blank"
+              }
+              rel={
+                primaryContactLink.id === "phone" || primaryContactLink.id === "email"
+                  ? undefined
+                  : "noreferrer"
+              }
             >
               <Mail aria-hidden="true" size={18} />
               <span>{primaryContactLink.label}</span>
             </a>
           ) : null}
-          <Button icon={<BriefcaseBusiness aria-hidden="true" size={18} />} onClick={() => onNavigate("experience")}>
+          <Button
+            icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
+            onClick={() => onNavigate("experience")}
+          >
             Experience
           </Button>
         </div>
@@ -251,23 +262,27 @@ function RecruiterOverviewPanel({
           <Badge tone="success">No WebGL required</Badge>
         </div>
         <div className="recruiter-fast-path-grid">
-          {hiringPath.map((item) => (
-            <article key={item.title}>
-              <span>{item.label}</span>
-              <h3>{item.title}</h3>
-              <p>{item.detail}</p>
-              {item.isCv && isPortfolioValueConfigured(cv.href) ? (
-                <a className="action-link" href={cv.href} download="cv.pdf">
-                  <Download aria-hidden="true" size={16} />
-                  {item.cta}
-                </a>
-              ) : item.section ? (
-                <Button variant="secondary" onClick={() => onNavigate(item.section)}>
-                  {item.cta}
-                </Button>
-              ) : null}
-            </article>
-          ))}
+          {hiringPath.map((item) => {
+            const targetSection = item.section;
+
+            return (
+              <article key={item.title}>
+                <span>{item.label}</span>
+                <h3>{item.title}</h3>
+                <p>{item.detail}</p>
+                {item.isCv && isPortfolioValueConfigured(cv.href) ? (
+                  <a className="action-link" href={cv.href} download="cv.pdf">
+                    <Download aria-hidden="true" size={16} />
+                    {item.cta}
+                  </a>
+                ) : targetSection ? (
+                  <Button variant="secondary" onClick={() => onNavigate(targetSection)}>
+                    {item.cta}
+                  </Button>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </Panel>
 
