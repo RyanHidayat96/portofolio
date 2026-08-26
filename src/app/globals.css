@@ -589,6 +589,8 @@ textarea:focus-visible,
   margin-top: 1.4rem;
   transform: perspective(960px) rotateX(var(--core-tilt-x)) rotateY(var(--core-tilt-y));
   transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
   transition: transform var(--motion-slow) var(--ease-emphasized);
 }
 

@@ -5,7 +5,7 @@ import { capabilities } from "@/data/capabilities";
 import type { EngineeringDomain } from "@/data/types";
 import { cn } from "@/lib/cn";
 import { Braces, GitBranch, ShieldCheck } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type SystemNodeId = "build" | "quality" | "ship";
 type SystemNodeTone = "build" | "quality" | "ship";
@@ -27,6 +27,13 @@ interface SystemEdge {
   readonly id: string;
   readonly source: SystemNodeId;
   readonly target: SystemNodeId;
+}
+
+interface PendingSceneStyle {
+  readonly lightX: string;
+  readonly lightY: string;
+  readonly tiltX: string;
+  readonly tiltY: string;
 }
 
 const capabilityByDomain = new Map<EngineeringDomain, (typeof capabilities)[number]>(
@@ -83,7 +90,41 @@ export function EngineeringCore(): React.ReactElement {
   const [isWebGlAvailable, setIsWebGlAvailable] = useState(true);
   const sceneRef = useRef<HTMLElement | null>(null);
   const reducedMotionRef = useRef(false);
+  const sceneAnimationFrameRef = useRef<number | null>(null);
+  const pendingSceneStyleRef = useRef<PendingSceneStyle | null>(null);
   const activeNode = systemNodes.find((node) => node.id === activeNodeId) ?? systemNodes[0];
+  const cancelPendingSceneFrame = useCallback((): void => {
+    if (sceneAnimationFrameRef.current !== null) {
+      window.cancelAnimationFrame(sceneAnimationFrameRef.current);
+      sceneAnimationFrameRef.current = null;
+    }
+
+    pendingSceneStyleRef.current = null;
+  }, []);
+
+  const scheduleSceneStyleUpdate = useCallback((style: PendingSceneStyle): void => {
+    pendingSceneStyleRef.current = style;
+
+    if (sceneAnimationFrameRef.current !== null) {
+      return;
+    }
+
+    sceneAnimationFrameRef.current = window.requestAnimationFrame(() => {
+      const nextStyle = pendingSceneStyleRef.current;
+      sceneAnimationFrameRef.current = null;
+      pendingSceneStyleRef.current = null;
+
+      if (!nextStyle || reducedMotionRef.current) {
+        return;
+      }
+
+      const element = sceneRef.current;
+      element?.style.setProperty("--core-light-x", nextStyle.lightX);
+      element?.style.setProperty("--core-light-y", nextStyle.lightY);
+      element?.style.setProperty("--core-tilt-x", nextStyle.tiltX);
+      element?.style.setProperty("--core-tilt-y", nextStyle.tiltY);
+    });
+  }, []);
 
   useEffect(() => {
     const webGlTimerId = window.setTimeout(() => {
@@ -94,6 +135,7 @@ export function EngineeringCore(): React.ReactElement {
     const updateMotionPreference = (): void => {
       reducedMotionRef.current = motionQuery.matches;
       if (motionQuery.matches) {
+        cancelPendingSceneFrame();
         resetSceneStyle(sceneRef.current);
       }
     };
@@ -103,12 +145,13 @@ export function EngineeringCore(): React.ReactElement {
 
     return () => {
       window.clearTimeout(webGlTimerId);
+      cancelPendingSceneFrame();
       motionQuery.removeEventListener("change", updateMotionPreference);
     };
-  }, []);
+  }, [cancelPendingSceneFrame]);
 
   function onPointerMove(event: React.PointerEvent<HTMLElement>): void {
-    if (reducedMotionRef.current) {
+    if (reducedMotionRef.current || event.pointerType !== "mouse") {
       return;
     }
 
@@ -118,10 +161,17 @@ export function EngineeringCore(): React.ReactElement {
     const tiltY = (x - 50) * 0.045;
     const tiltX = (50 - y) * 0.035;
 
-    event.currentTarget.style.setProperty("--core-light-x", `${x}%`);
-    event.currentTarget.style.setProperty("--core-light-y", `${y}%`);
-    event.currentTarget.style.setProperty("--core-tilt-x", `${tiltX}deg`);
-    event.currentTarget.style.setProperty("--core-tilt-y", `${tiltY}deg`);
+    scheduleSceneStyleUpdate({
+      lightX: `${x}%`,
+      lightY: `${y}%`,
+      tiltX: `${tiltX}deg`,
+      tiltY: `${tiltY}deg`
+    });
+  }
+
+  function onPointerLeave(event: React.PointerEvent<HTMLElement>): void {
+    cancelPendingSceneFrame();
+    resetSceneStyle(event.currentTarget);
   }
 
   return (
@@ -133,7 +183,7 @@ export function EngineeringCore(): React.ReactElement {
       className="hero-core"
       data-webgl={isWebGlAvailable ? "available" : "unavailable"}
       onPointerMove={onPointerMove}
-      onPointerLeave={(event) => resetSceneStyle(event.currentTarget)}
+      onPointerLeave={onPointerLeave}
     >
       <div className="hero-core-copy">
         <p className="eyebrow">interactive engineering core</p>

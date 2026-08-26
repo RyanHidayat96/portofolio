@@ -2,13 +2,8 @@
 
 import { Panel } from "@/components/ui/Panel";
 import { BootSequence } from "@/features/workspace/components/BootSequence";
-import { CommandPalette } from "@/features/workspace/components/CommandPalette";
-import { ContactPanel } from "@/features/workspace/components/ContactPanel";
-import { ExperiencePanel } from "@/features/workspace/components/ExperiencePanel";
 import { Landing } from "@/features/workspace/components/Landing";
 import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
-import { ProfilePanel } from "@/features/workspace/components/ProfilePanel";
-import { ProjectsPanel } from "@/features/workspace/components/ProjectsPanel";
 import { WorkspaceShell } from "@/features/workspace/components/WorkspaceShell";
 import {
   getPaletteActions,
@@ -31,6 +26,59 @@ type AppPhase = "landing" | "boot" | "workspace";
 const bootStorageKey = "ryanos.booted";
 const modeStorageKey = "ryanos.mode";
 const bootStateChangeEvent = "ryanos.boot-state-change";
+
+const CommandPalette = dynamic<{
+  readonly isOpen: boolean;
+  readonly actions: readonly PaletteAction[];
+  readonly onClose: () => void;
+  readonly onSelect: (action: PaletteAction) => void;
+}>(
+  () =>
+    import("@/features/workspace/components/CommandPalette").then(
+      (module) => module.CommandPalette
+    ),
+  {
+    loading: () => null
+  }
+);
+
+const ContactPanel = dynamic(
+  () =>
+    import("@/features/workspace/components/ContactPanel").then((module) => module.ContactPanel),
+  {
+    loading: () => <WorkspacePanelLoading label="Contact" />
+  }
+);
+
+const ExperiencePanel = dynamic(
+  () =>
+    import("@/features/workspace/components/ExperiencePanel").then(
+      (module) => module.ExperiencePanel
+    ),
+  {
+    loading: () => <WorkspacePanelLoading label="Experience" />
+  }
+);
+
+const ProfilePanel = dynamic(
+  () =>
+    import("@/features/workspace/components/ProfilePanel").then((module) => module.ProfilePanel),
+  {
+    loading: () => <WorkspacePanelLoading label="Profile" />
+  }
+);
+
+const ProjectsPanel = dynamic<{
+  readonly activeSlug?: string;
+  readonly onActiveSlugChange?: (slug: string) => void;
+  readonly onExploreArchitecture?: () => void;
+}>(
+  () =>
+    import("@/features/workspace/components/ProjectsPanel").then((module) => module.ProjectsPanel),
+  {
+    loading: () => <WorkspacePanelLoading label="Projects" />
+  }
+);
 
 const QualityEngineeringHub = dynamic(
   () =>

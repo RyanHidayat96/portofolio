@@ -27,7 +27,7 @@ export const siteConfig = {
 
 const sectionMetadata: Readonly<Record<WorkspaceSection, RouteMetadataText>> = {
   overview: {
-    title: branding.appName,
+    title: "Overview",
     description: siteConfig.description
   },
   profile: {

@@ -1,6 +1,9 @@
 import { architecturePresets } from "@/data/architecture";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-static";
+export const revalidate = 3600;
+
 export function GET(): NextResponse {
   return NextResponse.json({
     defaultPresetId: architecturePresets[0]?.id ?? null,

@@ -7,6 +7,8 @@ import {
 } from "@/features/workspace/routing";
 import { notFound } from "next/navigation";
 
+export const dynamicParams = false;
+
 interface DeepLinkPageProps {
   readonly params: Promise<{
     readonly slug: string[];
