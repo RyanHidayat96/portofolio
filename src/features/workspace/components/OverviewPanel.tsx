@@ -28,7 +28,8 @@ import {
   Route,
   Send,
   TerminalSquare,
-  UserRound
+  UserRound,
+  type LucideIcon
 } from "lucide-react";
 
 export function OverviewPanel({
@@ -293,7 +294,7 @@ function EngineerOverviewPanel({
     readonly description: string;
     readonly command: string;
     readonly signal: string;
-    readonly icon: React.ElementType;
+    readonly icon: LucideIcon;
   }[] = [
     {
       section: "terminal",
@@ -364,7 +365,7 @@ function EngineerOverviewPanel({
   const developerFlow: readonly {
     readonly label: string;
     readonly detail: string;
-    readonly icon: React.ElementType;
+    readonly icon: LucideIcon;
   }[] = [
     {
       label: "Build",

@@ -725,6 +725,98 @@ textarea:focus-visible,
   line-height: 1.45;
 }
 
+
+.hero-core-stage[data-renderer="r3f"] {
+  min-height: 28rem;
+  transform: none;
+}
+
+.hero-core-stage[data-renderer="r3f"]::before {
+  inset: 6% 7% 14%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(85, 215, 255, 0.08), transparent 45%),
+    linear-gradient(90deg, rgba(145, 164, 191, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(145, 164, 191, 0.06) 1px, transparent 1px), rgba(8, 12, 18, 0.5);
+  background-size: auto, 32px 32px, 32px 32px, auto;
+}
+
+.hero-core-stage[data-renderer="r3f"]::after {
+  display: none;
+}
+
+.hero-core-3d-shell,
+.hero-core-3d-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  min-height: 26rem;
+  transform: translateZ(18px);
+}
+
+.hero-core-3d-shell canvas,
+.hero-core-canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero-core-3d-loading {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background:
+    linear-gradient(90deg, transparent, rgba(85, 215, 255, 0.08), transparent),
+    rgba(8, 12, 18, 0.44);
+  background-size: 220% 100%, auto;
+  animation: core-3d-loading var(--motion-scene) var(--ease-standard) infinite;
+}
+
+.hero-core-3d-controls {
+  position: absolute;
+  left: 50%;
+  bottom: 0.9rem;
+  z-index: 4;
+  display: flex;
+  max-width: min(92%, 38rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  transform: translateX(-50%);
+}
+
+.hero-core-3d-controls button {
+  min-height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-badge);
+  background: rgba(5, 7, 10, 0.72);
+  padding: 0.3rem 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  transition:
+    border-color var(--motion-short) var(--ease-standard),
+    background-color var(--motion-short) var(--ease-standard),
+    color var(--motion-short) var(--ease-standard),
+    transform var(--motion-short) var(--ease-standard);
+}
+
+.hero-core-3d-controls button:hover,
+.hero-core-3d-controls button:focus-visible,
+.hero-core-3d-controls button[data-active="true"] {
+  border-color: var(--accent-strong);
+  background: rgba(85, 215, 255, 0.12);
+  color: var(--text-primary);
+}
+
+@keyframes core-3d-loading {
+  from {
+    background-position: 180% 0, 0 0;
+  }
+  to {
+    background-position: -80% 0, 0 0;
+  }
+}
 .hero-core-detail {
   position: relative;
   z-index: 2;
