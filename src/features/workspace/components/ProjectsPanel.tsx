@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { projects } from "@/data/projects";
-import type { ProjectCategory } from "@/data/types";
+import type { ProjectCaseStudy, ProjectCategory } from "@/data/types";
 import { FlagshipCaseStudy } from "@/features/workspace/components/FlagshipCaseStudy";
 import { useState } from "react";
 
@@ -57,10 +57,10 @@ export function ProjectsPanel({
       <Panel className="projects-index-panel">
         <header className="projects-index-header">
           <p className="eyebrow">case-studies</p>
-          <h1>Interactive project evidence.</h1>
+          <h1>Project worlds, not resume bullets.</h1>
           <p>
-            Pick a project. Inspect problem, architecture, implementation, testing, reliability, and
-            impact without exposing private company data.
+            Pick a case study. Each project opens into public-safe architecture, build decisions,
+            testing strategy, performance signal, and impact.
           </p>
         </header>
 
@@ -109,8 +109,9 @@ export function ProjectsPanel({
                 data-cursor-label="OPEN"
                 data-active={isActive}
               >
+                <ProjectCardPreview project={project} />
                 <span className="project-card-kicker">
-                  {isFeatured ? "featured" : project.status}
+                  {isFeatured ? "featured world" : project.status}
                 </span>
                 <strong>{project.title}</strong>
                 <small>{project.engineered ?? project.responsibility}</small>
@@ -127,7 +128,7 @@ export function ProjectsPanel({
         </div>
       </Panel>
 
-      <Panel className="projects-case-panel">
+      <Panel key={activeProject?.slug ?? "empty"} className="projects-case-panel">
         {activeProject ? (
           <FlagshipCaseStudy
             project={activeProject}
@@ -139,6 +140,32 @@ export function ProjectsPanel({
       </Panel>
     </div>
   );
+}
+
+function ProjectCardPreview({
+  project
+}: Readonly<{ project: ProjectCaseStudy }>): React.ReactElement {
+  const previewNodes = getPreviewNodes(project);
+
+  return (
+    <span className="project-card-preview" aria-hidden="true">
+      {previewNodes.map((node, index) => (
+        <span key={`${project.slug}-${node}-${index}`}>
+          {node}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function getPreviewNodes(project: ProjectCaseStudy): readonly string[] {
+  if (project.architectureLayers && project.architectureLayers.length > 0) {
+    return project.architectureLayers.slice(0, 4).map((layer) => layer.label.split(" /")[0]);
+  }
+
+  const categoryLabels = project.categories.map((category) => category.toUpperCase());
+  const technologyLabels = project.technologies.slice(0, 3);
+  return [...categoryLabels, ...technologyLabels].slice(0, 4);
 }
 
 function getCategoryTone(category: ProjectCategory): "info" | "success" | "warning" {
