@@ -23,6 +23,14 @@ type NodeStyle = CSSProperties & {
   readonly "--node-depth": string;
 };
 
+interface TopologyStats {
+  readonly nodes: number;
+  readonly edges: number;
+  readonly activeConnections: number;
+  readonly relatedSkills: number;
+  readonly relatedProjects: number;
+}
+
 const presetMeta: Record<
   ArchitecturePresetId,
   { readonly label: string; readonly icon: typeof Boxes }
@@ -65,6 +73,10 @@ export function ArchitectureExplorer(): React.ReactElement {
   const activeEdgeIds = useMemo(
     () => new Set(activeConnections.map((edge) => edge.id)),
     [activeConnections]
+  );
+  const topologyStats = useMemo(
+    () => getTopologyStats(activeNodes, activeEdges, activeConnections, connectedNodes),
+    [activeNodes, activeEdges, activeConnections, connectedNodes]
   );
 
   const selectPreset = (nextPresetId: ArchitecturePresetId): void => {
@@ -286,6 +298,7 @@ export function ArchitectureExplorer(): React.ReactElement {
             nodes={activeNodes}
             connections={activeConnections}
             connectedNodes={connectedNodes}
+            stats={topologyStats}
             onSelectNode={setSelectedId}
           />
         ) : (
@@ -413,12 +426,14 @@ function TopologyDetails({
   nodes,
   connections,
   connectedNodes,
+  stats,
   onSelectNode
 }: Readonly<{
   node: ArchitectureNode;
   nodes: readonly ArchitectureNode[];
   connections: readonly ArchitectureEdge[];
   connectedNodes: readonly ArchitectureNode[];
+  stats: TopologyStats;
   onSelectNode: (nodeId: string) => void;
 }>): React.ReactElement {
   return (
@@ -429,6 +444,8 @@ function TopologyDetails({
       </div>
       <h2>{node.label}</h2>
       <p>{node.purpose}</p>
+
+      <TopologySignalGrid stats={stats} />
 
       <section className="architecture-detail-section">
         <h3>Dependency Path</h3>
@@ -486,6 +503,46 @@ function TopologyDetails({
   );
 }
 
+function TopologySignalGrid({
+  stats
+}: Readonly<{ stats: TopologyStats }>): React.ReactElement {
+  return (
+    <section className="architecture-signal-grid" aria-label="Architecture topology signals">
+      <TopologySignal label="nodes" value={stats.nodes.toString()} />
+      <TopologySignal label="edges" value={stats.edges.toString()} />
+      <TopologySignal label="active paths" value={stats.activeConnections.toString()} />
+      <TopologySignal label="skills" value={stats.relatedSkills.toString()} />
+      <TopologySignal label="projects" value={stats.relatedProjects.toString()} />
+    </section>
+  );
+}
+
+function TopologySignal({
+  label,
+  value
+}: Readonly<{ label: string; value: string }>): React.ReactElement {
+  return (
+    <article>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </article>
+  );
+}
+
+function getTopologyStats(
+  nodes: readonly ArchitectureNode[],
+  edges: readonly ArchitectureEdge[],
+  activeConnections: readonly ArchitectureEdge[],
+  connectedNodes: readonly ArchitectureNode[]
+): TopologyStats {
+  return {
+    nodes: nodes.length,
+    edges: edges.length,
+    activeConnections: activeConnections.length,
+    relatedSkills: new Set(connectedNodes.flatMap((node) => node.relatedSkills)).size,
+    relatedProjects: new Set(connectedNodes.flatMap((node) => node.relatedProjects)).size
+  };
+}
 function ConnectionRow({
   connection,
   nodes

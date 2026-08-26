@@ -6,7 +6,7 @@ import { Panel } from "@/components/ui/Panel";
 import { challengeScenarios } from "@/data/challenges";
 import { profile } from "@/data/profile";
 import type { ChallengeScenario } from "@/data/types";
-import { Brain, RotateCcw } from "lucide-react";
+import { Brain, CheckCircle2, RotateCcw, Route, XCircle } from "lucide-react";
 import { useState } from "react";
 
 export function ChallengePanel(): React.ReactElement {
@@ -18,9 +18,12 @@ export function ChallengePanel(): React.ReactElement {
 
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-      <Panel className="p-4">
+      <Panel className="challenge-index-panel p-4">
         <p className="mono px-1 py-2 text-sm text-[#55d7ff]">test.me</p>
-        <h1 className="px-1 pb-4 text-2xl font-semibold">Engineering Challenge</h1>
+        <h1 className="px-1 pb-3 text-2xl font-semibold">Engineering Challenge</h1>
+        <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
+          Public-safe decision scenarios for build, quality, data, and delivery thinking.
+        </p>
         <div className="space-y-2">
           {challengeScenarios.map((item) => (
             <ChallengeScenarioButton
@@ -36,7 +39,7 @@ export function ChallengePanel(): React.ReactElement {
         </div>
       </Panel>
 
-      <Panel className="p-5 sm:p-7">
+      <Panel className="challenge-workbench p-5 sm:p-7">
         {scenario ? (
           <>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -53,16 +56,15 @@ export function ChallengePanel(): React.ReactElement {
               <Brain aria-hidden="true" className="hidden text-[#55d7ff] sm:block" size={28} />
             </div>
 
+            <ChallengeDecisionTrace scenario={scenario} selectedChoice={selectedChoice} />
+
             <section className="mt-6">
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a96a8]">
                 Signals
               </h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="challenge-signal-grid mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {scenario.metrics.map((metric) => (
-                  <div
-                    key={metric}
-                    className="mono border border-[var(--border)] bg-[#10141d] p-3 text-sm text-[#c8d4e6]"
-                  >
+                  <div key={metric} className="mono text-sm text-[#c8d4e6]">
                     {metric}
                   </div>
                 ))}
@@ -74,26 +76,30 @@ export function ChallengePanel(): React.ReactElement {
                 Decision
               </h3>
               <div className="mt-3 grid gap-3">
-                {scenario.choices.map((choice) => (
+                {scenario.choices.map((choice, index) => (
                   <button
                     key={choice.id}
                     type="button"
                     aria-pressed={choiceId === choice.id}
                     onClick={() => setChoiceId(choice.id)}
-                    className={`border p-4 text-left transition ${
-                      choiceId === choice.id
-                        ? "border-[#55d7ff] bg-[#55d7ff]/12"
-                        : "border-[var(--border)] bg-[#10141d] hover:border-[#55d7ff]/50"
-                    }`}
+                    className="challenge-choice-button"
+                    data-selected={choiceId === choice.id}
+                    data-cursor-intent="button"
+                    data-cursor-label="DECIDE"
                   >
-                    <span className="font-semibold">{choice.label}</span>
+                    <span className="mono">{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{choice.label}</strong>
                   </button>
                 ))}
               </div>
             </section>
 
             {selectedChoice ? (
-              <section className="mt-7 border border-[var(--border)] bg-[#0b0f16] p-5">
+              <section
+                className="challenge-feedback-card mt-7"
+                data-outcome={selectedChoice.isPreferred ? "preferred" : "secondary"}
+                aria-live="polite"
+              >
                 <Badge tone={selectedChoice.isPreferred ? "success" : "warning"}>
                   {selectedChoice.isPreferred ? "preferred path" : "useful signal, not first"}
                 </Badge>
@@ -111,6 +117,8 @@ export function ChallengePanel(): React.ReactElement {
                   className="mt-5"
                   icon={<RotateCcw aria-hidden="true" size={17} />}
                   onClick={() => setChoiceId(null)}
+                  cursorLabel="RESET"
+                  magnetic
                 >
                   Try Again
                 </Button>
@@ -122,6 +130,47 @@ export function ChallengePanel(): React.ReactElement {
         )}
       </Panel>
     </div>
+  );
+}
+
+function ChallengeDecisionTrace({
+  scenario,
+  selectedChoice
+}: Readonly<{
+  scenario: ChallengeScenario;
+  selectedChoice: ChallengeScenario["choices"][number] | undefined;
+}>): React.ReactElement {
+  return (
+    <section className="challenge-decision-trace" aria-label="Decision trace">
+      <article data-status="complete">
+        <Route aria-hidden="true" size={16} />
+        <span>Context</span>
+        <strong>{scenario.domain}</strong>
+      </article>
+      <article data-status="complete">
+        <CheckCircle2 aria-hidden="true" size={16} />
+        <span>Signals</span>
+        <strong>{scenario.metrics.length} checked</strong>
+      </article>
+      <article data-status={selectedChoice ? "complete" : "idle"}>
+        {selectedChoice?.isPreferred === false ? (
+          <XCircle aria-hidden="true" size={16} />
+        ) : (
+          <CheckCircle2 aria-hidden="true" size={16} />
+        )}
+        <span>Decision</span>
+        <strong>{selectedChoice ? selectedChoice.label : "waiting"}</strong>
+      </article>
+      <article data-status={selectedChoice?.isPreferred ? "complete" : selectedChoice ? "warning" : "idle"}>
+        {selectedChoice?.isPreferred ? (
+          <CheckCircle2 aria-hidden="true" size={16} />
+        ) : (
+          <XCircle aria-hidden="true" size={16} />
+        )}
+        <span>Path</span>
+        <strong>{selectedChoice?.isPreferred ? "preferred" : selectedChoice ? "reconsider" : "pending"}</strong>
+      </article>
+    </section>
   );
 }
 
@@ -139,11 +188,10 @@ function ChallengeScenarioButton({
       type="button"
       aria-pressed={isActive}
       onClick={onSelect}
-      className={`w-full border p-4 text-left transition ${
-        isActive
-          ? "border-[#55d7ff]/60 bg-[#55d7ff]/12"
-          : "border-[var(--border)] bg-[#10141d] hover:border-[#55d7ff]/50"
-      }`}
+      className="challenge-scenario-button"
+      data-active={isActive}
+      data-cursor-intent="button"
+      data-cursor-label="LOAD"
     >
       <span className="font-semibold">{scenario.title}</span>
       <span className="mt-2 flex flex-wrap gap-2">

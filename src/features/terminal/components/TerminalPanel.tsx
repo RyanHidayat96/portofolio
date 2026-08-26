@@ -7,13 +7,26 @@ import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
 import { projects } from "@/data/projects";
 import { skillGroups } from "@/data/skills";
-import type { WorkspaceSection } from "@/features/workspace/types";
 import { createPortfolioCommandRegistry } from "@/features/terminal/domain/commands";
 import { parseTerminalInput } from "@/features/terminal/domain/parser";
-import type { TerminalLine, TerminalLineKind } from "@/features/terminal/domain/types";
+import type { TerminalCommand, TerminalLine, TerminalLineKind } from "@/features/terminal/domain/types";
+import type { WorkspaceSection } from "@/features/workspace/types";
 import { useMemo, useRef, useState } from "react";
 
 let lineCounter = 0;
+
+const suggestedCommandNames = [
+  "help",
+  "whoami",
+  "stack",
+  "architecture",
+  "api",
+  "quality",
+  "performance",
+  "pipeline",
+  "challenge",
+  "hire"
+] as const;
 
 function createLine(kind: TerminalLineKind, value: string): TerminalLine {
   lineCounter += 1;
@@ -30,6 +43,14 @@ export function TerminalPanel({
   onNavigate: (section: WorkspaceSection) => void;
 }>): React.ReactElement {
   const registry = useMemo(() => createPortfolioCommandRegistry(), []);
+  const registryCommands = useMemo(() => registry.list(), [registry]);
+  const suggestedCommands = useMemo(
+    () =>
+      suggestedCommandNames
+        .map((commandName) => registry.find(commandName))
+        .filter((command): command is TerminalCommand => Boolean(command)),
+    [registry]
+  );
   const [lines, setLines] = useState<readonly TerminalLine[]>([
     createLine("system", `${branding.appName} terminal ready. Type "help", "whoami", or "career".`)
   ]);
@@ -37,16 +58,12 @@ export function TerminalPanel({
   const [history, setHistory] = useState<readonly string[]>([]);
   const [historyCursor, setHistoryCursor] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const suggestedCommands = [
-    "help",
-    "whoami",
-    "stack",
-    "api",
-    "quality",
-    "performance",
-    "pipeline",
-    "challenge"
-  ] as const;
+  const autocompleteMatch = getAutocompleteMatch(input, registryCommands);
+  const routeCommandCount = registryCommands.filter((command) =>
+    ["about", "skills", "career", "experience", "projects", "quality", "architecture", "api", "challenge"].includes(
+      command.name
+    )
+  ).length;
 
   async function executeInput(rawInput: string): Promise<void> {
     const trimmedInput = rawInput.trim();
@@ -57,7 +74,8 @@ export function TerminalPanel({
     const parsed = parseTerminalInput(trimmedInput);
     const command = parsed ? registry.find(parsed.commandName) : null;
     const inputLine = createLine("input", `$ ${trimmedInput}`);
-    setHistory((current) => [...current, trimmedInput]);
+    const nextHistory = [...history, trimmedInput];
+    setHistory(nextHistory);
     setHistoryCursor(null);
     setInput("");
 
@@ -79,7 +97,7 @@ export function TerminalPanel({
       projects,
       experience,
       architecturePresets,
-      history
+      history: nextHistory
     });
 
     if (output.clear) {
@@ -122,51 +140,58 @@ export function TerminalPanel({
   }
 
   function autocomplete(): void {
-    const parsed = parseTerminalInput(input);
-    if (!parsed || parsed.args.length > 0) {
-      return;
-    }
-
-    const match = registry.list().find((command) => command.name.startsWith(parsed.commandName));
-    if (match) {
-      setInput(match.name);
+    if (autocompleteMatch) {
+      setInput(autocompleteMatch.name);
     }
   }
 
   return (
-    <Panel className="overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3">
+    <Panel className="terminal-panel overflow-hidden">
+      <div className="terminal-header">
         <div>
-          <p className="mono text-sm text-[#55d7ff]">terminal</p>
-          <h1 className="text-xl font-semibold">Command Interface</h1>
+          <p className="mono text-sm text-[#55d7ff]">terminal.proof</p>
+          <h1>Command Interface</h1>
+          <p>
+            Fast keyboard path into portfolio evidence: profile, architecture, API routes,
+            simulations, and hiring contact.
+          </p>
+        </div>
+        <div className="terminal-proof-grid" aria-label="Terminal proof metrics">
+          <TerminalProofMetric label="commands" value={registryCommands.length.toString()} />
+          <TerminalProofMetric label="routes" value={routeCommandCount.toString()} />
+          <TerminalProofMetric label="history" value={history.length.toString()} />
         </div>
         <button
           type="button"
-          className="mono min-h-9 rounded-[var(--radius-control)] px-2 text-xs text-[#8a96a8] hover:text-[#55d7ff]"
+          className="terminal-focus-button"
           onClick={() => inputRef.current?.focus()}
+          data-cursor-intent="button"
+          data-cursor-label="FOCUS"
         >
           focus
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3">
+      <div className="terminal-command-rail" aria-label="Quick terminal commands">
         {suggestedCommands.map((command) => (
           <button
-            key={command}
+            key={command.name}
             type="button"
-            aria-label={`Run terminal command ${command}`}
-            className="mono min-h-9 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] px-3 text-xs text-[var(--text-muted)] transition hover:border-[var(--accent-strong)] hover:text-[var(--accent)]"
+            aria-label={`Run terminal command ${command.name}`}
             onClick={() => {
-              void executeInput(command);
+              void executeInput(command.name);
             }}
+            data-cursor-intent="button"
+            data-cursor-label="RUN"
           >
-            {command}
+            <span>{command.name}</span>
+            <small>{command.description}</small>
           </button>
         ))}
       </div>
 
       <div
-        className="mono max-h-[72vh] min-h-[360px] overflow-auto bg-[var(--surface-deeper)] p-4 text-sm leading-6 sm:min-h-[520px]"
+        className="terminal-screen mono"
         role="log"
         aria-live="polite"
         aria-label="Terminal output"
@@ -182,43 +207,76 @@ export function TerminalPanel({
           Use ArrowUp and ArrowDown for command history. Use Tab for autocomplete.
         </p>
         <form
-          className="mt-3 flex min-w-0 items-center gap-2"
+          className="terminal-input-row"
           onSubmit={(event) => {
             event.preventDefault();
             void executeInput(input);
           }}
         >
-          <label className="shrink-0 text-[#55d7ff]" htmlFor="terminal-input">
+          <label className="terminal-prompt" htmlFor="terminal-input">
             $
           </label>
-          <input
-            ref={inputRef}
-            id="terminal-input"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "ArrowUp") {
-                event.preventDefault();
-                handleHistory("up");
-              }
-              if (event.key === "ArrowDown") {
-                event.preventDefault();
-                handleHistory("down");
-              }
-              if (event.key === "Tab") {
-                event.preventDefault();
-                autocomplete();
-              }
-            }}
-            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-[#eef5ff] outline-none placeholder:text-[#556174]"
-            placeholder="help"
-            aria-label="Terminal command"
-            aria-describedby="terminal-command-help"
-            autoComplete="off"
-          />
+          <div className="terminal-input-stack">
+            <input
+              ref={inputRef}
+              id="terminal-input"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  handleHistory("up");
+                }
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  handleHistory("down");
+                }
+                if (event.key === "Tab") {
+                  event.preventDefault();
+                  autocomplete();
+                }
+              }}
+              className="terminal-command-input"
+              placeholder="help"
+              aria-label="Terminal command"
+              aria-describedby="terminal-command-help terminal-autocomplete-hint"
+              autoComplete="off"
+            />
+            <span id="terminal-autocomplete-hint" className="terminal-autocomplete-hint">
+              {autocompleteMatch
+                ? `Tab completes to ${autocompleteMatch.name}`
+                : "Try: architecture, api, quality, pipeline, challenge"}
+            </span>
+          </div>
         </form>
       </div>
     </Panel>
+  );
+}
+
+function TerminalProofMetric({
+  label,
+  value
+}: Readonly<{ label: string; value: string }>): React.ReactElement {
+  return (
+    <section>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </section>
+  );
+}
+
+function getAutocompleteMatch(
+  input: string,
+  commands: readonly TerminalCommand[]
+): TerminalCommand | undefined {
+  const parsed = parseTerminalInput(input);
+  if (!parsed || parsed.args.length > 0 || parsed.commandName.length === 0) {
+    return undefined;
+  }
+
+  return commands.find(
+    (command) => command.name.startsWith(parsed.commandName) && command.name !== parsed.commandName
   );
 }
 

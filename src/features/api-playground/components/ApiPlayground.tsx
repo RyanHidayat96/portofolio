@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { apiEndpoints } from "@/data/api-endpoints";
 import type { ApiEndpointDefinition } from "@/data/types";
-import { FileJson, Send } from "lucide-react";
+import { CheckCircle2, Clock, FileJson, Route, Send, ShieldCheck, XCircle } from "lucide-react";
 import { useState } from "react";
 
 type JsonValue =
   string | number | boolean | null | { readonly [key: string]: JsonValue } | readonly JsonValue[];
+
+type ApiLifecycleStatus = "idle" | "active" | "complete" | "blocked";
 
 interface ApiResponseState {
   readonly status: number;
@@ -17,6 +19,13 @@ interface ApiResponseState {
   readonly durationMs: number;
   readonly contentType: string;
   readonly body: JsonValue;
+}
+
+interface ApiLifecycleStep {
+  readonly id: string;
+  readonly label: string;
+  readonly value: string;
+  readonly status: ApiLifecycleStatus;
 }
 
 export function ApiPlayground(): React.ReactElement {
@@ -42,6 +51,7 @@ export function ApiPlayground(): React.ReactElement {
         body
       });
     } catch (requestError) {
+      setResponse(null);
       setError(requestError instanceof Error ? requestError.message : "Request failed.");
     } finally {
       setIsLoading(false);
@@ -56,9 +66,11 @@ export function ApiPlayground(): React.ReactElement {
     );
   }
 
+  const lifecycleSteps = getApiLifecycleSteps({ endpoint, response, error, isLoading });
+
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-      <Panel className="p-4">
+      <Panel className="api-playground-index p-4">
         <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
         <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
@@ -94,6 +106,8 @@ export function ApiPlayground(): React.ReactElement {
               icon={<Send aria-hidden="true" size={17} />}
               onClick={sendRequest}
               disabled={isLoading}
+              cursorLabel="SEND"
+              magnetic
             >
               {isLoading ? "Sending" : "Send"}
             </Button>
@@ -104,6 +118,8 @@ export function ApiPlayground(): React.ReactElement {
             <RequestFact label="Endpoint" value={endpoint.path} />
             <RequestFact label="Accept" value="application/json" />
           </div>
+
+          <ApiLifecycleRail steps={lifecycleSteps} />
         </Panel>
 
         <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
@@ -116,13 +132,11 @@ export function ApiPlayground(): React.ReactElement {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-2">
+            <div className="api-contract-list mt-5 grid gap-2">
               {endpoint.responseShape.map((field) => (
-                <div
-                  key={field}
-                  className="mono border border-[var(--border)] bg-[#0b0f16] p-3 text-sm text-[#c8d4e6]"
-                >
-                  {field}
+                <div key={field} className="mono text-sm text-[#c8d4e6]">
+                  <ShieldCheck aria-hidden="true" size={14} />
+                  <span>{field}</span>
                 </div>
               ))}
             </div>
@@ -172,7 +186,7 @@ export function ApiPlayground(): React.ReactElement {
 
             <pre
               aria-label="API response body"
-              className="mono mt-5 min-h-[360px] overflow-auto border border-[var(--border)] bg-[#0b0f16] p-4 text-sm leading-6 text-[#c8d4e6]"
+              className="api-response-body mono mt-5 min-h-[360px] overflow-auto text-sm leading-6 text-[#c8d4e6]"
             >
               {error ??
                 (response ? JSON.stringify(response.body, null, 2) : "// Response appears here")}
@@ -182,6 +196,79 @@ export function ApiPlayground(): React.ReactElement {
       </div>
     </div>
   );
+}
+
+function ApiLifecycleRail({
+  steps
+}: Readonly<{ steps: readonly ApiLifecycleStep[] }>): React.ReactElement {
+  return (
+    <ol className="api-lifecycle-rail" aria-label="API request lifecycle">
+      {steps.map((step) => (
+        <li key={step.id} data-status={step.status}>
+          {getLifecycleIcon(step.status)}
+          <span>{step.label}</span>
+          <strong>{step.value}</strong>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function getLifecycleIcon(status: ApiLifecycleStatus): React.ReactElement {
+  if (status === "complete") {
+    return <CheckCircle2 aria-hidden="true" size={16} />;
+  }
+
+  if (status === "blocked") {
+    return <XCircle aria-hidden="true" size={16} />;
+  }
+
+  if (status === "active") {
+    return <Clock aria-hidden="true" size={16} />;
+  }
+
+  return <Route aria-hidden="true" size={16} />;
+}
+
+function getApiLifecycleSteps({
+  endpoint,
+  response,
+  error,
+  isLoading
+}: Readonly<{
+  endpoint: ApiEndpointDefinition;
+  response: ApiResponseState | null;
+  error: string | null;
+  isLoading: boolean;
+}>): readonly ApiLifecycleStep[] {
+  const requestFinished = Boolean(response || error);
+
+  return [
+    {
+      id: "route",
+      label: "Route",
+      value: endpoint.path,
+      status: "complete"
+    },
+    {
+      id: "request",
+      label: "Request",
+      value: `${endpoint.method} JSON`,
+      status: isLoading ? "active" : requestFinished ? "complete" : "idle"
+    },
+    {
+      id: "contract",
+      label: "Contract",
+      value: `${endpoint.responseShape.length} fields`,
+      status: error ? "blocked" : response ? "complete" : "idle"
+    },
+    {
+      id: "response",
+      label: "Response",
+      value: response ? `${response.status}` : error ? "failed" : "pending",
+      status: error ? "blocked" : response ? "complete" : isLoading ? "active" : "idle"
+    }
+  ];
 }
 
 function EndpointButton({
@@ -198,11 +285,10 @@ function EndpointButton({
       type="button"
       aria-pressed={isActive}
       onClick={onSelect}
-      className={`w-full border p-4 text-left transition ${
-        isActive
-          ? "border-[#55d7ff]/60 bg-[#55d7ff]/12"
-          : "border-[var(--border)] bg-[#10141d] hover:border-[#55d7ff]/50"
-      }`}
+      className="api-endpoint-button"
+      data-active={isActive}
+      data-cursor-intent="button"
+      data-cursor-label="ROUTE"
     >
       <span className="mono block text-sm text-[#55d7ff]">
         {endpoint.method} {endpoint.path}
@@ -223,7 +309,7 @@ function RequestFact({
   tone?: "neutral" | "info";
 }>): React.ReactElement {
   return (
-    <section className="border border-[var(--border)] bg-[#10141d] p-4">
+    <section className="api-fact-card">
       <p className="text-sm text-[#8a96a8]">{label}</p>
       <p
         className={`mono mt-2 text-sm font-semibold ${tone === "info" ? "text-[#55d7ff]" : "text-[#eef5ff]"}`}
@@ -244,7 +330,7 @@ function ResponseFact({
   tone?: "neutral" | "success";
 }>): React.ReactElement {
   return (
-    <section className="border border-[var(--border)] bg-[#10141d] p-4">
+    <section className="api-fact-card">
       <p className="text-sm text-[#8a96a8]">{label}</p>
       <p
         className={`mono mt-2 text-sm font-semibold ${tone === "success" ? "text-[#6ee7a8]" : "text-[#eef5ff]"}`}
