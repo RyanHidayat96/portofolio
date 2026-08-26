@@ -3538,3 +3538,87 @@ textarea:focus-visible,
     transform: none !important;
   }
 }
+
+@supports (height: 100dvh) {
+  body,
+  main {
+    min-height: 100dvh;
+  }
+}
+
+.hero-core[data-webgl="unavailable"] .hero-core-stage,
+.hero-core[data-webgl="unavailable"] .hero-core-node,
+.hero-core[data-webgl="unavailable"] .hero-core-node-active {
+  transform: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .button-base:hover:not(:disabled),
+  .engineer-playground-card:hover,
+  .architecture-preset-button:hover,
+  .architecture-connected-button:hover,
+  .project-filter-button:hover,
+  .project-card-button:hover,
+  .case-study-layer-button:hover,
+  .contact-link-card:hover,
+  .recruiter-scan-career-list button:hover,
+  .quality-hub-tabs button:hover {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --background: Canvas;
+    --surface: Canvas;
+    --surface-elevated: Canvas;
+    --surface-raised: Canvas;
+    --surface-deep: Canvas;
+    --surface-deeper: Canvas;
+    --text-primary: CanvasText;
+    --text-secondary: CanvasText;
+    --text-muted: CanvasText;
+    --accent: Highlight;
+    --success: Highlight;
+    --warning: CanvasText;
+    --danger: Mark;
+    --border: ButtonBorder;
+    --border-strong: ButtonBorder;
+    --accent-soft: Canvas;
+    --accent-strong: Highlight;
+    --accent-contrast: HighlightText;
+  }
+
+  .engineering-grid,
+  .hero-core-edges,
+  .architecture-edges,
+  .architecture-plane,
+  .narrative-core-map::before,
+  .narrative-core-map::after {
+    display: none !important;
+  }
+
+  .panel-surface,
+  .button-base,
+  .badge-base,
+  .interactive-surface,
+  .hero-core-node,
+  .architecture-node,
+  .project-card-button,
+  .project-filter-button,
+  .contact-link-card {
+    border: 1px solid ButtonBorder;
+    forced-color-adjust: auto;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+    box-shadow: none;
+  }
+}

@@ -80,11 +80,16 @@ const systemEdges: readonly SystemEdge[] = [
 
 export function EngineeringCore(): React.ReactElement {
   const [activeNodeId, setActiveNodeId] = useState<SystemNodeId>("build");
+  const [isWebGlAvailable, setIsWebGlAvailable] = useState(true);
   const sceneRef = useRef<HTMLElement | null>(null);
   const reducedMotionRef = useRef(false);
   const activeNode = systemNodes.find((node) => node.id === activeNodeId) ?? systemNodes[0];
 
   useEffect(() => {
+    const webGlTimerId = window.setTimeout(() => {
+      setIsWebGlAvailable(detectWebGlSupport());
+    }, 0);
+
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updateMotionPreference = (): void => {
       reducedMotionRef.current = motionQuery.matches;
@@ -96,7 +101,10 @@ export function EngineeringCore(): React.ReactElement {
     updateMotionPreference();
     motionQuery.addEventListener("change", updateMotionPreference);
 
-    return () => motionQuery.removeEventListener("change", updateMotionPreference);
+    return () => {
+      window.clearTimeout(webGlTimerId);
+      motionQuery.removeEventListener("change", updateMotionPreference);
+    };
   }, []);
 
   function onPointerMove(event: React.PointerEvent<HTMLElement>): void {
@@ -121,13 +129,20 @@ export function EngineeringCore(): React.ReactElement {
       ref={sceneRef}
       id="hero-system-core"
       aria-labelledby="hero-system-core-title"
+      aria-describedby="hero-system-core-fallback"
       className="hero-core"
+      data-webgl={isWebGlAvailable ? "available" : "unavailable"}
       onPointerMove={onPointerMove}
       onPointerLeave={(event) => resetSceneStyle(event.currentTarget)}
     >
       <div className="hero-core-copy">
         <p className="eyebrow">interactive engineering core</p>
         <h2 id="hero-system-core-title">Build. Test. Measure. Ship.</h2>
+        <p id="hero-system-core-fallback" className="sr-only">
+          {isWebGlAvailable
+            ? "DOM and SVG visualization is active."
+            : "WebGL is unavailable; DOM and SVG fallback visualization remains active."}
+        </p>
       </div>
 
       <div className="hero-core-stage" aria-label="Build Quality Ship system map">
@@ -207,4 +222,13 @@ function resetSceneStyle(element: HTMLElement | null): void {
   element?.style.setProperty("--core-light-y", "30%");
   element?.style.setProperty("--core-tilt-x", "0deg");
   element?.style.setProperty("--core-tilt-y", "0deg");
+}
+
+function detectWebGlSupport(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
+  } catch {
+    return false;
+  }
 }

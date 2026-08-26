@@ -64,7 +64,7 @@ export function ProjectsPanel({
           </p>
         </header>
 
-        <div className="project-filter-grid" aria-label="Project filters">
+        <div className="project-filter-grid" role="group" aria-label="Project filters">
           {projectFilters.map((item) => {
             const isActive = filter === item;
             const count = projectCounts[item];
@@ -74,6 +74,7 @@ export function ProjectsPanel({
                 key={item}
                 type="button"
                 aria-pressed={isActive}
+                aria-label={`Show ${item} projects (${count})`}
                 onClick={() => {
                   const nextProjects = projectsByFilter[item];
                   setFilter(item);
@@ -101,6 +102,8 @@ export function ProjectsPanel({
                 key={project.slug}
                 type="button"
                 onClick={() => selectProject(project.slug)}
+                aria-current={isActive ? "true" : undefined}
+                aria-label={`Open ${project.title} case study`}
                 className="project-card-button"
                 data-active={isActive}
               >

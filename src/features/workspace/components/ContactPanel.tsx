@@ -3,7 +3,7 @@ import { Panel } from "@/components/ui/Panel";
 import { profile } from "@/data/profile";
 import type { ContactLink } from "@/data/types";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
-import { Download, ExternalLink, FileText, Github, Linkedin, Mail, Phone } from "lucide-react";
+import { Download, ExternalLink, FileText, Mail, Phone } from "lucide-react";
 
 export function ContactPanel(): React.ReactElement {
   const cv = profile.contact.cv;
@@ -90,7 +90,7 @@ function ContactAnchor({
   link: ContactLink;
   variant?: "button" | "card";
 }>): React.ReactElement {
-  const Icon = getContactIcon(link.id);
+  const iconSize = variant === "button" ? 17 : 20;
   const isExternal = link.id !== "phone" && link.id !== "email" && link.id !== "cv";
 
   return (
@@ -101,7 +101,7 @@ function ContactAnchor({
       rel={isExternal ? "noreferrer" : undefined}
       target={isExternal ? "_blank" : undefined}
     >
-      <Icon aria-hidden="true" size={variant === "button" ? 17 : 20} />
+      {renderContactIcon(link.id, iconSize)}
       <span>
         <strong>{link.label}</strong>
         {variant === "card" ? <small>{link.value}</small> : null}
@@ -115,26 +115,18 @@ function isConfiguredLink(link: ContactLink): boolean {
   return isPortfolioValueConfigured(link.value) && isPortfolioValueConfigured(link.href);
 }
 
-function getContactIcon(id: ContactLink["id"]): typeof ExternalLink {
+function renderContactIcon(id: ContactLink["id"], size: number): React.ReactElement {
   if (id === "email") {
-    return Mail;
+    return <Mail aria-hidden="true" size={size} />;
   }
 
   if (id === "phone") {
-    return Phone;
+    return <Phone aria-hidden="true" size={size} />;
   }
 
   if (id === "cv") {
-    return FileText;
+    return <FileText aria-hidden="true" size={size} />;
   }
 
-  if (id === "linkedin") {
-    return Linkedin;
-  }
-
-  if (id === "github") {
-    return Github;
-  }
-
-  return ExternalLink;
+  return <ExternalLink aria-hidden="true" size={size} />;
 }

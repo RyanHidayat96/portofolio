@@ -47,12 +47,51 @@ export function WorkspaceShell({
   const activeLabel = getNavigationItem(section).label;
   const navGroups = getNavigationGroups(mode);
   const navItems = getNavigationItemsForMode(mode);
+  const switchWorkspaceMode = (nextMode: WorkspaceMode): void => {
+    if (nextMode !== mode) {
+      onModeChange(nextMode);
+    }
+  };
+  const onModeKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    currentMode: WorkspaceMode
+  ): void => {
+    const currentIndex = modeOptions.findIndex((modeOption) => modeOption.id === currentMode);
+    const lastIndex = modeOptions.length - 1;
+    const keyToIndex: Partial<Record<string, number>> = {
+      ArrowLeft: currentIndex <= 0 ? lastIndex : currentIndex - 1,
+      ArrowUp: currentIndex <= 0 ? lastIndex : currentIndex - 1,
+      ArrowRight: currentIndex >= lastIndex ? 0 : currentIndex + 1,
+      ArrowDown: currentIndex >= lastIndex ? 0 : currentIndex + 1,
+      Home: 0,
+      End: lastIndex
+    };
+    const nextIndex = keyToIndex[event.key];
+
+    if (nextIndex === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    const nextMode = modeOptions[nextIndex]?.id;
+    if (!nextMode) {
+      return;
+    }
+
+    switchWorkspaceMode(nextMode);
+    window.requestAnimationFrame(() =>
+      document.getElementById(`workspace-mode-${nextMode}`)?.focus()
+    );
+  };
 
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--text-primary)]">
       <a href="#workspace-content" className="skip-link">
         Skip to workspace content
       </a>
+      <p id="workspace-status" className="sr-only" aria-live="polite">
+        Current section: {activeLabel}. Current mode: {mode}.
+      </p>
       <div aria-hidden="true" className="engineering-grid fixed inset-x-0 top-0 h-96 opacity-35" />
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="hidden border-r border-[var(--border)] bg-[var(--surface-deep-96)] p-4 lg:block">
@@ -129,15 +168,20 @@ export function WorkspaceShell({
                   </p>
                   <div
                     className="flex rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] p-1"
-                    role="group"
+                    role="radiogroup"
                     aria-label="Workspace mode"
                   >
                     {modeOptions.map((modeOption) => (
                       <button
                         key={modeOption.id}
+                        id={`workspace-mode-${modeOption.id}`}
                         type="button"
-                        onClick={() => onModeChange(modeOption.id)}
-                        aria-pressed={mode === modeOption.id}
+                        role="radio"
+                        onClick={() => switchWorkspaceMode(modeOption.id)}
+                        onKeyDown={(event) => onModeKeyDown(event, modeOption.id)}
+                        aria-checked={mode === modeOption.id}
+                        aria-label={`${modeOption.label} mode: ${modeOption.description}`}
+                        tabIndex={mode === modeOption.id ? 0 : -1}
                         className={`min-h-[var(--touch-target)] rounded-[var(--radius-control)] px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.12em] transition ${
                           mode === modeOption.id
                             ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
@@ -166,7 +210,11 @@ export function WorkspaceShell({
             </div>
           </header>
 
-          <div id="workspace-content" className="min-w-0 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+          <div
+            id="workspace-content"
+            aria-describedby="workspace-status"
+            className="min-w-0 px-4 py-5 sm:px-6 lg:px-8 lg:py-8"
+          >
             {children}
           </div>
         </section>

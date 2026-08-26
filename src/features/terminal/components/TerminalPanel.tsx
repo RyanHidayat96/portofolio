@@ -154,6 +154,7 @@ export function TerminalPanel({
           <button
             key={command}
             type="button"
+            aria-label={`Run terminal command ${command}`}
             className="mono min-h-9 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] px-3 text-xs text-[var(--text-muted)] transition hover:border-[var(--accent-strong)] hover:text-[var(--accent)]"
             onClick={() => {
               void executeInput(command);
@@ -177,6 +178,9 @@ export function TerminalPanel({
           </div>
         ))}
 
+        <p id="terminal-command-help" className="sr-only">
+          Use ArrowUp and ArrowDown for command history. Use Tab for autocomplete.
+        </p>
         <form
           className="mt-3 flex min-w-0 items-center gap-2"
           onSubmit={(event) => {
@@ -209,6 +213,7 @@ export function TerminalPanel({
             className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-[#eef5ff] outline-none placeholder:text-[#556174]"
             placeholder="help"
             aria-label="Terminal command"
+            aria-describedby="terminal-command-help"
             autoComplete="off"
           />
         </form>

@@ -5,6 +5,7 @@ import { Command, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const paletteListId = "command-palette-options";
+const paletteDescriptionId = "command-palette-description";
 
 export function CommandPalette({
   isOpen,
@@ -19,6 +20,7 @@ export function CommandPalette({
 }>): React.ReactElement | null {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const dialogRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
@@ -59,7 +61,7 @@ export function CommandPalette({
     const focusTimerId = window.setTimeout(() => inputRef.current?.focus(), 0);
 
     return () => window.clearTimeout(focusTimerId);
-  }, [closePalette, isOpen]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -68,13 +70,29 @@ export function CommandPalette({
 
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === "Escape") {
+        event.preventDefault();
         closePalette();
+        return;
       }
+
+      if (event.key !== "Tab" || !dialogRef.current) {
+        return;
+      }
+
+      trapDialogFocus(event, dialogRef.current);
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [closePalette, isOpen]);
+
+  useEffect(() => {
+    if (!activeOptionId || !isOpen) {
+      return;
+    }
+
+    document.getElementById(activeOptionId)?.scrollIntoView({ block: "nearest" });
+  }, [activeOptionId, isOpen]);
 
   if (!isOpen) {
     return null;
@@ -108,18 +126,26 @@ export function CommandPalette({
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-3 backdrop-blur-sm sm:p-4"
       role="presentation"
-      onMouseDown={closePalette}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          closePalette();
+        }
+      }}
     >
       <section
+        ref={dialogRef}
         className="palette-dialog mx-auto mt-4 w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-raised)] shadow-2xl sm:mt-20"
         role="dialog"
         aria-modal="true"
         aria-labelledby="command-palette-title"
-        onMouseDown={(event) => event.stopPropagation()}
+        aria-describedby={paletteDescriptionId}
       >
         <h2 id="command-palette-title" className="sr-only">
           Command palette
         </h2>
+        <p id={paletteDescriptionId} className="sr-only">
+          Search actions. Use arrow keys to move through results, Enter to select, Escape to close.
+        </p>
         <div className="flex items-center gap-3 border-b border-[var(--border)] p-3 sm:p-4">
           <Search aria-hidden="true" className="text-[var(--accent)]" size={20} />
           <input
@@ -208,4 +234,40 @@ export function CommandPalette({
 
 function createPaletteOptionId(actionId: string, index: number): string {
   return `command-palette-option-${index}-${actionId}`;
+}
+
+function trapDialogFocus(event: KeyboardEvent, dialog: HTMLElement): void {
+  const focusableElements = getFocusableElements(dialog);
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements.at(-1);
+
+  if (!firstElement || !lastElement) {
+    return;
+  }
+
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault();
+    lastElement.focus();
+    return;
+  }
+
+  if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault();
+    firstElement.focus();
+  }
+}
+
+function getFocusableElements(container: HTMLElement): readonly HTMLElement[] {
+  const selector = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(",");
+
+  return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(
+    (element) => !element.hasAttribute("aria-hidden")
+  );
 }

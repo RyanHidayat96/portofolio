@@ -96,6 +96,30 @@ export function ArchitectureExplorer(): React.ReactElement {
     event: React.KeyboardEvent<HTMLButtonElement>,
     currentPresetId: ArchitecturePresetId
   ): void => {
+    if (event.key === "Home") {
+      event.preventDefault();
+      const firstPreset = architecturePresets[0];
+      if (firstPreset) {
+        selectPreset(firstPreset.id);
+        window.requestAnimationFrame(() =>
+          document.getElementById(`architecture-preset-${firstPreset.id}`)?.focus()
+        );
+      }
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      const lastPreset = architecturePresets.at(-1);
+      if (lastPreset) {
+        selectPreset(lastPreset.id);
+        window.requestAnimationFrame(() =>
+          document.getElementById(`architecture-preset-${lastPreset.id}`)?.focus()
+        );
+      }
+      return;
+    }
+
     if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) {
       return;
     }
@@ -164,6 +188,7 @@ export function ArchitectureExplorer(): React.ReactElement {
                   role="tab"
                   aria-selected={isActive}
                   aria-controls="architecture-topology-panel"
+                  tabIndex={isActive ? 0 : -1}
                   onClick={() => selectPreset(preset.id)}
                   onKeyDown={(event) => onPresetKeyDown(event, preset.id)}
                   className="architecture-preset-button"

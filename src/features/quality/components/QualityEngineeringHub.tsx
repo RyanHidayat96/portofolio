@@ -120,6 +120,62 @@ export function QualityEngineeringHub(): React.ReactElement {
   const [activeView, setActiveView] = useState<QualityView>("overview");
   const activeMeta = qualityViews.find((view) => view.id === activeView) ?? qualityViews[0];
 
+  const selectView = (view: QualityView): void => {
+    setActiveView(view);
+  };
+
+  const focusTab = (view: QualityView): void => {
+    window.requestAnimationFrame(() => document.getElementById(`quality-hub-tab-${view}`)?.focus());
+  };
+
+  const selectViewByOffset = (currentView: QualityView, offset: number): void => {
+    const currentIndex = qualityViews.findIndex((view) => view.id === currentView);
+    const nextIndex = (currentIndex + offset + qualityViews.length) % qualityViews.length;
+    const nextView = qualityViews[nextIndex];
+
+    if (!nextView) {
+      return;
+    }
+
+    selectView(nextView.id);
+    focusTab(nextView.id);
+  };
+
+  const onViewKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    currentView: QualityView
+  ): void => {
+    if (event.key === "Home") {
+      event.preventDefault();
+      const firstView = qualityViews[0];
+      if (firstView) {
+        selectView(firstView.id);
+        focusTab(firstView.id);
+      }
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      const lastView = qualityViews.at(-1);
+      if (lastView) {
+        selectView(lastView.id);
+        focusTab(lastView.id);
+      }
+      return;
+    }
+
+    if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    selectViewByOffset(
+      currentView,
+      event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1
+    );
+  };
+
   return (
     <div className="quality-hub">
       <Panel className="quality-hub-header">
@@ -141,7 +197,9 @@ export function QualityEngineeringHub(): React.ReactElement {
                 role="tab"
                 aria-selected={isActive}
                 aria-controls="quality-hub-panel"
-                onClick={() => setActiveView(view.id)}
+                onClick={() => selectView(view.id)}
+                onKeyDown={(event) => onViewKeyDown(event, view.id)}
+                tabIndex={isActive ? 0 : -1}
                 data-active={isActive}
               >
                 <span>{view.label}</span>
