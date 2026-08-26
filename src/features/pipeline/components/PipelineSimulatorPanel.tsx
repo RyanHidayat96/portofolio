@@ -120,10 +120,17 @@ export function PipelineSimulatorPanel(): React.ReactElement {
             icon={<Play aria-hidden="true" size={17} />}
             onClick={runPipeline}
             disabled={isRunning}
+            cursorLabel="RUN"
+            magnetic
           >
             Run
           </Button>
-          <Button icon={<RotateCcw aria-hidden="true" size={17} />} onClick={resetPipeline}>
+          <Button
+            icon={<RotateCcw aria-hidden="true" size={17} />}
+            onClick={resetPipeline}
+            cursorLabel="RESET"
+            magnetic
+          >
             Reset
           </Button>
         </div>
@@ -143,6 +150,8 @@ export function PipelineSimulatorPanel(): React.ReactElement {
               {getQualityGateLabel(snapshot.qualityGate, isRunning)}
             </Badge>
           </div>
+
+          <PipelineSignalRail stages={snapshot.stages} />
 
           <ol className="mt-7 grid gap-3">
             {snapshot.stages.map((stage, index) => (
@@ -183,6 +192,22 @@ export function PipelineSimulatorPanel(): React.ReactElement {
         </div>
       </div>
     </div>
+  );
+}
+
+function PipelineSignalRail({
+  stages
+}: Readonly<{ stages: readonly PipelineStage[] }>): React.ReactElement {
+  return (
+    <ol className="pipeline-signal-rail" aria-label="Pipeline stage status overview">
+      {stages.map((stage, index) => (
+        <li key={stage.id} data-status={stage.status}>
+          <span>{String(index + 1).padStart(2, "0")}</span>
+          <strong>{stage.label}</strong>
+          <small>{stage.status}</small>
+        </li>
+      ))}
+    </ol>
   );
 }
 

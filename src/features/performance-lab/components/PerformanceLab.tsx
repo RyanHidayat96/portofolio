@@ -8,6 +8,7 @@ import {
   findPerformanceScenario,
   performanceScenarios,
   simulatePerformanceRun,
+  type PerformanceQualityGateStatus,
   type PerformanceRunConfig,
   type PerformanceScenario,
   type PerformanceScenarioId
@@ -16,12 +17,22 @@ import { Gauge, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const initialConfig = createDefaultPerformanceConfig("normal");
+const maxDefaultVirtualUsers = Math.max(
+  ...performanceScenarios.map((scenario) => scenario.defaultVirtualUsers)
+);
+
+interface PerformanceReleasePosture {
+  readonly label: string;
+  readonly detail: string;
+  readonly tone: "success" | "danger";
+}
 
 export function PerformanceLab(): React.ReactElement {
   const [config, setConfig] = useState<PerformanceRunConfig>(initialConfig);
   const scenario = findPerformanceScenario(config.scenarioId);
   const result = useMemo(() => simulatePerformanceRun(config), [config]);
   const failedThresholds = result.thresholds.filter((threshold) => threshold.status === "failed");
+  const releasePosture = getPerformanceReleasePosture(result.qualityGate, failedThresholds.length);
 
   const updateScenario = (scenarioId: PerformanceScenarioId): void => {
     setConfig(createDefaultPerformanceConfig(scenarioId));
@@ -96,9 +107,13 @@ export function PerformanceLab(): React.ReactElement {
           className="mt-5 w-full"
           icon={<RotateCcw aria-hidden="true" size={17} />}
           onClick={() => setConfig(createDefaultPerformanceConfig(config.scenarioId))}
+          cursorLabel="RESET"
+          magnetic
         >
           Reset Scenario
         </Button>
+
+        <PerformancePostureCard posture={releasePosture} />
 
         <div className="mt-5 border border-[var(--border)] bg-[#0b0f16] p-4">
           <p className="text-sm font-semibold text-[#eef5ff]">{scenario.label}</p>
@@ -123,6 +138,8 @@ export function PerformanceLab(): React.ReactElement {
               thresholds {result.qualityGate}
             </Badge>
           </div>
+
+          <K6ScenarioMap activeScenarioId={config.scenarioId} onSelectScenario={updateScenario} />
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Metric label="Requests" value={result.metrics.requests.toLocaleString()} />
@@ -198,6 +215,60 @@ export function PerformanceLab(): React.ReactElement {
   );
 }
 
+function PerformancePostureCard({
+  posture
+}: Readonly<{ posture: PerformanceReleasePosture }>): React.ReactElement {
+  return (
+    <section className="performance-posture-card" data-status={posture.tone}>
+      <span>release posture</span>
+      <strong>{posture.label}</strong>
+      <p>{posture.detail}</p>
+    </section>
+  );
+}
+
+function K6ScenarioMap({
+  activeScenarioId,
+  onSelectScenario
+}: Readonly<{
+  activeScenarioId: PerformanceScenarioId;
+  onSelectScenario: (scenarioId: PerformanceScenarioId) => void;
+}>): React.ReactElement {
+  return (
+    <section className="performance-scenario-map" aria-label="K6 load profile comparison">
+      <div>
+        <p className="mono text-sm text-[#55d7ff]">K6 LOAD SHAPE</p>
+        <h3>Normal, peak, and stress profiles.</h3>
+      </div>
+      <div className="performance-scenario-grid">
+        {performanceScenarios.map((scenario) => {
+          const isActive = scenario.id === activeScenarioId;
+          const pressureWidth = `${getScenarioPressure(scenario)}%`;
+
+          return (
+            <button
+              key={scenario.id}
+              type="button"
+              aria-pressed={isActive}
+              className="performance-scenario-node"
+              data-active={isActive}
+              onClick={() => onSelectScenario(scenario.id)}
+              data-cursor-intent="button"
+              data-cursor-label="LOAD"
+            >
+              <span>{scenario.label}</span>
+              <strong>{scenario.defaultVirtualUsers} VU</strong>
+              <small>{scenario.defaultDurationSeconds}s default run</small>
+              <span className="performance-scenario-meter" aria-hidden="true">
+                <span style={{ width: pressureWidth }} />
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 function PerformanceControl({
   id,
   label,
@@ -258,6 +329,28 @@ function PerformanceControl({
   );
 }
 
+function getPerformanceReleasePosture(
+  qualityGate: PerformanceQualityGateStatus,
+  failedThresholdCount: number
+): PerformanceReleasePosture {
+  if (qualityGate === "passed") {
+    return {
+      label: "Release signal clear",
+      detail: "All configured latency, error-rate, and check-rate thresholds are inside budget.",
+      tone: "success"
+    };
+  }
+
+  return {
+    label: "Release gate blocked",
+    detail: `${failedThresholdCount} threshold signal${failedThresholdCount === 1 ? "" : "s"} require investigation before promotion.`,
+    tone: "danger"
+  };
+}
+
+function getScenarioPressure(scenario: PerformanceScenario): number {
+  return Math.max(18, Math.round((scenario.defaultVirtualUsers / maxDefaultVirtualUsers) * 100));
+}
 function Metric({ label, value }: Readonly<{ label: string; value: string }>): React.ReactElement {
   return (
     <section className="border border-[var(--border)] bg-[#10141d] p-4">

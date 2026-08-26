@@ -6,7 +6,7 @@ import { Panel } from "@/components/ui/Panel";
 import { capabilities } from "@/data/capabilities";
 import { projects } from "@/data/projects";
 import dynamic from "next/dynamic";
-import { Activity, Gauge, Play, ShieldCheck, Workflow } from "lucide-react";
+import { Activity, Code2, Gauge, Play, Rocket, ShieldCheck, TestTube2, Workflow } from "lucide-react";
 import { useState } from "react";
 
 const AutomationLabPanel = dynamic(
@@ -53,6 +53,16 @@ interface QualitySystemLayer {
   readonly label: string;
   readonly stack: readonly string[];
   readonly summary: string;
+}
+
+type ReleaseSignalId = "build" | "automate" | "measure" | "gate" | "ship";
+
+interface ReleaseSignal {
+  readonly id: ReleaseSignalId;
+  readonly label: string;
+  readonly summary: string;
+  readonly evidence: string;
+  readonly targetView: QualityView;
 }
 
 const qualityViews: readonly QualityViewMeta[] = [
@@ -108,6 +118,44 @@ const qualityLayers: readonly QualitySystemLayer[] = [
     label: "Quality Gates",
     stack: ["GitLab CI/CD", "Docker", "GitLab Runner", "Allure"],
     summary: "Reports, runner output, and threshold results become explicit deploy decisions."
+  }
+];
+
+const releaseSignals: readonly ReleaseSignal[] = [
+  {
+    id: "build",
+    label: "Build",
+    summary: "Feature, API, and data changes become testable release candidates.",
+    evidence: "Full-stack boundaries",
+    targetView: "overview"
+  },
+  {
+    id: "automate",
+    label: "Automate",
+    summary: "Regression, API, mobile, and locator-risk checks turn behavior into evidence.",
+    evidence: "Web, API, mobile",
+    targetView: "automation"
+  },
+  {
+    id: "measure",
+    label: "Measure",
+    summary: "K6-style load signals expose latency, error, and check-rate risk.",
+    evidence: "P95, P99, errors",
+    targetView: "performance"
+  },
+  {
+    id: "gate",
+    label: "Gate",
+    summary: "Quality gates classify whether the release can move forward.",
+    evidence: "Pass, warning, block",
+    targetView: "gates"
+  },
+  {
+    id: "ship",
+    label: "Ship",
+    summary: "Deployment happens only after build, quality, and performance signals align.",
+    evidence: "Deploy readiness",
+    targetView: "gates"
   }
 ];
 
@@ -224,6 +272,68 @@ export function QualityEngineeringHub(): React.ReactElement {
   );
 }
 
+function QualityReleaseSignalBoard({
+  onSelectView
+}: Readonly<{
+  onSelectView: (view: QualityView) => void;
+}>): React.ReactElement {
+  return (
+    <section className="quality-release-board" aria-labelledby="quality-release-title">
+      <div className="quality-section-heading">
+        <p className="eyebrow">release.signal.map</p>
+        <h2 id="quality-release-title">Quality work becomes a deploy decision.</h2>
+        <p>
+          The advanced proof area links automation, performance, and CI/CD into one public-safe
+          release-confidence story.
+        </p>
+      </div>
+
+      <ol className="quality-release-rail" aria-label="Build quality ship signal flow">
+        {releaseSignals.map((signal, index) => (
+          <li key={signal.id}>
+            <button
+              type="button"
+              className="quality-release-node"
+              onClick={() => onSelectView(signal.targetView)}
+              data-phase={signal.id}
+              data-cursor-intent="button"
+              data-cursor-label={signal.label.toUpperCase()}
+              aria-label={`Open ${signal.label} signal`}
+            >
+              <span className="quality-release-node-index">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="quality-release-node-icon">{getReleaseSignalIcon(signal.id)}</span>
+              <strong>{signal.label}</strong>
+              <small>{signal.evidence}</small>
+              <p>{signal.summary}</p>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function getReleaseSignalIcon(signalId: ReleaseSignalId): React.ReactNode {
+  if (signalId === "build") {
+    return <Code2 aria-hidden="true" size={18} />;
+  }
+
+  if (signalId === "automate") {
+    return <TestTube2 aria-hidden="true" size={18} />;
+  }
+
+  if (signalId === "measure") {
+    return <Gauge aria-hidden="true" size={18} />;
+  }
+
+  if (signalId === "gate") {
+    return <ShieldCheck aria-hidden="true" size={18} />;
+  }
+
+  return <Rocket aria-hidden="true" size={18} />;
+}
 function QualityOverview({
   onSelectView
 }: Readonly<{
@@ -231,6 +341,8 @@ function QualityOverview({
 }>): React.ReactElement {
   return (
     <div className="quality-overview">
+      <QualityReleaseSignalBoard onSelectView={onSelectView} />
+
       <section className="quality-system-map" aria-labelledby="quality-system-title">
         <div className="quality-section-heading">
           <p className="eyebrow">quality.system</p>
@@ -323,7 +435,13 @@ function QualityLabCard({
       <div className="quality-lab-icon">{icon}</div>
       <h3>{title}</h3>
       <p>{summary}</p>
-      <Button variant="secondary" icon={<Play aria-hidden="true" size={17} />} onClick={onClick}>
+      <Button
+        variant="secondary"
+        icon={<Play aria-hidden="true" size={17} />}
+        onClick={onClick}
+        cursorLabel="OPEN"
+        magnetic
+      >
         {action}
       </Button>
     </article>

@@ -12,6 +12,7 @@ import {
   defaultAutomationScenario
 } from "@/features/automation-lab/domain/simulation-engine";
 import type {
+  FailureStrategy,
   FailureType,
   QualityGateImpact,
   RecoveryMode,
@@ -31,6 +32,16 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const playbackDelayMs = 90;
+
+type AutomationSignalTone = "neutral" | "info" | "success" | "warning" | "danger";
+
+interface AutomationSignal {
+  readonly id: string;
+  readonly label: string;
+  readonly value: string;
+  readonly detail: string;
+  readonly tone: AutomationSignalTone;
+}
 
 export function AutomationLab(): React.ReactElement {
   const engine = useMemo(() => new AutomationSimulationEngine(), []);
@@ -90,6 +101,7 @@ export function AutomationLab(): React.ReactElement {
   const finalStatus = finalEvent?.type === "test.completed" ? finalEvent.status : undefined;
   const gateImpact = getLatestGateImpact(visibleEvents);
   const statusLabel = getStatusLabel({ finalStatus, gateImpact, isRunning });
+  const automationSignals = getAutomationSignals(selectedStrategy, statusLabel.text);
 
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
@@ -137,6 +149,8 @@ export function AutomationLab(): React.ReactElement {
             ))}
           </div>
         </div>
+
+        <AutomationSignalRail signals={automationSignals} />
 
         <div className="mt-5 grid grid-cols-2 gap-2">
           <Button
@@ -238,6 +252,21 @@ export function AutomationLab(): React.ReactElement {
   );
 }
 
+function AutomationSignalRail({
+  signals
+}: Readonly<{ signals: readonly AutomationSignal[] }>): React.ReactElement {
+  return (
+    <section className="automation-signal-rail" aria-label="Automation release signal path">
+      {signals.map((signal) => (
+        <article key={signal.id} data-tone={signal.tone}>
+          <span>{signal.label}</span>
+          <strong>{signal.value}</strong>
+          <p>{signal.detail}</p>
+        </article>
+      ))}
+    </section>
+  );
+}
 function SectionHeading({
   icon,
   kicker,
@@ -421,6 +450,64 @@ function isHealingEvent(item: TimedSimulationEvent): boolean {
   }
 }
 
+function getAutomationSignals(
+  strategy: FailureStrategy,
+  runStatusText: string
+): readonly AutomationSignal[] {
+  return [
+    {
+      id: "runner",
+      label: "Runner",
+      value: runStatusText,
+      detail: `Expected result: ${strategy.expectedStatus}.`,
+      tone: getRunSignalTone(runStatusText, strategy.expectedStatus)
+    },
+    {
+      id: "inspector",
+      label: "Inspector",
+      value: strategy.type === "none" ? "standby" : strategy.type.replaceAll("-", " "),
+      detail: strategy.failureReason || "No injected failure in this scenario.",
+      tone: strategy.type === "none" ? "neutral" : getGateTone(strategy.qualityGateImpact)
+    },
+    {
+      id: "healing",
+      label: "Healing",
+      value: formatRecoveryMode(strategy.recoveryMode),
+      detail: getHealingSummary(strategy.recoveryMode),
+      tone: getRecoveryTone(strategy.recoveryMode)
+    },
+    {
+      id: "gate",
+      label: "Gate",
+      value: formatGateImpact(strategy.qualityGateImpact),
+      detail: strategy.summary,
+      tone: getGateTone(strategy.qualityGateImpact)
+    }
+  ];
+}
+
+function getRunSignalTone(
+  runStatusText: string,
+  expectedStatus: FailureStrategy["expectedStatus"]
+): AutomationSignalTone {
+  if (runStatusText === "running") {
+    return "info";
+  }
+
+  if (runStatusText === "idle") {
+    return "neutral";
+  }
+
+  if (runStatusText.includes("warning")) {
+    return "warning";
+  }
+
+  if (runStatusText === expectedStatus) {
+    return expectedStatus === "passed" ? "success" : "danger";
+  }
+
+  return runStatusText === "passed" ? "success" : "danger";
+}
 function getLatestGateImpact(
   events: readonly TimedSimulationEvent[]
 ): QualityGateImpact | undefined {

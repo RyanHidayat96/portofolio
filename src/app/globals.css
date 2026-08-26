@@ -5007,3 +5007,354 @@ textarea:focus-visible,
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.quality-release-board {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background:
+    linear-gradient(135deg, rgba(110, 231, 168, 0.09), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent 46%), var(--panel);
+  padding: 1rem;
+}
+
+.quality-release-board::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image:
+    linear-gradient(rgba(145, 164, 191, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(145, 164, 191, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(110deg, black, transparent 72%);
+}
+
+.quality-release-board > * {
+  position: relative;
+}
+
+.quality-release-rail {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quality-release-rail li {
+  position: relative;
+  min-width: 0;
+}
+
+.quality-release-node {
+  display: grid;
+  width: 100%;
+  min-height: 12rem;
+  align-content: start;
+  gap: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: rgba(8, 12, 18, 0.82);
+  padding: 0.9rem;
+  color: var(--text-primary);
+  text-align: left;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+.quality-release-node-index {
+  color: var(--success);
+  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.quality-release-node-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgba(110, 231, 168, 0.42);
+  border-radius: var(--radius-control);
+  background: rgba(110, 231, 168, 0.1);
+  color: var(--success);
+}
+
+.quality-release-node strong {
+  font-size: 1.05rem;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
+.quality-release-node small {
+  color: var(--accent);
+  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quality-release-node p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.quality-release-node[data-phase="measure"] .quality-release-node-icon,
+.quality-release-node[data-phase="gate"] .quality-release-node-icon {
+  border-color: var(--accent-strong);
+  background: rgba(85, 215, 255, 0.1);
+  color: var(--accent);
+}
+
+.quality-release-node[data-phase="ship"] .quality-release-node-icon {
+  border-color: rgba(255, 211, 110, 0.42);
+  background: rgba(255, 211, 110, 0.1);
+  color: var(--warning);
+}
+
+.automation-signal-rail {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.automation-signal-rail article,
+.performance-posture-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: rgba(8, 12, 18, 0.74);
+  padding: 0.85rem;
+}
+
+.automation-signal-rail article[data-tone="info"] {
+  border-left-color: var(--accent);
+}
+
+.automation-signal-rail article[data-tone="success"],
+.performance-posture-card[data-status="success"] {
+  border-left-color: var(--success);
+}
+
+.automation-signal-rail article[data-tone="warning"] {
+  border-left-color: var(--warning);
+}
+
+.automation-signal-rail article[data-tone="danger"],
+.performance-posture-card[data-status="danger"] {
+  border-left-color: var(--danger);
+}
+
+.automation-signal-rail span,
+.performance-posture-card > span {
+  color: var(--text-muted);
+  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.automation-signal-rail strong,
+.performance-posture-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.25;
+  text-transform: capitalize;
+}
+
+.automation-signal-rail p,
+.performance-posture-card p {
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.performance-posture-card {
+  margin-top: 1rem;
+}
+
+.performance-scenario-map {
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background:
+    linear-gradient(90deg, rgba(145, 164, 191, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(145, 164, 191, 0.055) 1px, transparent 1px), rgba(8, 12, 18, 0.68);
+  background-size: 24px 24px;
+  padding: 1rem;
+}
+
+.performance-scenario-map h3 {
+  margin-top: 0.25rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.performance-scenario-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.performance-scenario-node {
+  display: grid;
+  gap: 0.35rem;
+  min-height: var(--touch-target);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: rgba(5, 7, 10, 0.62);
+  padding: 0.75rem;
+  color: var(--text-primary);
+  text-align: left;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.performance-scenario-node[data-active="true"] {
+  border-color: var(--accent-strong);
+  background: rgba(85, 215, 255, 0.1);
+}
+
+.performance-scenario-node > span:first-child {
+  color: var(--accent);
+  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.performance-scenario-node strong {
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.performance-scenario-node small {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.performance-scenario-meter {
+  display: block;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: var(--radius-badge);
+  background: rgba(145, 164, 191, 0.14);
+}
+
+.performance-scenario-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--success), var(--accent), var(--warning));
+}
+
+.pipeline-signal-rail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.55rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pipeline-signal-rail li {
+  display: grid;
+  min-height: 5.8rem;
+  align-content: start;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: rgba(8, 12, 18, 0.74);
+  padding: 0.72rem;
+}
+
+.pipeline-signal-rail li[data-status="running"] {
+  border-top-color: var(--accent);
+}
+
+.pipeline-signal-rail li[data-status="passed"] {
+  border-top-color: var(--success);
+}
+
+.pipeline-signal-rail li[data-status="failed"],
+.pipeline-signal-rail li[data-status="blocked"] {
+  border-top-color: var(--danger);
+}
+
+.pipeline-signal-rail li[data-status="skipped"] {
+  border-top-color: var(--warning);
+}
+
+.pipeline-signal-rail span {
+  color: var(--accent);
+  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.pipeline-signal-rail strong {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+
+.pipeline-signal-rail small {
+  color: var(--text-muted);
+  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .quality-release-board {
+    padding: 1.4rem;
+  }
+
+  .performance-scenario-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  .quality-release-rail {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .quality-release-rail li:not(:last-child)::after {
+    position: absolute;
+    right: -0.75rem;
+    top: 2rem;
+    width: 0.75rem;
+    height: 1px;
+    content: "";
+    background: var(--border-strong);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .quality-release-node:hover,
+  .quality-release-node:focus-visible,
+  .performance-scenario-node:hover,
+  .performance-scenario-node:focus-visible {
+    border-color: var(--accent-strong);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+    transform: translateY(-2px);
+  }
+}
