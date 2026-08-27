@@ -76,24 +76,45 @@ export function FullCycleExperience(): React.ReactElement {
     setActiveNodeId(modeNodeIds[nextMode][0] ?? "idea");
   };
 
+  const focusMode = (nextMode: PortfolioMode): void => {
+    window.requestAnimationFrame(() =>
+      document.getElementById(`full-cycle-mode-${nextMode}`)?.focus()
+    );
+  };
+
   const onModeKeyDown = (
     event: React.KeyboardEvent<HTMLButtonElement>,
     currentMode: PortfolioMode
   ): void => {
+    if (event.key === "Home") {
+      event.preventDefault();
+      const firstMode = modeOptions[0]?.id ?? "full-cycle";
+      selectMode(firstMode);
+      focusMode(firstMode);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      const lastMode = modeOptions.at(-1)?.id ?? "full-cycle";
+      selectMode(lastMode);
+      focusMode(lastMode);
+      return;
+    }
+
     if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) {
       return;
     }
 
     event.preventDefault();
     const currentIndex = modeOptions.findIndex((option) => option.id === currentMode);
+    const safeIndex = Math.max(0, currentIndex);
     const direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
-    const nextIndex = (currentIndex + direction + modeOptions.length) % modeOptions.length;
+    const nextIndex = (safeIndex + direction + modeOptions.length) % modeOptions.length;
     const nextMode = modeOptions[nextIndex]?.id ?? "full-cycle";
 
     selectMode(nextMode);
-    window.requestAnimationFrame(() =>
-      document.getElementById(`full-cycle-mode-${nextMode}`)?.focus()
-    );
+    focusMode(nextMode);
   };
 
   if (!activeNode) {
@@ -136,6 +157,7 @@ export function FullCycleExperience(): React.ReactElement {
                 aria-controls="full-cycle-panel"
                 onClick={() => selectMode(option.id)}
                 onKeyDown={(event) => onModeKeyDown(event, option.id)}
+                tabIndex={isSelected ? 0 : -1}
                 className={cn(
                   "min-h-20 rounded-[var(--radius-control)] border p-3 text-left transition",
                   isSelected
@@ -177,6 +199,7 @@ export function FullCycleExperience(): React.ReactElement {
                     onClick={() => setActiveNodeId(node.id)}
                     onFocus={() => setActiveNodeId(node.id)}
                     aria-pressed={isActive}
+                    aria-label={`Inspect ${node.label} layer`}
                     className={cn(
                       "group flex min-h-44 w-full flex-col justify-between rounded-[var(--radius-control)] border p-4 text-left transition",
                       isActive

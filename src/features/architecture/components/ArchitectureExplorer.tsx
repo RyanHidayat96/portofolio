@@ -410,6 +410,7 @@ function MobileNodeButton({
     <button
       type="button"
       aria-pressed={status === "selected"}
+      aria-label={`Select ${node.label} architecture node`}
       onClick={onSelect}
       className="architecture-mobile-node"
       data-status={status}
@@ -469,6 +470,7 @@ function TopologyDetails({
                 key={connectedNode.id}
                 type="button"
                 className="architecture-connected-button"
+                aria-label={`Select connected architecture node ${connectedNode.label}`}
                 onClick={() => onSelectNode(connectedNode.id)}
               >
                 {connectedNode.label}

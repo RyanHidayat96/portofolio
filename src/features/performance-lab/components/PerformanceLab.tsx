@@ -284,14 +284,20 @@ function PerformanceControl({
   range: PerformanceScenario["virtualUserRange"];
   onChange: (value: number) => void;
 }>): React.ReactElement {
+  const labelId = `${id}-label`;
+  const hintId = `${id}-bounds`;
+  const valueInputId = `${id}-value`;
+
   return (
     <div className="mt-5">
       <div className="flex items-center justify-between gap-3">
-        <label className="text-sm font-semibold text-[#c8d4e6]" htmlFor={id}>
+        <label id={labelId} className="text-sm font-semibold text-[#c8d4e6]" htmlFor={id}>
           {label}
         </label>
         <input
-          aria-label={`${label} value`}
+          id={valueInputId}
+          aria-labelledby={labelId}
+          aria-describedby={hintId}
           className="mono w-24 border border-[var(--border)] bg-[#111722] px-2 py-1 text-right text-sm text-[#eef5ff]"
           type="number"
           min={range.min}
@@ -309,9 +315,11 @@ function PerformanceControl({
         max={range.max}
         step={range.step}
         value={value}
+        aria-labelledby={labelId}
+        aria-describedby={hintId}
         onChange={(event) => onChange(Number(event.target.value))}
       />
-      <div className="mt-2 flex justify-between text-xs text-[#8a96a8]">
+      <div id={hintId} className="mt-2 flex justify-between text-xs text-[#8a96a8]">
         <span>
           {range.min}
           {suffix}

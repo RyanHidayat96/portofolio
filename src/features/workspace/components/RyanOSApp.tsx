@@ -315,7 +315,11 @@ export function RyanOSApp({
   const runPaletteAction = useCallback(
     (action: PaletteAction) => {
       if (action.href) {
-        window.open(action.href, action.isExternal ? "_blank" : "_blank", "noopener,noreferrer");
+        if (action.isExternal) {
+          window.open(action.href, "_blank", "noopener,noreferrer");
+        } else {
+          window.location.assign(action.href);
+        }
         return;
       }
 

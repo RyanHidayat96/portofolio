@@ -165,6 +165,7 @@ export function WorkspaceShell({
                   icon={<Command aria-hidden="true" size={17} />}
                   onClick={onOpenCommandPalette}
                   aria-keyshortcuts="Control+K Meta+K"
+                  aria-label="Open command palette"
                   className="w-full min-w-0 sm:w-auto"
                 >
                   Ctrl K
@@ -175,6 +176,7 @@ export function WorkspaceShell({
 
           <div
             id="workspace-content"
+            tabIndex={-1}
             aria-describedby="workspace-status"
             className="workspace-content min-w-0 px-4 py-5 sm:px-6 lg:px-8 lg:py-8"
           >

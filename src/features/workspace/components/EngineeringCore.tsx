@@ -231,6 +231,7 @@ function EngineeringCoreFallback({
             key={node.id}
             type="button"
             aria-pressed={isActive}
+            aria-label={`Inspect ${node.label} engineering core node`}
             className={cn("hero-core-node", isActive && "hero-core-node-active")}
             data-tone={node.tone}
             data-cursor-intent="node"
