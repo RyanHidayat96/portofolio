@@ -7,7 +7,6 @@ import type {
   EngineeringCoreNodeTone
 } from "@/features/workspace/engineering-core-data";
 import { isEngineeringCoreEdgeActive } from "@/features/workspace/engineering-core-data";
-import { Line, PerspectiveCamera, Text } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -30,10 +29,11 @@ export function EngineeringCore3D({
       <div className="hero-core-3d-shell" aria-hidden="true">
         <Canvas
           className="hero-core-canvas"
-          dpr={[1, 1.5]}
+          dpr={[1, 1.25]}
+          performance={{ min: 0.6, debounce: 240 }}
+          camera={{ position: [0, 0, 6.8], fov: 46 }}
           gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         >
-          <PerspectiveCamera makeDefault position={[0, 0, 6.8]} fov={46} />
           <EngineeringCoreScene
             nodes={nodes}
             edges={edges}
@@ -120,7 +120,14 @@ function EngineeringCoreScene({
           key={node.id}
           node={node}
           isActive={node.id === activeNodeId}
-          isDimmed={node.id !== activeNodeId && !edges.some((edge) => isEngineeringCoreEdgeActive(edge, activeNodeId) && (edge.source === node.id || edge.target === node.id))}
+          isDimmed={
+            node.id !== activeNodeId &&
+            !edges.some(
+              (edge) =>
+                isEngineeringCoreEdgeActive(edge, activeNodeId) &&
+                (edge.source === node.id || edge.target === node.id)
+            )
+          }
           onSelect={() => onNodeSelect(node.id)}
         />
       ))}
@@ -132,7 +139,7 @@ function CorePlane(): React.ReactElement {
   return (
     <group position={[0, -0.12, -0.32]} rotation={[0, 0, 0]}>
       <mesh rotation={[-0.18, 0, 0]}>
-        <planeGeometry args={[5.8, 5.4, 12, 12]} />
+        <planeGeometry args={[5.8, 5.4, 8, 8]} />
         <meshStandardMaterial
           color="#08111a"
           roughness={0.86}
@@ -144,7 +151,13 @@ function CorePlane(): React.ReactElement {
       </mesh>
       <mesh position={[0, 0, -0.05]} rotation={[-0.18, 0, 0]}>
         <planeGeometry args={[5.8, 5.4]} />
-        <meshStandardMaterial color="#061018" roughness={0.92} metalness={0.08} transparent opacity={0.24} />
+        <meshStandardMaterial
+          color="#061018"
+          roughness={0.92}
+          metalness={0.08}
+          transparent
+          opacity={0.24}
+        />
       </mesh>
     </group>
   );
@@ -159,19 +172,22 @@ function CoreConnection({
   target: EngineeringCoreNode;
   isActive: boolean;
 }>): React.ReactElement {
-  const points = useMemo(
-    () => [source.position, target.position].map(([x, y, z]) => new THREE.Vector3(x, y, z)),
+  const positions = useMemo(
+    () => new Float32Array([...source.position, ...target.position]),
     [source.position, target.position]
   );
 
   return (
-    <Line
-      points={points}
-      color={isActive ? "#55d7ff" : "#273449"}
-      lineWidth={isActive ? 2.4 : 1.1}
-      transparent
-      opacity={isActive ? 0.94 : 0.36}
-    />
+    <line>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <lineBasicMaterial
+        color={isActive ? "#55d7ff" : "#273449"}
+        transparent
+        opacity={isActive ? 0.94 : 0.36}
+      />
+    </line>
   );
 }
 
@@ -198,7 +214,7 @@ function CoreNode({
       onPointerOver={onSelect}
     >
       <mesh>
-        <sphereGeometry args={[0.16, 32, 32]} />
+        <sphereGeometry args={[0.16, 24, 24]} />
         <meshStandardMaterial
           color={tone.color}
           emissive={tone.emissive}
@@ -210,21 +226,14 @@ function CoreNode({
         />
       </mesh>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.25, 0.27, 48]} />
-        <meshBasicMaterial color={tone.color} transparent opacity={isActive ? 0.5 : 0.18} side={THREE.DoubleSide} />
+        <ringGeometry args={[0.25, 0.27, 32]} />
+        <meshBasicMaterial
+          color={tone.color}
+          transparent
+          opacity={isActive ? 0.5 : 0.18}
+          side={THREE.DoubleSide}
+        />
       </mesh>
-      <Text
-        position={[0, -0.43, 0.02]}
-        fontSize={0.12}
-        letterSpacing={0.05}
-        color={isDimmed ? "#657287" : "#eef5ff"}
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.003}
-        outlineColor="#05070a"
-      >
-        {node.label}
-      </Text>
     </group>
   );
 }

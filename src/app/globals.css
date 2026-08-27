@@ -4661,13 +4661,11 @@ textarea:focus-visible,
   transform-origin: 50% 0;
   transition:
     opacity var(--motion-short) var(--ease-standard),
-    filter var(--motion-short) var(--ease-standard),
     transform var(--motion-short) var(--ease-emphasized);
 }
 
 .workspace-root[data-transition="exit"] .workspace-scene-panel {
   opacity: 0.28;
-  filter: blur(2px);
   transform: translateY(0.55rem) scale(0.992);
 }
 
@@ -4715,12 +4713,10 @@ textarea:focus-visible,
 @keyframes workspace-scene-enter {
   from {
     opacity: 0;
-    filter: blur(2px);
     transform: translateY(-0.35rem) scale(0.996);
   }
   to {
     opacity: 1;
-    filter: blur(0);
     transform: translateY(0) scale(1);
   }
 }

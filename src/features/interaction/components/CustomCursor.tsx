@@ -29,6 +29,7 @@ export function CustomCursor(): React.ReactElement | null {
   const cursorRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const pendingPositionRef = useRef({ x: -100, y: -100 });
+  const lastPresentationSignalRef = useRef("");
   const [isEnabled, setIsEnabled] = useState(false);
   const [cursorState, setCursorState] = useState<CursorState>(initialCursorState);
 
@@ -90,6 +91,13 @@ export function CustomCursor(): React.ReactElement | null {
     const onPointerMove = (event: PointerEvent): void => {
       setCursorPosition(event.clientX, event.clientY);
       const presentation = getCursorPresentation(event.target);
+      const nextSignal = `${presentation.intent}:${presentation.label ?? ""}:visible`;
+
+      if (lastPresentationSignalRef.current === nextSignal) {
+        return;
+      }
+
+      lastPresentationSignalRef.current = nextSignal;
       updateCursorState({
         intent: presentation.intent,
         label: presentation.label,
@@ -98,7 +106,10 @@ export function CustomCursor(): React.ReactElement | null {
     };
     const onPointerDown = (): void => updateCursorState({ isPressed: true });
     const onPointerUp = (): void => updateCursorState({ isPressed: false });
-    const onPointerLeave = (): void => updateCursorState({ isVisible: false, isPressed: false });
+    const onPointerLeave = (): void => {
+      lastPresentationSignalRef.current = "default::hidden";
+      updateCursorState({ isVisible: false, isPressed: false });
+    };
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerDown, { passive: true });
@@ -110,6 +121,7 @@ export function CustomCursor(): React.ReactElement | null {
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", onPointerUp);
       document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+      lastPresentationSignalRef.current = "";
       if (frameRef.current !== null) {
         window.cancelAnimationFrame(frameRef.current);
         frameRef.current = null;
@@ -159,12 +171,18 @@ function getCursorPresentation(target: EventTarget | null): CursorPresentation {
     return { intent: "project", label: cursorIntentLabels.project };
   }
 
-  if (element.classList.contains("hero-core-node") || element.classList.contains("architecture-node")) {
+  if (
+    element.classList.contains("hero-core-node") ||
+    element.classList.contains("architecture-node")
+  ) {
     return { intent: "node", label: cursorIntentLabels.node };
   }
 
   if (element.matches("a[href]")) {
-    return { intent: "link", label: element.hasAttribute("download") ? "CV" : cursorIntentLabels.link };
+    return {
+      intent: "link",
+      label: element.hasAttribute("download") ? "CV" : cursorIntentLabels.link
+    };
   }
 
   if (element.matches("button:not(:disabled), [role='button']")) {
