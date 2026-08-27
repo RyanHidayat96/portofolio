@@ -1,8 +1,7 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/data/branding";
-import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
 import { EngineeringCore } from "@/features/workspace/components/EngineeringCore";
 import { ScrollNarrative } from "@/features/workspace/components/ScrollNarrative";
@@ -44,7 +43,6 @@ export function Landing({
     isPortfolioValueConfigured(contactLink.value) && isPortfolioValueConfigured(contactLink.href);
   const hasLinkedIn =
     isPortfolioValueConfigured(linkedInLink.value) && isPortfolioValueConfigured(linkedInLink.href);
-  const currentRole = experience.find((role) => role.id === "jasa-marga-full-stack");
   const ctaLinkClass = "action-link landing-action-link";
 
   return (
@@ -82,8 +80,8 @@ export function Landing({
 
             <div className="landing-current" aria-label="Current role">
               <BriefcaseBusiness aria-hidden="true" size={18} />
-              <span>{currentRole?.role ?? profile.role}</span>
-              <span>{currentRole?.period ?? "Mar 2026 - Present"}</span>
+              <span>{profile.role}</span>
+              <span>Full timeline in CV</span>
             </div>
 
             <ol className="landing-pillars" aria-label="Build Quality Ship positioning">
@@ -118,29 +116,33 @@ export function Landing({
                   <span>Download CV</span>
                 </a>
               ) : null}
-              {hasContact ? (
-                <a
-                  href={contactLink.href}
-                  className={ctaLinkClass}
-                  data-cursor-intent="link"
-                  data-cursor-label="MAIL"
-                >
-                  <Mail aria-hidden="true" size={18} />
-                  <span>Contact</span>
-                </a>
-              ) : null}
-              {hasLinkedIn ? (
-                <a
-                  href={linkedInLink.href}
-                  className={ctaLinkClass}
-                  rel="noreferrer"
-                  target="_blank"
-                  data-cursor-intent="link"
-                  data-cursor-label="LINK"
-                >
-                  <ExternalLink aria-hidden="true" size={18} />
-                  <span>LinkedIn</span>
-                </a>
+              {hasContact || hasLinkedIn ? (
+                <div className="landing-contact-actions">
+                  {hasContact ? (
+                    <a
+                      href={contactLink.href}
+                      className={ctaLinkClass}
+                      data-cursor-intent="link"
+                      data-cursor-label="MAIL"
+                    >
+                      <Mail aria-hidden="true" size={18} />
+                      <span>Contact</span>
+                    </a>
+                  ) : null}
+                  {hasLinkedIn ? (
+                    <a
+                      href={linkedInLink.href}
+                      className={ctaLinkClass}
+                      rel="noreferrer"
+                      target="_blank"
+                      data-cursor-intent="link"
+                      data-cursor-label="LINK"
+                    >
+                      <ExternalLink aria-hidden="true" size={18} />
+                      <span>LinkedIn</span>
+                    </a>
+                  ) : null}
+                </div>
               ) : null}
             </div>
 

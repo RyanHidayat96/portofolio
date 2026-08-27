@@ -1,4 +1,4 @@
-import type { WorkspaceSection } from "@/features/workspace/types";
+﻿import type { WorkspaceSection } from "@/features/workspace/types";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import type { TerminalCommand, TerminalContext, TerminalOutput } from "./types";
 
@@ -122,30 +122,31 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   );
 
   registry.register(
-    new StaticCommand("career", "Show career evolution.", (_args, context) => {
-      const chronologicalRoles = [...context.experience].reverse();
-      const currentRole = context.experience[0];
-
-      return navigate(
-        "experience",
-        ...chronologicalRoles.map((role) => `${getStartYear(role.period)} - ${role.role}`),
-        "",
-        currentRole
-          ? `Current: ${currentRole.role} at ${currentRole.company} (${currentRole.period})`
-          : "Current role not configured."
-      );
-    })
-  );
-
-  registry.register(
-    new StaticCommand("experience", "Open experience timeline.", (_args, context) =>
+    new StaticCommand("career", "Show public career summary.", () =>
       navigate(
         "experience",
-        ...context.experience.map((role) => `${role.role} at ${role.company} (${role.period})`)
+        "Public career summary:",
+        "Build: Full Stack Development",
+        "Quality: SDET and automation depth",
+        "Ship: CI/CD, release gates, and production readiness",
+        "",
+        "Full company timeline and responsibilities are in the CV."
       )
     )
   );
-
+  registry.register(
+    new StaticCommand("experience", "Open public experience summary.", () =>
+      navigate(
+        "experience",
+        "Public experience view:",
+        "Full Stack Development: application, API, backend, and data workflows.",
+        "Quality Engineering: automation, API testing, mobile checks, and release gates.",
+        "Delivery Systems: CI/CD, Docker, reporting, and production readiness.",
+        "",
+        "Detailed companies, dates, and responsibilities stay in the CV."
+      )
+    )
+  );
   registry.register(
     new StaticCommand("projects", "Open project case studies.", (_args, context) =>
       navigate(
@@ -166,43 +167,33 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   );
 
   registry.register(
-    new StaticCommand("build", "Show build-side evidence.", (_args, context) => {
+    new StaticCommand("build", "Show build-side capability.", (_args, context) => {
       const buildGroup = context.skillGroups.find((group) => group.id === "build");
-      const buildProjects = context.projects.filter((project) =>
-        project.categories.includes("build")
-      );
 
       return navigate(
         "projects",
-        "Build evidence:",
+        "Build capability:",
         ...(buildGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
         "",
-        "Build projects:",
-        ...buildProjects.map((project) => project.title)
+        "Project names and role details are summarized visually. Full detail stays in the CV."
       );
     })
   );
-
   registry.register(
-    new StaticCommand("quality", "Show quality engineering evidence.", (_args, context) => {
+    new StaticCommand("quality", "Show quality engineering capability.", (_args, context) => {
       const qualityGroup = context.skillGroups.find((group) => group.id === "quality");
       const deliveryGroup = context.skillGroups.find((group) => group.id === "delivery");
-      const qualityProjects = context.projects.filter(
-        (project) => project.categories.includes("quality") || project.categories.includes("devops")
-      );
 
       return navigate(
         "automation",
-        "Quality evidence:",
+        "Quality capability:",
         ...(qualityGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
         ...(deliveryGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
         "",
-        "Quality and delivery projects:",
-        ...qualityProjects.map((project) => project.title)
+        "Public portfolio shows capability patterns; CV holds full work detail."
       );
     })
   );
-
   registry.register(
     new StaticCommand("contact", "Open contact channel.", (_args, context) =>
       navigate(
@@ -278,7 +269,7 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
 
   registry.register(
     new StaticCommand("hire", "Run candidate evaluation.", (_args, context) => {
-      const evidenceLines = context.skillGroups
+      const capabilityLines = context.skillGroups
         .flatMap((group) => group.skills.map((skill) => `${skill.name.padEnd(24)} strong`))
         .slice(0, 5);
 
@@ -287,7 +278,7 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
         "Running candidate evaluation...",
         "",
         `Identity              ${context.profile.name}`,
-        ...evidenceLines,
+        ...capabilityLines,
         "",
         "Result: Strong Match",
         "Opening contact channel..."
@@ -304,9 +295,6 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   return registry;
 }
 
-function getStartYear(period: string): string {
-  return period.match(/\d{4}/)?.[0] ?? period;
-}
 
 function getTechnologiesForCategory(
   context: TerminalContext,

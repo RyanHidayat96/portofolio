@@ -1,12 +1,10 @@
-import { Badge } from "@/components/ui/Badge";
+﻿import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { apiEndpoints } from "@/data/api-endpoints";
 import { capabilities } from "@/data/capabilities";
 import { challengeScenarios } from "@/data/challenges";
-import { experience } from "@/data/experience";
 import { profile } from "@/data/profile";
-import { projects } from "@/data/projects";
 import { FullCycleExperience } from "@/features/workspace/components/FullCycleExperience";
 import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
@@ -51,17 +49,6 @@ function RecruiterOverviewPanel({
 }: Readonly<{
   onNavigate: (section: WorkspaceSection) => void;
 }>): React.ReactElement {
-  const currentRole = experience.find((role) => role.id === "jasa-marga-full-stack");
-  const sdetRole = experience.find((role) => role.id === "jasa-marga-sdet");
-  const softwareEngineerRole = experience.find((role) => role.id === "adira-software-engineer");
-  const selectedProjects = [
-    "enterprise-audit-monitoring-platform",
-    "enterprise-backend-development",
-    "enterprise-web-automation-ecosystem"
-  ]
-    .map((slug) => projects.find((project) => project.slug === slug))
-    .filter((project): project is (typeof projects)[number] => Boolean(project));
-  const recruiterProjects = selectedProjects.length > 0 ? selectedProjects : projects.slice(0, 3);
   const cv = profile.contact.cv;
   const contactLinks = [
     profile.contact.email,
@@ -99,23 +86,21 @@ function RecruiterOverviewPanel({
     readonly section: WorkspaceSection;
   }[] = [
     {
-      label: "Now",
-      title: currentRole?.role ?? profile.role,
-      meta: `${currentRole?.company ?? "PT Jasa Marga (Persero) Tbk"} - ${
-        currentRole?.period ?? "Present"
-      }`,
+      label: "Build",
+      title: "Full Stack Development",
+      meta: "Frontend, backend, API, and data workflows.",
       section: "experience"
     },
     {
-      label: "Quality depth",
-      title: sdetRole?.role ?? "Software Development Engineer in Test (SDET)",
-      meta: sdetRole?.period ?? "Automation, mobile, API, performance, CI/CD",
+      label: "Quality",
+      title: "SDET Depth",
+      meta: "Automation, API checks, mobile coverage, and release confidence.",
       section: "experience"
     },
     {
-      label: "Engineering base",
-      title: softwareEngineerRole?.role ?? "Software Engineer",
-      meta: softwareEngineerRole?.period ?? "Backend, SQL, production support",
+      label: "Ship",
+      title: "Delivery Discipline",
+      meta: "CI/CD, Docker, reporting, gates, and production readiness.",
       section: "experience"
     }
   ];
@@ -343,7 +328,7 @@ function RecruiterOverviewPanel({
         <div className="recruiter-scan-section-header">
           <div>
             <p className="mono text-sm text-[var(--accent)]">selected.work</p>
-            <h2>Relevant projects, not every detail.</h2>
+            <h2>Project themes, not internal detail.</h2>
           </div>
           <Button
             icon={<BadgeCheck aria-hidden="true" size={17} />}
@@ -353,15 +338,32 @@ function RecruiterOverviewPanel({
           </Button>
         </div>
         <div className="recruiter-scan-project-grid">
-          {recruiterProjects.map((project) => (
-            <article key={project.slug}>
-              <Badge tone={project.categories.includes("build") ? "info" : "success"}>
-                {project.role ?? project.label ?? "Project"}
-              </Badge>
-              <h3>{project.title}</h3>
-              <p>{project.engineered ?? project.responsibility}</p>
+          {[
+            {
+              label: "Build",
+              title: "Enterprise application systems",
+              detail: "Frontend, backend, API, data, and workflow ownership.",
+              tech: ["React", "Next.js", "Node.js", "SQL", "API"]
+            },
+            {
+              label: "Quality",
+              title: "Automation and test systems",
+              detail: "Web, mobile, API, regression, reporting, and release confidence.",
+              tech: ["Playwright", "Appium", "Postman", "Jest", "K6"]
+            },
+            {
+              label: "Ship",
+              title: "Delivery readiness systems",
+              detail: "CI/CD, Docker, runners, quality gates, and operational signals.",
+              tech: ["GitLab CI/CD", "Docker", "Runner", "Reports", "Gates"]
+            }
+          ].map((item) => (
+            <article key={item.title}>
+              <Badge tone={item.label === "Quality" ? "success" : "info"}>{item.label}</Badge>
+              <h3>{item.title}</h3>
+              <p>{item.detail}</p>
               <div>
-                {project.technologies.slice(0, 5).map((technology) => (
+                {item.tech.map((technology) => (
                   <span key={technology}>{technology}</span>
                 ))}
               </div>
@@ -374,7 +376,7 @@ function RecruiterOverviewPanel({
         <div>
           <p className="mono text-sm text-[var(--accent)]">cv.contact</p>
           <h2>Need full details?</h2>
-          <p>Download CV for full responsibility detail, then contact directly.</p>
+          <p>Download CV for full timeline and responsibility detail, then contact directly.</p>
         </div>
         <div className="recruiter-scan-contact-actions">
           {isPortfolioValueConfigured(cv.href) ? (
@@ -473,9 +475,9 @@ function EngineerOverviewPanel({
     {
       section: "projects",
       title: "Case Studies",
-      description: "Open portfolio-safe implementation stories with problem, role, and outcomes.",
+      description: "Open public-safe project themes without internal role detail.",
       command: "projects",
-      signal: "evidence trail",
+      signal: "project themes",
       icon: BadgeCheck
     }
   ];
@@ -487,7 +489,7 @@ function EngineerOverviewPanel({
   }[] = [
     {
       label: "Build",
-      detail: "Frontend, backend, API, data, and integration evidence.",
+      detail: "Frontend, backend, API, data, and integration flow.",
       icon: Code2
     },
     {

@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/Badge";
 import { capabilities, fullCycleNodes } from "@/data/capabilities";
-import { projects } from "@/data/projects";
-import type { EngineeringDomain, FullCycleNode, ProjectCategory } from "@/data/types";
+import type { EngineeringDomain, FullCycleNode } from "@/data/types";
 import { useReducedMotion } from "@/features/interaction/hooks/useReducedMotion";
 import { cn } from "@/lib/cn";
 import { Braces, Database, GitBranch, ShieldCheck, type LucideIcon } from "lucide-react";
@@ -17,8 +16,8 @@ interface NarrativePhase {
   readonly title: string;
   readonly summary: string;
   readonly domain: EngineeringDomain;
-  readonly projectCategory: ProjectCategory;
   readonly nodeIds: readonly FullCycleNode["id"][];
+  readonly publicSignal: string;
   readonly icon: LucideIcon;
 }
 
@@ -30,8 +29,8 @@ const phases: readonly NarrativePhase[] = [
     summary:
       "Ryan builds frontend screens, API contracts, backend services, and database workflows as one connected product system.",
     domain: "build",
-    projectCategory: "build",
     nodeIds: ["frontend", "api", "backend", "data"],
+    publicSignal: "Application systems",
     icon: Braces
   },
   {
@@ -41,8 +40,8 @@ const phases: readonly NarrativePhase[] = [
     summary:
       "Automation, API checks, mobile coverage, performance signals, and failure analysis turn testing into delivery confidence.",
     domain: "quality",
-    projectCategory: "quality",
     nodeIds: ["quality"],
+    publicSignal: "Release confidence",
     icon: ShieldCheck
   },
   {
@@ -52,8 +51,8 @@ const phases: readonly NarrativePhase[] = [
     summary:
       "CI/CD, Docker, runners, reports, and quality gates help teams decide what can move forward and what needs root-cause work.",
     domain: "delivery",
-    projectCategory: "devops",
     nodeIds: ["cicd", "production"],
+    publicSignal: "Delivery readiness",
     icon: GitBranch
   }
 ] as const;
@@ -61,23 +60,16 @@ const phases: readonly NarrativePhase[] = [
 const capabilityByDomain = new Map<EngineeringDomain, (typeof capabilities)[number]>(
   capabilities.map((capability) => [capability.domain, capability])
 );
-const phaseOrder: readonly NarrativePhaseId[] = phases.map((phase) => phase.id);
 
 export function ScrollNarrative(): React.ReactElement {
   const sectionRef = useRef<HTMLElement | null>(null);
-  const activePhaseIdRef = useRef<NarrativePhaseId>("build");
   const [activePhaseId, setActivePhaseId] = useState<NarrativePhaseId>("build");
   const prefersReducedMotion = useReducedMotion();
   const activePhase = phases.find((phase) => phase.id === activePhaseId) ?? phases[0];
 
-  useEffect(() => {
-    activePhaseIdRef.current = activePhaseId;
-  }, [activePhaseId]);
 
   useNarrativeScrollChoreography({
     sectionRef,
-    activePhaseIdRef,
-    setActivePhaseId,
     prefersReducedMotion
   });
 
@@ -90,25 +82,14 @@ export function ScrollNarrative(): React.ReactElement {
       aria-labelledby="scroll-narrative-title"
     >
       <div className="content-container narrative-grid">
-        <div className="narrative-copy">
+        <header className="narrative-copy">
           <p className="eyebrow">portfolio story</p>
           <h2 id="scroll-narrative-title">Build, quality, and ship as one system.</h2>
           <p>
-            Short path for humans first. Every section maps back to real portfolio data, then deeper
-            labs remain available inside the portfolio workspace.
+            Short path for humans first. The public view stays concise, while deeper technical labs
+            remain available inside the portfolio workspace.
           </p>
-
-          <div className="narrative-sections">
-            {phases.map((phase, index) => (
-              <NarrativeSection
-                key={phase.id}
-                phase={phase}
-                index={index}
-                isActive={phase.id === activePhaseId}
-              />
-            ))}
-          </div>
-        </div>
+        </header>
 
         <aside className="narrative-visual" aria-label="Active Build Quality Ship system state">
           <div className="narrative-sticky">
@@ -148,16 +129,20 @@ export function ScrollNarrative(): React.ReactElement {
                 <span>RyanOS</span>
               </div>
             </div>
-
-            <div className="narrative-active-card" data-phase={activePhase.id}>
-              <Badge tone={activePhase.id === "quality" ? "success" : "info"}>
-                {activePhase.label}
-              </Badge>
-              <h3>{activePhase.title}</h3>
-              <p>{activePhase.summary}</p>
-            </div>
           </div>
         </aside>
+
+        <div className="narrative-sections">
+          {phases.map((phase, index) => (
+            <NarrativeSection
+              key={phase.id}
+              phase={phase}
+              index={index}
+              isActive={phase.id === activePhaseId}
+              onSelect={setActivePhaseId}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -166,15 +151,16 @@ export function ScrollNarrative(): React.ReactElement {
 function NarrativeSection({
   phase,
   index,
-  isActive
+  isActive,
+  onSelect
 }: Readonly<{
   phase: NarrativePhase;
   index: number;
   isActive: boolean;
+  onSelect: (phaseId: NarrativePhaseId) => void;
 }>): React.ReactElement {
   const capability = capabilityByDomain.get(phase.domain);
   const phaseNodes = fullCycleNodes.filter((node) => phase.nodeIds.includes(node.id));
-  const project = projects.find((item) => item.categories.includes(phase.projectCategory));
   const technologies = Array.from(
     new Set([
       ...(capability?.technologies ?? []),
@@ -189,6 +175,16 @@ function NarrativeSection({
       data-narrative-phase={phase.id}
       data-active={isActive}
       aria-labelledby={`narrative-${phase.id}-title`}
+      aria-pressed={isActive}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(phase.id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(phase.id);
+        }
+      }}
     >
       <div className="narrative-phase-index">{String(index + 1).padStart(2, "0")}</div>
       <div>
@@ -204,8 +200,8 @@ function NarrativeSection({
 
         <div className="narrative-proof-grid">
           <div>
-            <span>Evidence</span>
-            <p>{project?.title ?? capability?.title ?? phase.label}</p>
+            <span>Focus</span>
+            <p>{phase.publicSignal}</p>
           </div>
           <div>
             <span>Stack</span>
@@ -219,13 +215,9 @@ function NarrativeSection({
 
 function useNarrativeScrollChoreography({
   sectionRef,
-  activePhaseIdRef,
-  setActivePhaseId,
   prefersReducedMotion
 }: Readonly<{
   sectionRef: React.RefObject<HTMLElement | null>;
-  activePhaseIdRef: React.MutableRefObject<NarrativePhaseId>;
-  setActivePhaseId: React.Dispatch<React.SetStateAction<NarrativePhaseId>>;
   prefersReducedMotion: boolean;
 }>): void {
   useEffect(() => {
@@ -272,12 +264,6 @@ function useNarrativeScrollChoreography({
       setLayerProperties(element, "build", buildProgress);
       setLayerProperties(element, "quality", qualityProgress);
       setLayerProperties(element, "delivery", deliveryProgress);
-
-      const nextPhaseId = getPhaseIdForProgress(progress);
-      if (activePhaseIdRef.current !== nextPhaseId) {
-        activePhaseIdRef.current = nextPhaseId;
-        setActivePhaseId(nextPhaseId);
-      }
     };
 
     const requestUpdate = (): void => {
@@ -300,7 +286,7 @@ function useNarrativeScrollChoreography({
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", requestUpdate);
     };
-  }, [activePhaseIdRef, prefersReducedMotion, sectionRef, setActivePhaseId]);
+  }, [prefersReducedMotion, sectionRef]);
 }
 
 function getScrollProgress(element: HTMLElement): number {
@@ -316,10 +302,6 @@ function getLayerProgress(progress: number, index: number): number {
   return clamp((progress - index / phases.length) * phases.length);
 }
 
-function getPhaseIdForProgress(progress: number): NarrativePhaseId {
-  const phaseIndex = Math.min(phaseOrder.length - 1, Math.floor(progress * phaseOrder.length));
-  return phaseOrder[phaseIndex] ?? "delivery";
-}
 
 function setLayerProperties(
   element: HTMLElement,

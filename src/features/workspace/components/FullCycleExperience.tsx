@@ -3,8 +3,6 @@
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { fullCycleNodes } from "@/data/capabilities";
-import { experience } from "@/data/experience";
-import { projects } from "@/data/projects";
 import type { FullCycleNode, PortfolioMode } from "@/data/types";
 import { cn } from "@/lib/cn";
 import { useState } from "react";
@@ -39,19 +37,15 @@ const modeOptions: readonly {
   }
 ];
 
-const nodeEvidence: Record<FullCycleNodeId, string> = {
-  idea: "Ryan turns requirements, audit workflows, and delivery risk into scoped engineering slices that can be built and verified.",
-  frontend:
-    "Ryan builds enterprise screens with Next.js, React, TypeScript, forms, tables, filters, and data-heavy workflows.",
-  api: "Ryan designs and validates REST boundaries between user workflows, backend services, and portfolio-safe route handlers.",
-  backend:
-    "Ryan has built Node.js / Express services and earlier Java Spring Boot backend systems for enterprise applications.",
-  data: "Ryan works with relational databases, SQL validation, ORM modeling, ETL context, filters, pagination, and data integrity.",
-  quality:
-    "Ryan engineers automation across web, mobile, API, and performance layers using Playwright, WebDriverIO, Appium, Jest, Postman, K6, and JMeter.",
-  cicd: "Ryan connects build, automation, reports, Docker execution, GitLab Runner, GitLab CI/CD, and quality gates into delivery signals.",
-  production:
-    "Ryan carries production support, troubleshooting, release confidence, dashboards, and public-safe operational thinking into full-stack work."
+const publicSignal: Record<FullCycleNodeId, string> = {
+  idea: "Turns product needs into scoped engineering slices.",
+  frontend: "Builds usable interfaces and data-heavy workflows.",
+  api: "Keeps route boundaries readable, typed, and testable.",
+  backend: "Organizes service logic, validation, and integration boundaries.",
+  data: "Protects data integrity through SQL, modeling, and validation habits.",
+  quality: "Uses automation mindset to reduce regression and release risk.",
+  cicd: "Connects checks, reports, runners, and quality gates into delivery signals.",
+  production: "Keeps release readiness, supportability, and operational clarity visible."
 };
 
 export function FullCycleExperience(): React.ReactElement {
@@ -66,10 +60,6 @@ export function FullCycleExperience(): React.ReactElement {
     visibleNodes.find((node) => node.id === resolvedActiveNodeId) ??
     visibleNodes[0] ??
     fullCycleNodes[0];
-  const relatedRoles = experience.filter((role) => activeNode?.relatedExperience.includes(role.id));
-  const relatedProjects = projects.filter((project) =>
-    activeNode?.relatedProjects.includes(project.slug)
-  );
 
   const selectMode = (nextMode: PortfolioMode): void => {
     setMode(nextMode);
@@ -131,20 +121,15 @@ export function FullCycleExperience(): React.ReactElement {
         <div className="max-w-3xl">
           <Badge tone="info">Signature Lifecycle</Badge>
           <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
-            Full-cycle engineering experience.
+            Full-cycle engineering shape.
           </h2>
           <p className="mt-4 text-base leading-7 text-[#b7c2d2]">
-            Follow the path from product idea through frontend, API, backend, data, quality, CI/CD,
-            and production readiness. Each layer shows what it does, what Ryan has done there,
-            verified technologies, related roles, and related projects.
+            Interactive overview of how build, quality, data, and delivery connect. Deeper role
+            detail stays in the CV so the portfolio remains easy to scan.
           </p>
         </div>
 
-        <div
-          role="tablist"
-          aria-label="Engineering mode"
-          className="grid gap-2 sm:grid-cols-3 lg:w-[520px]"
-        >
+        <div role="tablist" aria-label="Engineering mode" className="grid gap-2 sm:grid-cols-3 lg:w-[520px]">
           {modeOptions.map((option) => {
             const isSelected = mode === option.id;
             return (
@@ -185,10 +170,7 @@ export function FullCycleExperience(): React.ReactElement {
           aria-label="Interactive full-cycle lifecycle"
           className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border)] bg-[#080d14] p-4"
         >
-          <div
-            aria-hidden="true"
-            className="full-cycle-flow-line absolute left-8 right-8 top-10 hidden h-px lg:block"
-          />
+          <div aria-hidden="true" className="full-cycle-flow-line absolute left-8 right-8 top-10 hidden h-px lg:block" />
           <ol className="relative grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {visibleNodes.map((node, index) => {
               const isActive = node.id === activeNode.id;
@@ -201,7 +183,7 @@ export function FullCycleExperience(): React.ReactElement {
                     aria-pressed={isActive}
                     aria-label={`Inspect ${node.label} layer`}
                     className={cn(
-                      "group flex min-h-44 w-full flex-col justify-between rounded-[var(--radius-control)] border p-4 text-left transition",
+                      "group flex min-h-40 w-full flex-col justify-between rounded-[var(--radius-control)] border p-4 text-left transition",
                       isActive
                         ? "border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-[0_0_32px_rgba(85,215,255,0.12)]"
                         : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--accent-strong)] hover:bg-[var(--accent-soft)]"
@@ -218,10 +200,7 @@ export function FullCycleExperience(): React.ReactElement {
                       </span>
                       <Badge tone={getDomainBadgeTone(node.domain)}>{node.domain}</Badge>
                     </span>
-                    <span className="mt-5 block text-sm leading-6">{node.description}</span>
-                    <span className="mono mt-5 text-xs text-[var(--accent)]">
-                      {isActive ? "selected.layer" : "inspect.layer"}
-                    </span>
+                    <span className="mt-5 block text-sm leading-6">{publicSignal[node.id]}</span>
                   </button>
                 </li>
               );
@@ -234,8 +213,8 @@ export function FullCycleExperience(): React.ReactElement {
           <h3 className="mt-3 text-2xl font-semibold">{activeNode.label}</h3>
 
           <div className="mt-5 space-y-5">
-            <EvidenceBlock title="What this layer does" value={activeNode.description} />
-            <EvidenceBlock title="What Ryan has done here" value={nodeEvidence[activeNode.id]} />
+            <SignalBlock title="Layer purpose" value={activeNode.description} />
+            <SignalBlock title="Public signal" value={publicSignal[activeNode.id]} />
 
             <section>
               <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
@@ -250,42 +229,9 @@ export function FullCycleExperience(): React.ReactElement {
               </div>
             </section>
 
-            <section>
-              <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                Related Role
-              </h4>
-              <div className="mt-3 space-y-2">
-                {relatedRoles.map((role) => (
-                  <article
-                    key={role.id}
-                    className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[#0b1018] p-3"
-                  >
-                    <p className="font-semibold">{role.role}</p>
-                    <p className="mt-1 text-sm text-[var(--text-muted)]">{role.company}</p>
-                    <p className="mono mt-2 text-xs text-[var(--accent)]">{role.period}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
-                Related Project
-              </h4>
-              <div className="mt-3 space-y-2">
-                {relatedProjects.map((project) => (
-                  <article
-                    key={project.slug}
-                    className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[#0b1018] p-3"
-                  >
-                    <p className="font-semibold">{project.title}</p>
-                    <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                      {project.responsibility}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </section>
+            <p className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[#0b1018] p-3 text-sm leading-6 text-[var(--text-muted)]">
+              Full company timeline and responsibility detail are available in the CV.
+            </p>
           </div>
         </aside>
       </div>
@@ -293,7 +239,7 @@ export function FullCycleExperience(): React.ReactElement {
   );
 }
 
-function EvidenceBlock({
+function SignalBlock({
   title,
   value
 }: Readonly<{ title: string; value: string }>): React.ReactElement {

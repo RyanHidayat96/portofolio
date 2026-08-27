@@ -4,7 +4,6 @@ import { profile } from "@/data/profile";
 import { publicExperience } from "@/data/public-experience";
 import { CareerEvolution } from "@/features/workspace/components/CareerEvolution";
 import { EngineeringDNA } from "@/features/workspace/components/EngineeringDNA";
-import { cn } from "@/lib/cn";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import { Download } from "lucide-react";
 
@@ -20,8 +19,8 @@ export function ExperiencePanel(): React.ReactElement {
         <div className="experience-history-header">
           <div>
             <p className="mono text-sm text-[var(--accent)]">experience.summary</p>
-            <h2>Work history, short version.</h2>
-            <p>Full responsibilities and project detail stay in CV.</p>
+            <h2>Experience, public version.</h2>
+            <p>Portfolio shows capability direction. CV carries exact companies, dates, and detail.</p>
           </div>
           {isPortfolioValueConfigured(cv.href) ? (
             <a className="button-base button-primary" href={cv.href} download="cv.pdf">
@@ -29,41 +28,32 @@ export function ExperiencePanel(): React.ReactElement {
               <span>Download CV</span>
             </a>
           ) : (
-            <Badge tone="success">verified career data</Badge>
+            <Badge tone="success">concise profile</Badge>
           )}
         </div>
 
         <div className="experience-history-list">
-          {publicExperience.map((role) => {
-            const isCurrent = role.id === "jasa-marga-full-stack";
-
-            return (
-              <article
-                key={role.id}
-                className={cn("experience-history-card", isCurrent && "is-current")}
-              >
-                <div className="experience-history-card-top">
-                  <div>
-                    <div className="experience-history-title-row">
-                      <h3>{role.role}</h3>
-                      {isCurrent ? <Badge tone="success">Current</Badge> : null}
-                    </div>
-                    <p>{role.company}</p>
+          {publicExperience.map((role) => (
+            <article key={role.id} className="experience-history-card">
+              <div className="experience-history-card-top">
+                <div>
+                  <div className="experience-history-title-row">
+                    <h3>{role.role}</h3>
                   </div>
-                  <span>{role.period}</span>
+                  <p>High-level public summary</p>
                 </div>
+                <span>CV has detail</span>
+              </div>
 
-                <p className="experience-history-summary">{role.summary}</p>
+              <p className="experience-history-summary">{role.summary}</p>
 
-                <div className="experience-history-stack">
-                  {role.technologies.map((technology) => (
-                    <Badge key={technology}>{technology}</Badge>
-                  ))}
-                  <Badge tone="info">More detail in CV</Badge>
-                </div>
-              </article>
-            );
-          })}
+              <div className="experience-history-stack">
+                {role.technologies.map((technology) => (
+                  <Badge key={technology}>{technology}</Badge>
+                ))}
+              </div>
+            </article>
+          ))}
         </div>
       </Panel>
     </div>

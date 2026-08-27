@@ -1,5 +1,4 @@
-import { Panel } from "@/components/ui/Panel";
-import { education } from "@/data/education";
+﻿import { Panel } from "@/components/ui/Panel";
 import { profile } from "@/data/profile";
 import { CapabilityMatrix } from "@/features/workspace/components/CapabilityMatrix";
 
@@ -26,16 +25,13 @@ export function ProfilePanel(): React.ReactElement {
             <dd className="mt-1 text-[var(--success)]">{profile.availability}</dd>
           </div>
         </dl>
-        <details className="mt-7 border border-[var(--border)] bg-[#111722] p-4">
-          <summary className="cursor-pointer font-semibold text-[var(--accent)]">Education</summary>
-          {education.map((item) => (
-            <div key={item.institution} className="mt-3 text-sm leading-6 text-[#c8d4e6]">
-              <p>{item.institution}</p>
-              <p className="text-[var(--text-muted)]">{item.degree}</p>
-              <p className="mono text-[var(--accent)]">{item.period}</p>
-            </div>
-          ))}
-        </details>
+        <div className="mt-7 border border-[var(--border)] bg-[#111722] p-4 text-sm leading-6 text-[#c8d4e6]">
+          <p className="font-semibold text-[var(--accent)]">Public profile summary</p>
+          <p className="mt-2">
+            Portfolio keeps personal history concise. Education, exact work timeline, and deeper
+            responsibility detail are available in the downloadable CV.
+          </p>
+        </div>
       </Panel>
 
       <CapabilityMatrix />

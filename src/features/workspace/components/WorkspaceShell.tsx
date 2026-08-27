@@ -11,7 +11,7 @@ import {
 } from "@/features/workspace/navigation";
 import type { WorkspaceSceneTransition, WorkspaceSection } from "@/features/workspace/types";
 import { cn } from "@/lib/cn";
-import { Command } from "lucide-react";
+import { Command, House } from "lucide-react";
 
 export function WorkspaceShell({
   section,
@@ -155,6 +155,17 @@ export function WorkspaceShell({
                     </option>
                   ))}
                 </select>
+
+                <a
+                  className="button-base button-secondary w-full min-w-0 sm:w-auto"
+                  href="/"
+                  aria-label="Back to landing page"
+                  data-cursor-intent="link"
+                  data-cursor-label="HOME"
+                >
+                  <House aria-hidden="true" size={17} />
+                  <span>Home</span>
+                </a>
 
                 <Badge tone="info" className="hidden sm:inline-flex">
                   Full Stack + SDET

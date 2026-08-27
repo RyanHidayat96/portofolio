@@ -442,7 +442,7 @@ export function RyanOSApp({
         onSectionChange={navigateToSection}
         onOpenCommandPalette={() => setIsPaletteOpen(true)}
         sceneTransition={sceneTransition}
-        sceneKey={`${section}:${projectSlug ?? "index"}`}
+        sceneKey={`${section}:${mode}`}
       >
         {renderedSection}
       </WorkspaceShell>

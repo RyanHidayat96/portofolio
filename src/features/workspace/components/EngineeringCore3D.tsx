@@ -93,7 +93,7 @@ function EngineeringCoreScene({
     <group ref={groupRef}>
       <ambientLight intensity={0.62} />
       <pointLight position={[0, 2.6, 3.4]} intensity={6.8} color="#55d7ff" />
-      <pointLight position={[-3.2, -1.8, 2.4]} intensity={2.1} color="#6ee7a8" />
+      <pointLight position={[-3.2, -1.8, 2.4]} intensity={1.45} color="#90a4bf" />
       <directionalLight position={[3.5, 2, 4]} intensity={2.4} color="#ffffff" />
 
       <CorePlane />
@@ -183,9 +183,9 @@ function CoreConnection({
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <lineBasicMaterial
-        color={isActive ? "#55d7ff" : "#273449"}
+        color={isActive ? "#87e8ff" : "#243044"}
         transparent
-        opacity={isActive ? 0.94 : 0.36}
+        opacity={isActive ? 0.92 : 0.28}
       />
     </line>
   );
@@ -203,53 +203,200 @@ function CoreNode({
   onSelect: () => void;
 }>): React.ReactElement {
   const tone = getToneColors(node.tone);
-  const scale = isActive ? 1.18 : 1;
-  const opacity = isDimmed ? 0.42 : 1;
+  const scale = isActive ? 1.08 : 1;
+  const moduleOpacity = isDimmed ? 0.5 : 0.96;
+  const edgeOpacity = isActive ? 0.72 : isDimmed ? 0.18 : 0.34;
+  const signalOpacity = isActive ? 0.92 : isDimmed ? 0.28 : 0.52;
 
   return (
-    <group
-      position={node.position}
-      scale={scale}
-      onClick={onSelect}
-      onPointerOver={onSelect}
-    >
+    <group position={node.position} scale={scale}>
+      <mesh onClick={onSelect} onPointerOver={onSelect}>
+        <boxGeometry args={[1.08, 0.72, 0.34]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+
       <mesh>
-        <sphereGeometry args={[0.16, 24, 24]} />
+        <boxGeometry args={[0.86, 0.42, 0.16]} />
         <meshStandardMaterial
-          color={tone.color}
+          color={isActive ? "#102335" : "#08111b"}
           emissive={tone.emissive}
-          emissiveIntensity={isActive ? 1.1 : 0.42}
-          roughness={0.34}
-          metalness={0.54}
+          emissiveIntensity={isActive ? 0.38 : 0.12}
+          roughness={0.52}
+          metalness={0.34}
           transparent
-          opacity={opacity}
+          opacity={moduleOpacity}
         />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.25, 0.27, 32]} />
-        <meshBasicMaterial
-          color={tone.color}
-          transparent
-          opacity={isActive ? 0.5 : 0.18}
-          side={THREE.DoubleSide}
-        />
+
+      <mesh scale={[1.04, 1.08, 1.08]}>
+        <boxGeometry args={[0.86, 0.42, 0.16]} />
+        <meshBasicMaterial color={tone.accent} wireframe transparent opacity={edgeOpacity} />
+      </mesh>
+
+      <CoreNodeGlyph
+        nodeId={node.id}
+        tone={tone}
+        isDimmed={isDimmed}
+        signalOpacity={signalOpacity}
+        edgeOpacity={edgeOpacity}
+      />
+    </group>
+  );
+}
+
+function CoreNodeGlyph({
+  nodeId,
+  tone,
+  isDimmed,
+  signalOpacity,
+  edgeOpacity
+}: Readonly<{
+  nodeId: EngineeringCoreNodeId;
+  tone: CoreToneColors;
+  isDimmed: boolean;
+  signalOpacity: number;
+  edgeOpacity: number;
+}>): React.ReactElement {
+  const textOpacity = isDimmed ? 0.2 : 0.48;
+  const mutedOpacity = isDimmed ? 0.18 : 0.38;
+
+  if (nodeId === "frontend") {
+    return (
+      <group>
+        <mesh position={[0, 0.04, 0.105]}>
+          <boxGeometry args={[0.48, 0.25, 0.03]} />
+          <meshBasicMaterial color={tone.accent} wireframe transparent opacity={edgeOpacity + 0.2} />
+        </mesh>
+        <mesh position={[0, -0.13, 0.11]}>
+          <boxGeometry args={[0.12, 0.08, 0.035]} />
+          <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity * 0.74} />
+        </mesh>
+        <mesh position={[0, -0.21, 0.11]}>
+          <boxGeometry args={[0.32, 0.035, 0.035]} />
+          <meshBasicMaterial color="#dbe7ff" transparent opacity={textOpacity} />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (nodeId === "api") {
+    return (
+      <group>
+        <mesh position={[-0.25, 0, 0.11]}>
+          <boxGeometry args={[0.06, 0.3, 0.035]} />
+          <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity} />
+        </mesh>
+        <mesh position={[0.25, 0, 0.11]}>
+          <boxGeometry args={[0.06, 0.3, 0.035]} />
+          <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity} />
+        </mesh>
+        <mesh position={[0, 0.11, 0.11]}>
+          <boxGeometry args={[0.35, 0.035, 0.035]} />
+          <meshBasicMaterial color="#dbe7ff" transparent opacity={textOpacity} />
+        </mesh>
+        <mesh position={[0, -0.11, 0.11]}>
+          <boxGeometry args={[0.35, 0.035, 0.035]} />
+          <meshBasicMaterial color="#90a4bf" transparent opacity={mutedOpacity} />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (nodeId === "backend") {
+    return (
+      <group>
+        {[-0.13, 0, 0.13].map((y, index) => (
+          <group key={y} position={[0, y, 0.11]}>
+            <mesh>
+              <boxGeometry args={[0.5, 0.075, 0.035]} />
+              <meshBasicMaterial color={index === 1 ? tone.accent : "#dbe7ff"} transparent opacity={index === 1 ? signalOpacity : textOpacity} />
+            </mesh>
+            <mesh position={[-0.27, 0, 0.005]}>
+              <boxGeometry args={[0.045, 0.045, 0.035]} />
+              <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+    );
+  }
+
+  if (nodeId === "test") {
+    return (
+      <group>
+        <mesh position={[0, 0.01, 0.105]} rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[0.36, 0.36, 0.025]} />
+          <meshBasicMaterial color={tone.accent} wireframe transparent opacity={edgeOpacity + 0.24} />
+        </mesh>
+        <mesh position={[-0.08, -0.04, 0.12]} rotation={[0, 0, -0.72]}>
+          <boxGeometry args={[0.16, 0.04, 0.035]} />
+          <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity} />
+        </mesh>
+        <mesh position={[0.08, 0.03, 0.12]} rotation={[0, 0, 0.72]}>
+          <boxGeometry args={[0.34, 0.04, 0.035]} />
+          <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity} />
+        </mesh>
+      </group>
+    );
+  }
+
+  if (nodeId === "database") {
+    return (
+      <group>
+        {[-0.14, 0, 0.14].map((y, index) => (
+          <mesh key={y} position={[0, y, 0.11]}>
+            <boxGeometry args={[0.46 - index * 0.04, 0.08, 0.035]} />
+            <meshBasicMaterial color={index === 0 ? "#dbe7ff" : tone.accent} transparent opacity={index === 0 ? textOpacity : signalOpacity * (0.86 - index * 0.14)} />
+          </mesh>
+        ))}
+        <mesh position={[-0.28, 0, 0.115]}>
+          <boxGeometry args={[0.045, 0.34, 0.035]} />
+          <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity * 0.78} />
+        </mesh>
+      </group>
+    );
+  }
+
+  return (
+    <group>
+      {[-0.24, 0, 0.24].map((x, index) => (
+        <mesh key={x} position={[x, 0, 0.11]}>
+          <boxGeometry args={[0.13, 0.13, 0.035]} />
+          <meshBasicMaterial color={index === 1 ? tone.accent : "#dbe7ff"} transparent opacity={index === 1 ? signalOpacity : textOpacity} />
+        </mesh>
+      ))}
+      <mesh position={[-0.12, 0, 0.105]}>
+        <boxGeometry args={[0.14, 0.035, 0.03]} />
+        <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity * 0.7} />
+      </mesh>
+      <mesh position={[0.12, 0, 0.105]}>
+        <boxGeometry args={[0.14, 0.035, 0.03]} />
+        <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity * 0.7} />
+      </mesh>
+      <mesh position={[0.34, 0, 0.11]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[0.055, 0.12, 3]} />
+        <meshBasicMaterial color={tone.accent} transparent opacity={signalOpacity} />
       </mesh>
     </group>
   );
 }
 
-function getToneColors(tone: EngineeringCoreNodeTone): { color: string; emissive: string } {
+interface CoreToneColors {
+  readonly accent: string;
+  readonly emissive: string;
+}
+function getToneColors(tone: EngineeringCoreNodeTone): CoreToneColors {
   if (tone === "quality") {
-    return { color: "#6ee7a8", emissive: "#184b34" };
+    return { accent: "#7ee7b4", emissive: "#123629" };
   }
 
   if (tone === "ship") {
-    return { color: "#ffd36e", emissive: "#5a4218" };
+    return { accent: "#f6d16f", emissive: "#3d3316" };
   }
 
   if (tone === "data") {
-    return { color: "#9bbcff", emissive: "#1e2d53" };
+    return { accent: "#9db8ff", emissive: "#182744" };
   }
 
-  return { color: "#55d7ff", emissive: "#123d4b" };
+  return { accent: "#66d9ff", emissive: "#103247" };
 }

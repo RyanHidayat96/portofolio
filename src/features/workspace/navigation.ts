@@ -1,6 +1,5 @@
-import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
+﻿import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
 import { profile } from "@/data/profile";
-import { projects } from "@/data/projects";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import {
   Activity,
@@ -59,7 +58,7 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "experience",
     label: "Experience",
     icon: BriefcaseBusiness,
-    description: "Career evolution, Jasa Marga role growth, and role evidence."
+    description: "Public career summary with full timeline in CV."
   },
   projects: {
     id: "projects",
@@ -157,25 +156,19 @@ export function getNavigationItems(): readonly WorkspaceNavigationItem[] {
 }
 
 export function getPaletteActions(): readonly PaletteAction[] {
-  const flagshipProject =
-    projects.find((project) => project.slug === "enterprise-audit-monitoring-platform") ??
-    projects[0];
   const quickActions: PaletteAction[] = [
     {
       id: "quick-current-role",
-      label: "View Current Role",
+      label: "View Career Summary",
       section: "experience",
-      description: `${profile.role} career evidence and role evolution.`,
+      description: "Public career summary with full details in CV.",
       keywords: ["career", "experience"]
     },
     {
       id: "quick-flagship",
-      label: "Open Flagship Project",
+      label: "Open Project Themes",
       section: "projects",
-      projectSlug: flagshipProject?.slug,
-      description: flagshipProject
-        ? flagshipProject.title
-        : "Open portfolio-safe project case studies.",
+      description: "Public-safe build, quality, and delivery themes.",
       keywords: ["project", "case study", "full stack"]
     },
     {
