@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Panel } from "@/components/ui/Panel";
 import { CustomCursor } from "@/features/interaction/components/CustomCursor";
@@ -84,13 +84,13 @@ const ProjectsPanel = dynamic<{
   }
 );
 
-const QualityEngineeringHub = dynamic(
+const AutomationPanel = dynamic(
   () =>
-    import("@/features/quality/components/QualityEngineeringHub").then(
-      (module) => module.QualityEngineeringHub
+    import("@/features/automation-lab/components/AutomationLab").then(
+      (module) => module.AutomationLab
     ),
   {
-    loading: () => <WorkspacePanelLoading label="Quality Lab" />
+    loading: () => <WorkspacePanelLoading label="Automation" />
   }
 );
 
@@ -390,7 +390,7 @@ export function RyanOSApp({
           />
         );
       case "automation":
-        return <QualityEngineeringHub />;
+        return <AutomationPanel />;
       case "pipeline":
         return <PipelineSimulatorPanel />;
       case "performance":

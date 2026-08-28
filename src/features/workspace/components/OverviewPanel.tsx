@@ -442,10 +442,10 @@ function EngineerOverviewPanel({
     },
     {
       section: "automation",
-      title: "Quality Lab",
+      title: "Automation",
       description: "Run automation, healing, API failure, auth failure, and recovery simulations.",
-      command: "quality",
-      signal: "self-healing loop",
+      command: "automation",
+      signal: "recovery loop",
       icon: FlaskConical
     },
     {
@@ -533,7 +533,7 @@ function EngineerOverviewPanel({
                 icon={<FlaskConical aria-hidden="true" size={18} />}
                 onClick={() => onNavigate("automation")}
               >
-                Run Simulations
+                Run Automation
               </Button>
             </div>
           </section>
@@ -551,8 +551,8 @@ function EngineerOverviewPanel({
                 <strong>visualize full stack flow</strong>
               </li>
               <li>
-                <span>$ quality</span>
-                <strong>simulate automation recovery</strong>
+                <span>$ automation</span>
+                <strong>simulate recovery loop</strong>
               </li>
               <li>
                 <span>$ performance</span>

@@ -68,9 +68,9 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
   },
   automation: {
     id: "automation",
-    label: "Quality Lab",
+    label: "Automation",
     icon: FlaskConical,
-    description: "Integrate automation, self-healing, performance, and quality gates."
+    description: "Run automation recovery and failure simulations."
   },
   pipeline: {
     id: "pipeline",
@@ -180,7 +180,7 @@ export function getPaletteActions(): readonly PaletteAction[] {
     },
     {
       id: "quick-quality",
-      label: "Run Quality Lab",
+      label: "Run Automation",
       section: "automation",
       description: "Run automation, healing, API failure, auth failure, and recovery simulations.",
       keywords: ["automation", "qa", "quality", "sdet"]
@@ -250,7 +250,7 @@ function getActionLabel(item: WorkspaceNavigationItem): string {
   }
 
   if (item.id === "automation") {
-    return "Run Quality Lab";
+    return "Run Automation";
   }
 
   if (item.id === "pipeline") {
