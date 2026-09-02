@@ -6089,3 +6089,40 @@ textarea:focus-visible,
     white-space: nowrap;
   }
 }
+.portfolio-3d-shell .button-secondary[data-active="true"],
+.portfolio-3d-shell .button-secondary[aria-pressed="true"] {
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.portfolio-3d-shell .button-secondary[data-active="true"] .mono,
+.portfolio-3d-shell .button-secondary[aria-pressed="true"] .mono {
+  color: var(--accent);
+}
+
+.portfolio-3d-shell canvas {
+  touch-action: manipulation;
+}
+
+.portfolio-3d-shell [role="group"] .button-base {
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-3d-shell *,
+  .portfolio-3d-shell *::before,
+  .portfolio-3d-shell *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .portfolio-3d-shell .button-base:hover:not(:disabled) {
+    transform: none;
+  }
+}

@@ -1,6 +1,5 @@
-import { RyanOSApp } from "@/features/workspace/components/RyanOSApp";
-import { homeWorkspaceRoute } from "@/features/workspace/routing";
+import { PortfolioExperience } from '@/features/portfolio-3d/components/PortfolioExperience';
 
 export default function Home(): React.ReactElement {
-  return <RyanOSApp initialRoute={homeWorkspaceRoute} />;
+  return <PortfolioExperience />;
 }

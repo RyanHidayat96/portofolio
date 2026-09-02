@@ -10,4 +10,11 @@ test-results/
 RYANOS_CODEX_*.md
 CODEX_3D_PORTFOLIO_MASTER_PLAN.md
 assets/
-docs/
+docs/*
+!docs/portfolio-revamp-audit.md
+!docs/3d-portfolio-audit.md
+!docs/3d-portfolio-progress.md
+!docs/3d-asset-contract.md
+!docs/3d-portfolio-performance.md
+!docs/3d-portfolio-handoff.md
+
