@@ -27,6 +27,8 @@ export interface AssetRuntimeNodeMap {
 
 const warnedMissingAnchors = new Set<string>();
 const warnedMissingNodes = new Set<string>();
+const materialLiftColor = new THREE.Color('#9bb7ca');
+const materialEmissiveLiftColor = new THREE.Color('#102130');
 
 export function SceneAsset({
   asset,
@@ -132,6 +134,35 @@ function configureRuntimeMeshRenderState(scene: THREE.Object3D): void {
     if (isDisplaySurface) {
       object.renderOrder = Math.max(object.renderOrder, 3);
     }
+  });
+}
+
+function tuneRuntimeMaterial(
+  material: THREE.Material | THREE.Material[],
+  isRuntimeOnly: boolean,
+  isGlass: boolean,
+  isDisplaySurface: boolean
+): void {
+  const materials = Array.isArray(material) ? material : [material];
+
+  materials.forEach((entry) => {
+    const colorMaterial = entry as THREE.Material & { color?: THREE.Color };
+
+    if (!isRuntimeOnly && !isDisplaySurface && colorMaterial.color instanceof THREE.Color) {
+      colorMaterial.color.lerp(materialLiftColor, isGlass ? 0.04 : 0.14);
+    }
+
+    if (entry instanceof THREE.MeshStandardMaterial) {
+      entry.envMapIntensity = Math.max(entry.envMapIntensity, 1.35);
+      entry.roughness = Math.min(Math.max(entry.roughness, 0.34), 0.84);
+
+      if (!isRuntimeOnly && !isDisplaySurface && !isGlass) {
+        entry.emissive.lerp(materialEmissiveLiftColor, 0.28);
+        entry.emissiveIntensity = Math.max(entry.emissiveIntensity, 0.08);
+      }
+    }
+
+    entry.needsUpdate = true;
   });
 }
 

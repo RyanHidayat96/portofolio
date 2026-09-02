@@ -129,7 +129,7 @@ function PortfolioExperienceContent({
           ) : null
         }
         navigationSlot={<Portfolio3dNavigation />}
-        sectionPanelSlot={<Portfolio3dSectionPanel />}
+        sectionPanelSlot={state.activeSectionId === 'overview' ? null : <Portfolio3dSectionPanel />}
         instructionHintSlot={<Portfolio3dInstructionHint />}
         assetProgress={assetProgress}
       />

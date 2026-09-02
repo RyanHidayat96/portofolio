@@ -17,7 +17,7 @@ export function ExperienceShell({
   canvasSlot: React.ReactNode;
   fallbackSlot: React.ReactNode;
   navigationSlot: React.ReactNode;
-  sectionPanelSlot: React.ReactNode;
+  sectionPanelSlot?: React.ReactNode;
   instructionHintSlot?: React.ReactNode;
   assetProgress?: Portfolio3dLoadingProgress;
 }>): React.ReactElement {
@@ -145,9 +145,11 @@ export function ExperienceShell({
           {navigationSlot}
         </aside>
 
-        <section className="portfolio-3d-section-popover pointer-events-auto relative z-20 mx-4 mt-[100dvh] p-4 lg:absolute lg:bottom-5 lg:right-5 lg:mx-0 lg:mt-0 lg:max-h-[42dvh] lg:w-[min(28rem,calc(100vw-2.5rem))] lg:overflow-y-auto">
-          {sectionPanelSlot}
-        </section>
+        {sectionPanelSlot ? (
+          <section className="portfolio-3d-section-popover pointer-events-auto relative z-20 mx-4 mt-[100dvh] p-4 lg:absolute lg:bottom-5 lg:right-5 lg:mx-0 lg:mt-0 lg:max-h-[42dvh] lg:w-[min(28rem,calc(100vw-2.5rem))] lg:overflow-y-auto">
+            {sectionPanelSlot}
+          </section>
+        ) : null}
       </section>
     </main>
   );
