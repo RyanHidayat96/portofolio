@@ -10,7 +10,7 @@ import type {
 
 export const portfolio3dCameraBounds = {
   min: [-2.75, 0.72, -1.85],
-  max: [2.75, 2.72, 4.85]
+  max: [2.95, 2.72, 5.8]
 } as const satisfies Readonly<{ min: Vector3Tuple; max: Vector3Tuple }>;
 
 export function getPortfolio3dCameraPresetForSection(

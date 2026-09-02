@@ -10,10 +10,10 @@ export const portfolio3dRendererPerformance = {
 } as const;
 
 export const portfolio3dDefaultCamera = {
-  position: [0, 1.55, 4.75] as const,
-  fov: 42,
+  position: [0, 1.45, 5.35] as const,
+  fov: 50,
   near: 0.08,
-  far: 24
+  far: 30
 } as const;
 
 export const portfolio3dRendererOptions = {
@@ -24,7 +24,7 @@ export const portfolio3dRendererOptions = {
   powerPreference: 'high-performance'
 } as const;
 
-export const portfolio3dRendererToneMappingExposure = 0.98;
+export const portfolio3dRendererToneMappingExposure = 1.18;
 export const portfolio3dRendererShadowType = THREE.PCFSoftShadowMap;
 
 export function getInitialPortfolio3dDpr(

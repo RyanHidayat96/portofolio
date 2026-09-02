@@ -1,14 +1,14 @@
-﻿import type { Portfolio3dCameraPreset } from './types';
+import type { Portfolio3dCameraPreset } from './types';
 
 export const portfolio3dCameraPresets = [
   {
     id: 'overview',
     label: 'Room overview',
-    position: [0, 1.55, 4.75],
-    target: [0, 1.15, 0],
-    fov: 42,
+    position: [0, 1.45, 5.35],
+    target: [0, 1.12, -0.35],
+    fov: 50,
     near: 0.08,
-    far: 24,
+    far: 30,
     targetNodeName: 'Room_Shell_Root',
     reducedMotionMs: 80,
     transitionMs: 850

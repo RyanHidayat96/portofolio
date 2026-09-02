@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 :root {
   color-scheme: dark;
@@ -6124,5 +6124,167 @@ textarea:focus-visible,
 @media (hover: none), (pointer: coarse) {
   .portfolio-3d-shell .button-base:hover:not(:disabled) {
     transform: none;
+  }
+}
+/* 3D portfolio cinematic shell */
+.portfolio-3d-shell {
+  background:
+    radial-gradient(circle at 78% 20%, rgba(73, 179, 255, 0.1), transparent 34rem),
+    radial-gradient(circle at 16% 42%, rgba(92, 255, 202, 0.08), transparent 28rem),
+    #03060a;
+  color-scheme: dark;
+  isolation: isolate;
+}
+
+.portfolio-3d-shell canvas {
+  filter: saturate(1.08) contrast(1.06);
+  touch-action: pan-y;
+}
+
+.portfolio-3d-cinematic-vignette {
+  background:
+    radial-gradient(circle at 51% 45%, transparent 0, transparent 28%, rgba(3, 6, 10, 0.06) 46%, rgba(3, 6, 10, 0.56) 100%),
+    linear-gradient(90deg, rgba(3, 6, 10, 0.66) 0%, rgba(3, 6, 10, 0.3) 18%, rgba(3, 6, 10, 0.02) 45%, rgba(3, 6, 10, 0.22) 74%, rgba(3, 6, 10, 0.54) 100%),
+    linear-gradient(180deg, rgba(3, 6, 10, 0.28) 0%, transparent 24%, rgba(3, 6, 10, 0.34) 100%);
+}
+
+.portfolio-3d-city-glow {
+  background:
+    linear-gradient(90deg, rgba(84, 181, 255, 0.1), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(156, 213, 245, 0.14) 0 1px, transparent 1px 78px),
+    repeating-linear-gradient(0deg, rgba(156, 213, 245, 0.08) 0 1px, transparent 1px 54px);
+  mask-image: linear-gradient(90deg, black, transparent);
+  opacity: 0.45;
+}
+
+.portfolio-3d-glass-panel,
+.portfolio-3d-section-popover,
+.portfolio-3d-instruction-hint {
+  border: 1px solid rgba(180, 221, 245, 0.24);
+  background:
+    linear-gradient(135deg, rgba(29, 45, 63, 0.76), rgba(10, 16, 27, 0.68)),
+    rgba(10, 16, 27, 0.62);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.44),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+.portfolio-3d-glass-panel {
+  border-radius: 8px;
+}
+
+.portfolio-3d-section-popover,
+.portfolio-3d-instruction-hint,
+.portfolio-3d-detail-card {
+  border-radius: 8px;
+}
+
+.portfolio-3d-area-button,
+.portfolio-3d-chip-button,
+.portfolio-3d-room-chip {
+  width: 100%;
+  border: 1px solid rgba(180, 221, 245, 0.16);
+  background: rgba(15, 23, 36, 0.56);
+  color: rgba(245, 249, 255, 0.88);
+  font-weight: 700;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.portfolio-3d-area-button {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 0.72rem;
+  border-radius: 6px;
+  padding: 0.62rem 0.72rem;
+  text-align: left;
+}
+
+.portfolio-3d-area-icon {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid rgba(83, 216, 255, 0.28);
+  background: rgba(83, 216, 255, 0.08);
+  color: var(--accent);
+}
+
+.portfolio-3d-chip-button {
+  min-height: 36px;
+  border-radius: 6px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.72rem;
+}
+
+.portfolio-3d-room-chip {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 6px;
+  padding: 0.48rem 0.62rem;
+  text-align: left;
+  font-size: 0.75rem;
+}
+
+.portfolio-3d-area-button:hover:not(:disabled),
+.portfolio-3d-chip-button:hover:not(:disabled),
+.portfolio-3d-room-chip:hover:not(:disabled) {
+  border-color: rgba(83, 216, 255, 0.55);
+  background: rgba(31, 51, 72, 0.72);
+  transform: translateY(-1px);
+}
+
+.portfolio-3d-area-button[data-active='true'],
+.portfolio-3d-chip-button[data-active='true'],
+.portfolio-3d-room-chip[data-active='true'] {
+  border-color: rgba(83, 216, 255, 0.82);
+  background: linear-gradient(135deg, rgba(83, 216, 255, 0.22), rgba(15, 23, 36, 0.74));
+  color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(83, 216, 255, 0.1),
+    0 10px 30px rgba(83, 216, 255, 0.12);
+}
+
+.portfolio-3d-area-button:focus-visible,
+.portfolio-3d-chip-button:focus-visible,
+.portfolio-3d-room-chip:focus-visible,
+.portfolio-3d-top-actions a:focus-visible,
+.portfolio-3d-detail-card a:focus-visible,
+.portfolio-3d-detail-card button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.portfolio-3d-detail-card {
+  border: 1px solid rgba(180, 221, 245, 0.18);
+  background: rgba(10, 16, 27, 0.54);
+  padding: 0;
+}
+
+.portfolio-3d-content-strip {
+  border-left: 1px solid rgba(83, 216, 255, 0.26);
+  background: linear-gradient(90deg, rgba(83, 216, 255, 0.06), transparent 74%);
+  padding: 0.7rem 0 0.7rem 0.85rem;
+}
+
+@media (max-width: 767px) {
+  .portfolio-3d-glass-panel {
+    max-height: 42dvh;
+  }
+
+  .portfolio-3d-cinematic-vignette {
+    background:
+      linear-gradient(180deg, rgba(3, 6, 10, 0.72) 0%, rgba(3, 6, 10, 0.16) 36%, rgba(3, 6, 10, 0.72) 100%),
+      radial-gradient(circle at 50% 42%, transparent 0, transparent 26%, rgba(3, 6, 10, 0.68) 100%);
   }
 }

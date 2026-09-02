@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { ExternalLink } from 'lucide-react';
+import { Activity, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
 import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { withPortfolio3dBasePath } from '../asset-url';
 import { shouldUsePortfolio3dMediumDefault } from '../runtime-capabilities';
@@ -9,7 +9,8 @@ import type {
   Portfolio3dHotspotDefinition,
   Portfolio3dHotspotId,
   Portfolio3dLoadingProgress,
-  Portfolio3dQualityTier
+  Portfolio3dQualityTier,
+  Portfolio3dSectionId
 } from '../types';
 import {
   configurePortfolio3dRenderer,
@@ -50,6 +51,35 @@ const roomControlHotspotIds = [
   'desk-lamp'
 ] as const satisfies readonly Portfolio3dHotspotId[];
 const qualityTiers = ['low', 'medium', 'high'] as const satisfies readonly Portfolio3dQualityTier[];
+const portfolio3dAreaLabels = {
+  overview: 'Overview',
+  profile: 'About Me',
+  experience: 'Experience',
+  projects: 'Projects',
+  fullstack: 'Full Stack',
+  backend: 'Backend/API',
+  architecture: 'Architecture',
+  automation: 'Engineering Lab',
+  performance: 'Performance Lab',
+  pipeline: 'CI/CD Pipeline',
+  terminal: 'Terminal',
+  contact: 'Contact'
+} satisfies Partial<Record<Portfolio3dSectionId, string>>;
+
+const portfolio3dAreaIcons = {
+  overview: House,
+  profile: UserRound,
+  experience: Briefcase,
+  projects: FolderKanban,
+  fullstack: Workflow,
+  backend: Server,
+  architecture: Network,
+  automation: ShieldCheck,
+  performance: Gauge,
+  pipeline: GitBranch,
+  terminal: Terminal,
+  contact: Activity
+} satisfies Partial<Record<Portfolio3dSectionId, LucideIcon>>;
 
 export function PortfolioExperience(): React.ReactElement {
   const fallback = <Portfolio3dHtmlFallback />;
@@ -265,46 +295,49 @@ function Portfolio3dNavigation(): React.ReactElement {
   const isTransitioning = state.navigationState === 'focusing' || state.navigationState === 'returning';
 
   return (
-    <nav
-      className="rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-elevated)] p-3"
-      aria-label="3D portfolio sections"
-    >
-      <p className="mono mb-3 text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
-        sections
-      </p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
-        {portfolio3dSectionContracts.map((contract) => {
-          const isActive = state.activeSectionId === contract.id;
-          const isLocked = isTransitioning && !isActive && contract.id !== 'overview';
-          const hotspot = getHotspotById(contract.hotspotId);
+    <nav className="space-y-3" aria-label="3D portfolio areas">
+      <div>
+        <p className="mono mb-2 text-[10px] uppercase tracking-[0.24em] text-[rgba(219,235,247,0.72)]">
+          Areas
+        </p>
+        <div className="grid gap-1.5">
+          {portfolio3dSectionContracts.map((contract) => {
+            const isActive = state.activeSectionId === contract.id;
+            const isLocked = isTransitioning && !isActive && contract.id !== 'overview';
+            const hotspot = getHotspotById(contract.hotspotId);
+            const Icon = portfolio3dAreaIcons[contract.id] ?? Monitor;
 
-          return (
-            <button
-              key={contract.id}
-              type="button"
-              className="button-base button-secondary min-h-11 justify-start text-left text-xs sm:text-sm"
-              data-active={isActive}
-              aria-pressed={isActive}
-              disabled={isLocked}
-              onFocus={() => setFocusedHotspot(hotspot?.id, 'keyboard')}
-              onBlur={() => setFocusedHotspot(undefined)}
-              onClick={() => {
-                if (isLocked) {
-                  return;
-                }
+            return (
+              <button
+                key={contract.id}
+                type="button"
+                className="portfolio-3d-area-button"
+                data-active={isActive}
+                aria-pressed={isActive}
+                disabled={isLocked}
+                onFocus={() => setFocusedHotspot(hotspot?.id, 'keyboard')}
+                onBlur={() => setFocusedHotspot(undefined)}
+                onClick={() => {
+                  if (isLocked) {
+                    return;
+                  }
 
-                if (hotspot) {
-                  activateHotspot(hotspot, 'keyboard');
-                  return;
-                }
+                  if (hotspot) {
+                    activateHotspot(hotspot, 'keyboard');
+                    return;
+                  }
 
-                setActiveSection(contract.id);
-              }}
-            >
-              {contract.label}
-            </button>
-          );
-        })}
+                  setActiveSection(contract.id);
+                }}
+              >
+                <span className="portfolio-3d-area-icon" aria-hidden="true">
+                  <Icon size={17} strokeWidth={1.9} />
+                </span>
+                <span>{portfolio3dAreaLabels[contract.id] ?? contract.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <Portfolio3dQualityControl />
@@ -312,27 +345,26 @@ function Portfolio3dNavigation(): React.ReactElement {
     </nav>
   );
 }
-
 function Portfolio3dQualityControl(): React.ReactElement {
   const { state, setQualityTier } = usePortfolio3dState();
 
   return (
     <section
-      className="mt-4 border-t border-[var(--border)] pt-4"
+      className="border-t border-[rgba(148,163,184,0.24)] pt-3"
       aria-labelledby="portfolio-3d-quality-label"
     >
       <p
         id="portfolio-3d-quality-label"
-        className="mono mb-3 text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]"
+        className="mono mb-2 text-[10px] uppercase tracking-[0.22em] text-[rgba(219,235,247,0.62)]"
       >
-        quality
+        Render
       </p>
-      <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="portfolio-3d-quality-label">
+      <div className="grid grid-cols-3 gap-1.5" role="group" aria-labelledby="portfolio-3d-quality-label">
         {qualityTiers.map((tier) => (
           <button
             key={tier}
             type="button"
-            className="button-base button-secondary min-h-11 justify-center text-xs capitalize"
+            className="portfolio-3d-chip-button capitalize"
             data-active={state.qualityTier === tier}
             aria-pressed={state.qualityTier === tier}
             aria-label={`Use ${tier} render quality`}
@@ -345,7 +377,6 @@ function Portfolio3dQualityControl(): React.ReactElement {
     </section>
   );
 }
-
 function Portfolio3dRoomControls(): React.ReactElement {
   const {
     state,
@@ -354,11 +385,11 @@ function Portfolio3dRoomControls(): React.ReactElement {
   } = usePortfolio3dState();
 
   return (
-    <section className="mt-4 border-t border-[var(--border)] pt-4" aria-label="Room controls">
-      <p className="mono mb-3 text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
-        room
+    <section className="border-t border-[rgba(148,163,184,0.24)] pt-3" aria-label="Room controls">
+      <p className="mono mb-2 text-[10px] uppercase tracking-[0.22em] text-[rgba(219,235,247,0.62)]">
+        Room
       </p>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">
+      <div className="grid gap-1.5">
         {roomControlHotspotIds.map((hotspotId) => {
           const hotspot = getHotspotById(hotspotId);
           if (!hotspot) {
@@ -369,7 +400,7 @@ function Portfolio3dRoomControls(): React.ReactElement {
             <button
               key={hotspot.id}
               type="button"
-              className="button-base button-secondary min-h-11 justify-between text-left text-xs"
+              className="portfolio-3d-room-chip"
               data-active={isRoomControlActive(hotspot.id, state)}
               aria-pressed={isRoomControlActive(hotspot.id, state)}
               onFocus={() => setFocusedHotspot(hotspot.id, 'keyboard')}
@@ -377,7 +408,7 @@ function Portfolio3dRoomControls(): React.ReactElement {
               onClick={() => activateHotspot(hotspot, 'keyboard')}
             >
               <span>{hotspot.label}</span>
-              <span className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--text-subtle)]">
+              <span className="mono text-[9px] uppercase tracking-[0.14em] text-[rgba(219,235,247,0.48)]">
                 {getRoomControlStatus(hotspot.id, state)}
               </span>
             </button>
@@ -387,7 +418,6 @@ function Portfolio3dRoomControls(): React.ReactElement {
     </section>
   );
 }
-
 function Portfolio3dInstructionHint(): React.ReactElement | null {
   const { state, setInstructionHintDismissed } = usePortfolio3dState();
 
@@ -396,13 +426,13 @@ function Portfolio3dInstructionHint(): React.ReactElement | null {
   }
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-10 max-w-[320px] rounded-[var(--radius-button)] border border-[var(--accent-border)] bg-[var(--surface-elevated)]/92 p-3 shadow-[var(--shadow-soft)] backdrop-blur sm:right-auto">
-      <p className="text-xs leading-5 text-[var(--text-muted)]">
-        Tap room markers or use section buttons. Camera stays guided.
+    <div className="portfolio-3d-instruction-hint absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-3 px-3 py-2 md:flex">
+      <p className="text-xs leading-5 text-[rgba(219,235,247,0.72)]">
+        Use Areas menu or room markers.
       </p>
       <button
         type="button"
-        className="button-base button-ghost mt-2 min-h-10 px-0 py-0 text-[10px] uppercase tracking-[0.18em] text-[var(--accent)]"
+        className="mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]"
         aria-label="Dismiss 3D portfolio hint"
         onClick={() => setInstructionHintDismissed(true)}
       >
@@ -411,7 +441,6 @@ function Portfolio3dInstructionHint(): React.ReactElement | null {
     </div>
   );
 }
-
 function Portfolio3dSectionPanel(): React.ReactElement {
   const { state, setActiveSection } = usePortfolio3dState();
   const headingRef = useRef<HTMLHeadingElement | null>(null);
@@ -429,12 +458,12 @@ function Portfolio3dSectionPanel(): React.ReactElement {
 
   if (!content) {
     return (
-      <section className="rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-elevated)] p-4">
+      <section className="portfolio-3d-detail-card">
         <p className="mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]">
-          content
+          Content
         </p>
-        <h2 className="mt-2 text-xl font-semibold">Content unavailable</h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
+        <h2 className="mt-2 text-lg font-semibold">Content unavailable</h2>
+        <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
           No public portfolio data is mapped for this section yet.
         </p>
       </section>
@@ -442,16 +471,13 @@ function Portfolio3dSectionPanel(): React.ReactElement {
   }
 
   return (
-    <section
-      className="rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-elevated)] p-4"
-      aria-labelledby="portfolio-3d-panel-heading"
-    >
+    <section className="portfolio-3d-detail-card" aria-labelledby="portfolio-3d-panel-heading">
       <div className="flex items-center justify-between gap-3">
         <p className="mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]">
           {content.eyebrow}
         </p>
-        <span className="mono rounded-full border border-[var(--border)] px-2 py-1 text-[9px] uppercase tracking-[0.18em] text-[var(--text-subtle)]">
-          {activeContract.label}
+        <span className="mono rounded-full border border-[rgba(83,216,255,0.35)] bg-[rgba(83,216,255,0.08)] px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-[rgba(219,235,247,0.74)]">
+          {portfolio3dAreaLabels[activeContract.id] ?? activeContract.label}
         </span>
       </div>
 
@@ -459,45 +485,45 @@ function Portfolio3dSectionPanel(): React.ReactElement {
         id="portfolio-3d-panel-heading"
         ref={headingRef}
         tabIndex={-1}
-        className="mt-2 text-xl font-semibold leading-tight"
+        className="mt-2 text-lg font-semibold leading-tight text-white outline-none sm:text-xl"
       >
         {content.title}
       </h2>
-      <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">{content.summary}</p>
+      <p className="mt-2 text-sm leading-6 text-[rgba(219,235,247,0.72)]">{content.summary}</p>
 
       {content.tags.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-2" aria-label="Related tags">
-          {content.tags.map((tag) => (
+        <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Related tags">
+          {content.tags.slice(0, 5).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[var(--border)] bg-[var(--surface-base)] px-2 py-1 text-[11px] font-semibold text-[var(--text-muted)]"
+              className="rounded-full border border-[rgba(148,163,184,0.24)] bg-[rgba(15,23,42,0.52)] px-2 py-1 text-[10px] font-semibold text-[rgba(219,235,247,0.64)]"
             >
               {tag}
             </span>
           ))}
         </div>
       ) : (
-        <p className="mt-4 text-xs text-[var(--text-subtle)]">{content.emptyLabel}</p>
+        <p className="mt-3 text-xs text-[var(--text-subtle)]">{content.emptyLabel}</p>
       )}
 
-      <div className="mt-5 grid gap-3">
+      <div className="mt-4 grid gap-2">
         {content.blocks.length > 0 ? (
-          content.blocks.map((block) => <Portfolio3dContentBlock key={block.heading} block={block} />)
+          content.blocks.slice(0, 2).map((block) => <Portfolio3dContentBlock key={block.heading} block={block} />)
         ) : (
           <p className="text-sm text-[var(--text-muted)]">{content.emptyLabel}</p>
         )}
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         {isPortfolio3dSafeHref(activeContract.routePath) ? (
           <a
             className="button-base button-secondary justify-center text-xs"
             href={getPortfolio3dPanelHref(activeContract.routePath)}
           >
-            Open HTML view
+            Open page
           </a>
         ) : null}
-        {content.links.map((link) => (
+        {content.links.slice(0, 2).map((link) => (
           <a
             key={link.label + '-' + link.href}
             className="button-base button-secondary justify-center text-xs"
@@ -513,7 +539,7 @@ function Portfolio3dSectionPanel(): React.ReactElement {
       {!isOverview ? (
         <button
           type="button"
-          className="button-base button-secondary mt-4 w-full justify-center"
+          className="button-base button-secondary mt-3 w-full justify-center text-xs"
           onClick={() => setActiveSection('overview')}
         >
           Back to overview
@@ -522,22 +548,21 @@ function Portfolio3dSectionPanel(): React.ReactElement {
     </section>
   );
 }
-
 function Portfolio3dContentBlock({
   block
 }: Readonly<{
   block: Portfolio3dPanelBlock;
 }>): React.ReactElement {
   return (
-    <article className="rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface-base)] p-3">
+    <article className="portfolio-3d-content-strip">
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">{block.heading}</h3>
       {block.body ? (
-        <p className="mt-2 text-xs leading-5 text-[var(--text-muted)]">{block.body}</p>
+        <p className="mt-1.5 text-xs leading-5 text-[rgba(219,235,247,0.66)]">{block.body}</p>
       ) : null}
       {block.items && block.items.length > 0 ? (
-        <ul className="mt-3 grid gap-2">
-          {block.items.map((item) => (
-            <li key={item} className="flex gap-2 text-xs leading-5 text-[var(--text-muted)]">
+        <ul className="mt-2 grid gap-1.5">
+          {block.items.slice(0, 3).map((item) => (
+            <li key={item} className="flex gap-2 text-xs leading-5 text-[rgba(219,235,247,0.64)]">
               <span
                 className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]"
                 aria-hidden="true"
@@ -550,7 +575,6 @@ function Portfolio3dContentBlock({
     </article>
   );
 }
-
 function getPortfolio3dPanelHref(href: string): string {
   return href.startsWith('/') ? withPortfolio3dBasePath(href) : href;
 }
