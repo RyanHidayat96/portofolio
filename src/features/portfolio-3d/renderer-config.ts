@@ -17,14 +17,14 @@ export const portfolio3dDefaultCamera = {
 } as const;
 
 export const portfolio3dRendererOptions = {
-  antialias: true,
+  antialias: false,
   alpha: true,
   depth: true,
   stencil: false,
   powerPreference: 'high-performance'
 } as const;
 
-export const portfolio3dRendererToneMappingExposure = 1.18;
+export const portfolio3dRendererToneMappingExposure = 1.35;
 export const portfolio3dRendererShadowType = THREE.PCFSoftShadowMap;
 
 export function getInitialPortfolio3dDpr(
@@ -45,6 +45,6 @@ export function configurePortfolio3dRenderer(renderer: THREE.WebGLRenderer): voi
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = portfolio3dRendererToneMappingExposure;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = false;
   renderer.shadowMap.type = portfolio3dRendererShadowType;
 }

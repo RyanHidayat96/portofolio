@@ -58,7 +58,7 @@ export function getPortfolio3dDprLimit(
   qualityTier: Portfolio3dQualityTier,
   capabilities = getPortfolio3dRuntimeCapabilities()
 ): number {
-  const tierLimit = qualityTier === 'low' ? 1 : qualityTier === 'medium' ? 1.25 : 1.5;
+  const tierLimit = qualityTier === 'low' ? 0.85 : qualityTier === 'medium' ? 1 : 1.2;
 
   if (
     capabilities.saveData ||

@@ -162,7 +162,9 @@ export function PortfolioSceneStage({
         : null}
 
       <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
-      <HotspotInteractionLayer runtimeNodesByAsset={runtimeNodesByAsset} />
+      {qualityTier === 'high' ? (
+        <HotspotInteractionLayer runtimeNodesByAsset={runtimeNodesByAsset} />
+      ) : null}
       <RoomInteractionController roomNodes={roomNodes} isDoorOpen={state.isDoorOpen} />
       {roomNodes ? (
         <WindowBackdropLayer

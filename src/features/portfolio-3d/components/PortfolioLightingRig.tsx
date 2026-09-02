@@ -121,6 +121,18 @@ export function PortfolioLightingRig({
         intensity={getPortfolio3dTierValue(profile.fallbackKeyIntensity, qualityTier) * clampedLightingLevel}
         color={profile.fallbackKeyColor}
       />
+      <directionalLight
+        position={[-3.2, 2.4, 3.1]}
+        intensity={0.52 * clampedLightingLevel}
+        color="#95d9ff"
+      />
+      <pointLight
+        position={[0, 1.34, 1.35]}
+        intensity={0.78 * clampedLightingLevel}
+        color="#9feaff"
+        distance={4.8}
+        decay={2}
+      />
       {screenAccentLights.map((light) => (
         <pointLight
           key={light.key}

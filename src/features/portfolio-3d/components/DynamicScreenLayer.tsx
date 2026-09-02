@@ -17,8 +17,8 @@ interface ScreenMaterialBinding {
   readonly previewMaterial: THREE.Material;
 }
 
-const screenCanvasWidth = 768;
-const screenCanvasHeight = 432;
+const screenCanvasWidth = 512;
+const screenCanvasHeight = 288;
 
 export function DynamicScreenLayer({
   runtimeNodesByAsset
@@ -145,7 +145,7 @@ function createPreviewTexture(preview: ScreenPreview): THREE.CanvasTexture {
   drawPreviewCanvas(context, preview);
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 4;
+  texture.anisotropy = 2;
   texture.generateMipmaps = true;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
@@ -164,30 +164,30 @@ function drawPreviewCanvas(context: CanvasRenderingContext2D, preview: ScreenPre
   drawGrid(context);
 
   context.strokeStyle = withAlpha(preview.accent, 0.72);
-  context.lineWidth = 3;
-  context.strokeRect(28, 28, screenCanvasWidth - 56, screenCanvasHeight - 56);
+  context.lineWidth = 2;
+  context.strokeRect(20, 20, screenCanvasWidth - 40, screenCanvasHeight - 40);
 
   context.fillStyle = preview.accent;
-  context.font = '600 24px monospace';
-  context.fillText(preview.eyebrow.toUpperCase(), 52, 76);
+  context.font = '600 18px monospace';
+  context.fillText(preview.eyebrow.toUpperCase(), 38, 52);
 
   context.fillStyle = '#eaf2ff';
-  context.font = '700 54px Inter, Arial, sans-serif';
-  wrapCanvasText(context, preview.title, 52, 145, 640, 58, 2);
+  context.font = '700 36px Inter, Arial, sans-serif';
+  wrapCanvasText(context, preview.title, 38, 100, 420, 39, 2);
 
-  const lineStartY = 246;
+  const lineStartY = 168;
   preview.lines.slice(0, 4).forEach((line, index) => {
-    const y = lineStartY + index * 38;
+    const y = lineStartY + index * 25;
     context.fillStyle = withAlpha(preview.accent, 0.92);
-    context.fillRect(52, y - 12, 18, 3);
+    context.fillRect(38, y - 8, 14, 2);
     context.fillStyle = '#aeb9ca';
-    context.font = '500 25px Inter, Arial, sans-serif';
-    context.fillText(truncateText(context, line, 600), 84, y);
+    context.font = '500 16px Inter, Arial, sans-serif';
+    context.fillText(truncateText(context, line, 398), 62, y);
   });
 
   context.fillStyle = withAlpha(preview.accent, 0.18);
   context.beginPath();
-  context.arc(665, 86, 42, 0, Math.PI * 2);
+  context.arc(444, 58, 28, 0, Math.PI * 2);
   context.fill();
   context.strokeStyle = withAlpha(preview.accent, 0.86);
   context.lineWidth = 2;

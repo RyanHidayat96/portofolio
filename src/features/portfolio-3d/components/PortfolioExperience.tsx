@@ -110,7 +110,7 @@ function PortfolioExperienceContent({
 
     responsiveDefaultsAppliedRef.current = true;
     if (shouldUsePortfolio3dMediumDefault()) {
-      setQualityTier('medium');
+      setQualityTier('low');
     }
   }, [setQualityTier]);
 
@@ -428,7 +428,7 @@ function Portfolio3dInstructionHint(): React.ReactElement | null {
   return (
     <div className="portfolio-3d-instruction-hint absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-3 px-3 py-2 md:flex">
       <p className="text-xs leading-5 text-[rgba(219,235,247,0.72)]">
-        Use Areas menu or room markers.
+        Use Areas menu. High render enables room markers.
       </p>
       <button
         type="button"
