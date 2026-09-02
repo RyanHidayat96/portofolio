@@ -181,7 +181,7 @@ function configureImportedLights(
     light.visible = intensity > 0;
     light.intensity = intensity;
     light.color.set(config.color);
-    light.castShadow = intensity > 0 && config.castShadowIn.includes(qualityTier);
+    light.castShadow = false;
 
     if (light instanceof THREE.SpotLight) {
       light.angle = config.angle ?? light.angle;
@@ -309,7 +309,7 @@ function DeskTaskLight({
   const target = targetRef.current;
   const placement = useMemo(() => resolveDeskTaskPlacement(runtimeNodesByAsset), [runtimeNodesByAsset]);
   const intensity = getPortfolio3dTierValue(portfolio3dDeskTaskLight.intensity, qualityTier) * intensityMultiplier;
-  const castShadow = intensity > 0 && portfolio3dDeskTaskLight.castShadowIn.includes(qualityTier);
+  const castShadow = false;
 
   useEffect(() => {
     target.position.set(...placement.target);

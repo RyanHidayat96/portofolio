@@ -134,6 +134,8 @@ function configureRuntimeMeshRenderState(scene: THREE.Object3D): void {
     if (isDisplaySurface) {
       object.renderOrder = Math.max(object.renderOrder, 3);
     }
+
+    tuneRuntimeMaterial(object.material, isRuntimeOnly, isGlass, isDisplaySurface);
   });
 }
 

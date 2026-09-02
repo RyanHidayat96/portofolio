@@ -29,6 +29,7 @@ import type {
 import { DynamicScreenLayer } from './DynamicScreenLayer';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { PortfolioLightingRig } from './PortfolioLightingRig';
+import { ProceduralWorkspaceScene } from './ProceduralWorkspaceScene';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
 import { SceneAssetBoundary } from './SceneAssetBoundary';
 
@@ -37,6 +38,8 @@ const criticalAssets = criticalPortfolio3dAssetIds.map((assetId) => portfolio3dA
 const criticalAssetIdSet = new Set<Portfolio3dAssetId>(criticalPortfolio3dAssetIds);
 const anchoredSceneAssets = portfolio3dAssets.filter((asset) => asset.id !== 'room-shell');
 const doorOpenRotationOffset = -1.08;
+// Imported GLB room is retained as an asset contract, but disabled by default because it blocks first paint on local hardware.
+const enableImportedGlbScene = false;
 
 export function PortfolioSceneStage({
   qualityTier = 'high',
@@ -53,9 +56,10 @@ export function PortfolioSceneStage({
   const [failedCriticalAssetIds, setFailedCriticalAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
-  const canRenderAnchoredAssets = Boolean(roomNodes) || failedCriticalAssetIds.includes('room-shell');
+  const useImportedAssets = enableImportedGlbScene ? qualityTier === 'high' : false;
+  const canRenderAnchoredAssets = useImportedAssets && (Boolean(roomNodes) || failedCriticalAssetIds.includes('room-shell'));
   const criticalComplete =
-    loadedCriticalAssetIds.length + failedCriticalAssetIds.length >= criticalAssets.length;
+    !useImportedAssets || loadedCriticalAssetIds.length + failedCriticalAssetIds.length >= criticalAssets.length;
   const tierAvailability = usePortfolio3dPreload(criticalComplete, qualityTier);
 
   const activePrimaryAssetId = useMemo(
@@ -81,12 +85,12 @@ export function PortfolioSceneStage({
 
   useEffect(() => {
     onCriticalProgressChange?.({
-      totalCriticalAssets: criticalAssets.length,
-      loadedCriticalAssets: loadedCriticalAssetIds.length,
-      failedCriticalAssets: failedCriticalAssetIds.length,
+      totalCriticalAssets: useImportedAssets ? criticalAssets.length : 0,
+      loadedCriticalAssets: useImportedAssets ? loadedCriticalAssetIds.length : 0,
+      failedCriticalAssets: useImportedAssets ? failedCriticalAssetIds.length : 0,
       isCriticalComplete: criticalComplete
     });
-  }, [criticalComplete, failedCriticalAssetIds.length, loadedCriticalAssetIds.length, onCriticalProgressChange]);
+  }, [criticalComplete, failedCriticalAssetIds.length, loadedCriticalAssetIds.length, onCriticalProgressChange, useImportedAssets]);
 
   const handleNodesMapped = useCallback((nodes: AssetRuntimeNodeMap): void => {
     setRuntimeNodesByAsset((current) => ({ ...current, [nodes.assetId]: nodes }));
@@ -138,14 +142,18 @@ export function PortfolioSceneStage({
         deskTaskLightingLevel={state.deskTaskLightingLevel}
       />
 
-      <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
-        <SceneAsset
-          asset={roomShellAsset}
-          onReady={handleAssetReady}
-          onNodesMapped={handleNodesMapped}
-          onNodesUnmapped={handleNodesUnmapped}
-        />
-      </SceneAssetBoundary>
+      <ProceduralWorkspaceScene qualityTier={qualityTier} />
+
+      {useImportedAssets ? (
+        <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
+          <SceneAsset
+            asset={roomShellAsset}
+            onReady={handleAssetReady}
+            onNodesMapped={handleNodesMapped}
+            onNodesUnmapped={handleNodesUnmapped}
+          />
+        </SceneAssetBoundary>
+      ) : null}
 
       {canRenderAnchoredAssets
         ? visibleAnchoredAssets.map((asset) => (
@@ -161,12 +169,12 @@ export function PortfolioSceneStage({
           ))
         : null}
 
-      <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
-      {qualityTier === 'high' ? (
+      {useImportedAssets ? <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} /> : null}
+      {useImportedAssets && qualityTier === 'high' ? (
         <HotspotInteractionLayer runtimeNodesByAsset={runtimeNodesByAsset} />
       ) : null}
-      <RoomInteractionController roomNodes={roomNodes} isDoorOpen={state.isDoorOpen} />
-      {roomNodes ? (
+      {useImportedAssets ? <RoomInteractionController roomNodes={roomNodes} isDoorOpen={state.isDoorOpen} /> : null}
+      {useImportedAssets && roomNodes ? (
         <WindowBackdropLayer
           anchor={roomNodes.anchors.get('Anchor_WindowBackdrop')}
           environmentVariant={state.environmentVariant}

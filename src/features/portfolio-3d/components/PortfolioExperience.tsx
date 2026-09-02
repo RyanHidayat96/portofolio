@@ -43,13 +43,6 @@ interface Portfolio3dErrorBoundaryState {
   readonly hasError: boolean;
 }
 
-const roomControlHotspotIds = [
-  'window',
-  'door',
-  'room-lighting',
-  'ceiling-lights',
-  'desk-lamp'
-] as const satisfies readonly Portfolio3dHotspotId[];
 const qualityTiers = ['low', 'medium', 'high'] as const satisfies readonly Portfolio3dQualityTier[];
 const portfolio3dAreaLabels = {
   overview: 'Overview',
@@ -377,47 +370,6 @@ function Portfolio3dQualityControl(): React.ReactElement {
     </section>
   );
 }
-function Portfolio3dRoomControls(): React.ReactElement {
-  const {
-    state,
-    setFocusedHotspot,
-    activateHotspot
-  } = usePortfolio3dState();
-
-  return (
-    <section className="border-t border-[rgba(148,163,184,0.24)] pt-3" aria-label="Room controls">
-      <p className="mono mb-2 text-[10px] uppercase tracking-[0.22em] text-[rgba(219,235,247,0.62)]">
-        Room
-      </p>
-      <div className="grid gap-1.5">
-        {roomControlHotspotIds.map((hotspotId) => {
-          const hotspot = getHotspotById(hotspotId);
-          if (!hotspot) {
-            return null;
-          }
-
-          return (
-            <button
-              key={hotspot.id}
-              type="button"
-              className="portfolio-3d-room-chip"
-              data-active={isRoomControlActive(hotspot.id, state)}
-              aria-pressed={isRoomControlActive(hotspot.id, state)}
-              onFocus={() => setFocusedHotspot(hotspot.id, 'keyboard')}
-              onBlur={() => setFocusedHotspot(undefined)}
-              onClick={() => activateHotspot(hotspot, 'keyboard')}
-            >
-              <span>{hotspot.label}</span>
-              <span className="mono text-[9px] uppercase tracking-[0.14em] text-[rgba(219,235,247,0.48)]">
-                {getRoomControlStatus(hotspot.id, state)}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 function Portfolio3dInstructionHint(): React.ReactElement | null {
   const { state, setInstructionHintDismissed } = usePortfolio3dState();
 
@@ -428,7 +380,7 @@ function Portfolio3dInstructionHint(): React.ReactElement | null {
   return (
     <div className="portfolio-3d-instruction-hint absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-3 px-3 py-2 md:flex">
       <p className="text-xs leading-5 text-[rgba(219,235,247,0.72)]">
-        Use Areas menu. High render enables room markers.
+        Use Areas menu. Scene stays lightweight.
       </p>
       <button
         type="button"
@@ -583,61 +535,6 @@ function getHotspotById(hotspotId: Portfolio3dHotspotId | undefined): Portfolio3
   return hotspotId ? portfolio3dHotspots.find((hotspot) => hotspot.id === hotspotId) : undefined;
 }
 
-function isRoomControlActive(hotspotId: Portfolio3dHotspotId, state: ReturnType<typeof usePortfolio3dState>['state']): boolean {
-  if (hotspotId === 'door') {
-    return state.isDoorOpen;
-  }
-
-  if (hotspotId === 'window') {
-    return state.environmentVariant !== 'studio';
-  }
-
-  if (hotspotId === 'ceiling-lights') {
-    return state.ceilingLightingLevel > 0;
-  }
-
-  if (hotspotId === 'desk-lamp') {
-    return state.deskTaskLightingLevel > 0;
-  }
-
-  if (hotspotId === 'room-lighting') {
-    return state.lightingMode !== 'studio';
-  }
-
-  return false;
-}
-
-function getRoomControlStatus(hotspotId: Portfolio3dHotspotId, state: ReturnType<typeof usePortfolio3dState>['state']): string {
-  if (hotspotId === 'door') {
-    return state.isDoorOpen ? 'open' : 'closed';
-  }
-
-  if (hotspotId === 'window') {
-    return state.environmentVariant;
-  }
-
-  if (hotspotId === 'ceiling-lights') {
-    return `${formatLightLevel(state.ceilingLightingLevel)} / ${state.ceilingLightAim}`;
-  }
-
-  if (hotspotId === 'desk-lamp') {
-    return state.deskTaskLightingLevel > 0 ? 'on' : 'off';
-  }
-
-  if (hotspotId === 'room-lighting') {
-    return state.lightingMode;
-  }
-
-  return '';
-}
-
-function formatLightLevel(level: number): string {
-  if (level <= 0) {
-    return 'off';
-  }
-
-  return level < 0.7 ? 'dim' : 'full';
-}
 
 class Portfolio3dErrorBoundary extends Component<
   Readonly<{ children: React.ReactNode; fallback: React.ReactNode }>,

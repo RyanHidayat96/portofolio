@@ -67,7 +67,7 @@ export function Portfolio3dProvider({
   const [state, setState] = useState<Portfolio3dState>({
     activeSectionId: initialSectionId,
     navigationState: initialSectionId === 'overview' ? 'overview' : 'focusing',
-    qualityTier: 'medium',
+    qualityTier: 'low',
     lightingMode: 'studio',
     roomLightingLevel: 1,
     environmentVariant: 'studio',

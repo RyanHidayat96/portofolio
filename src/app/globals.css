@@ -6137,15 +6137,15 @@ textarea:focus-visible,
 }
 
 .portfolio-3d-shell canvas {
-  filter: saturate(1.08) contrast(1.06);
+  filter: brightness(1.24) saturate(1.12) contrast(1.03);
   touch-action: pan-y;
 }
 
 .portfolio-3d-cinematic-vignette {
   background:
-    radial-gradient(circle at 51% 45%, transparent 0, transparent 28%, rgba(3, 6, 10, 0.06) 46%, rgba(3, 6, 10, 0.56) 100%),
-    linear-gradient(90deg, rgba(3, 6, 10, 0.66) 0%, rgba(3, 6, 10, 0.3) 18%, rgba(3, 6, 10, 0.02) 45%, rgba(3, 6, 10, 0.22) 74%, rgba(3, 6, 10, 0.54) 100%),
-    linear-gradient(180deg, rgba(3, 6, 10, 0.28) 0%, transparent 24%, rgba(3, 6, 10, 0.34) 100%);
+    radial-gradient(circle at 51% 45%, transparent 0, transparent 36%, rgba(3, 6, 10, 0.03) 56%, rgba(3, 6, 10, 0.34) 100%),
+    linear-gradient(90deg, rgba(3, 6, 10, 0.46) 0%, rgba(3, 6, 10, 0.18) 18%, rgba(3, 6, 10, 0.01) 45%, rgba(3, 6, 10, 0.14) 74%, rgba(3, 6, 10, 0.38) 100%),
+    linear-gradient(180deg, rgba(3, 6, 10, 0.18) 0%, transparent 24%, rgba(3, 6, 10, 0.24) 100%);
 }
 
 .portfolio-3d-city-glow {

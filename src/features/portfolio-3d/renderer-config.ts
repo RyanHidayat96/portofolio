@@ -24,7 +24,7 @@ export const portfolio3dRendererOptions = {
   powerPreference: 'high-performance'
 } as const;
 
-export const portfolio3dRendererToneMappingExposure = 1.35;
+export const portfolio3dRendererToneMappingExposure = 1.55;
 export const portfolio3dRendererShadowType = THREE.PCFSoftShadowMap;
 
 export function getInitialPortfolio3dDpr(

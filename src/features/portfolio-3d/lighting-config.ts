@@ -89,17 +89,17 @@ export const portfolio3dLightingProfiles = {
     fogNear: 7.5,
     fogFar: 18,
     ambientColor: '#dce8ff',
-    ambientIntensity: tier(1.08, 0.98, 0.92),
+    ambientIntensity: tier(1.24, 1.12, 1.04),
     hemisphereSkyColor: '#dce8ff',
     hemisphereGroundColor: '#101923',
-    hemisphereIntensity: tier(0.66, 0.58, 0.52),
+    hemisphereIntensity: tier(0.78, 0.68, 0.62),
     fallbackKeyColor: '#fff7e8',
     fallbackKeyPosition: [2.4, 3.1, 3.6],
-    fallbackKeyIntensity: tier(1.8, 1.56, 1.36),
+    fallbackKeyIntensity: tier(2.15, 1.86, 1.62),
     importedIntensityMultiplier: 1.32,
     screenAccentMultiplier: 0.92,
     deskTaskMultiplier: 1.2,
-    exposure: 1.35
+    exposure: 1.55
   },
   focus: {
     background: '#04060a',
