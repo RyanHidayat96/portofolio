@@ -1,7 +1,7 @@
 'use client';
 
 import { useLoader } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { getPortfolio3dAssetUrl } from '../asset-url';
@@ -21,14 +21,11 @@ export interface AssetRuntimeNodeMap {
   readonly colliders: ReadonlyMap<string, THREE.Object3D>;
   readonly navMeshes: ReadonlyMap<string, THREE.Object3D>;
   readonly lights: ReadonlyMap<string, THREE.Light>;
-  readonly doorPivot?: THREE.Object3D;
   readonly bounds: THREE.Box3;
 }
 
 const warnedMissingAnchors = new Set<string>();
 const warnedMissingNodes = new Set<string>();
-const materialLiftColor = new THREE.Color('#9bb7ca');
-const materialEmissiveLiftColor = new THREE.Color('#102130');
 
 export function SceneAsset({
   asset,
@@ -49,7 +46,7 @@ export function SceneAsset({
     [asset, gltf.scene, roomAnchors]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     onNodesMapped?.(runtime.nodes);
     onReady?.(asset.id);
 
@@ -148,20 +145,16 @@ function tuneRuntimeMaterial(
   const materials = Array.isArray(material) ? material : [material];
 
   materials.forEach((entry) => {
-    const colorMaterial = entry as THREE.Material & { color?: THREE.Color };
-
-    if (!isRuntimeOnly && !isDisplaySurface && colorMaterial.color instanceof THREE.Color) {
-      colorMaterial.color.lerp(materialLiftColor, isGlass ? 0.04 : 0.14);
+    if (entry instanceof THREE.MeshStandardMaterial) {
+      entry.envMapIntensity = Math.max(entry.envMapIntensity, isRuntimeOnly ? 1 : 1.2);
     }
 
-    if (entry instanceof THREE.MeshStandardMaterial) {
-      entry.envMapIntensity = Math.max(entry.envMapIntensity, 1.35);
-      entry.roughness = Math.min(Math.max(entry.roughness, 0.34), 0.84);
+    if (isDisplaySurface) {
+      entry.toneMapped = false;
+    }
 
-      if (!isRuntimeOnly && !isDisplaySurface && !isGlass) {
-        entry.emissive.lerp(materialEmissiveLiftColor, 0.28);
-        entry.emissiveIntensity = Math.max(entry.emissiveIntensity, 0.08);
-      }
+    if (isGlass) {
+      entry.transparent = true;
     }
 
     entry.needsUpdate = true;
@@ -231,7 +224,6 @@ function mapSceneAssetNodes(asset: SceneAssetDefinition, scene: THREE.Group): As
   const colliders = new Map<string, THREE.Object3D>();
   const navMeshes = new Map<string, THREE.Object3D>();
   const lights = new Map<string, THREE.Light>();
-  let doorPivot: THREE.Object3D | undefined;
 
   scene.traverse((object) => {
     const name = object.name;
@@ -264,10 +256,6 @@ function mapSceneAssetNodes(asset: SceneAssetDefinition, scene: THREE.Group): As
       object.visible = false;
     }
 
-    if (name === 'Door_Pivot') {
-      doorPivot = object;
-    }
-
     if (object instanceof THREE.Light) {
       lights.set(name || object.uuid, object);
       object.castShadow = false;
@@ -283,11 +271,6 @@ function mapSceneAssetNodes(asset: SceneAssetDefinition, scene: THREE.Group): As
   asset.nodes.screens?.forEach((nodeName) => warnIfMissing(asset, nodeName, screens));
   asset.nodes.navMeshes?.forEach((nodeName) => warnIfMissing(asset, nodeName, navMeshes));
   asset.nodes.colliders?.forEach((nodeName) => warnIfMissing(asset, nodeName, colliders));
-  asset.nodes.doors?.forEach((nodeName) => {
-    if (nodeName === 'Door_Pivot' && !doorPivot) {
-      warnMissingNode(asset.id, nodeName);
-    }
-  });
 
   return {
     assetId: asset.id,
@@ -298,7 +281,6 @@ function mapSceneAssetNodes(asset: SceneAssetDefinition, scene: THREE.Group): As
     colliders,
     navMeshes,
     lights,
-    doorPivot,
     bounds: new THREE.Box3().setFromObject(scene)
   };
 }

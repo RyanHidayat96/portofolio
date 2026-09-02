@@ -1,4 +1,4 @@
-﻿# 3D Asset Contract
+# 3D Asset Contract
 
 Date: 2026-09-02
 Stage: 1 - Architecture, data contracts, and integration plan
@@ -50,17 +50,15 @@ Stage 1 did not move assets. A later stage must choose the serving strategy, suc
 
 | Tier | Assets |
 | --- | --- |
-| critical | `room-shell`, `desk`, `chair`, `main-monitor` |
-| near | `architecture-screen`, `laptop`, `server-rack`, `hologram-projector`, `ceiling-lights` |
+| critical | `room-shell` |
+| near | `ceiling-lights`, `desk`, `chair`, `main-monitor`, `architecture-screen`, `laptop`, `server-rack`, `hologram-projector` |
 | deferred | `pipeline-console`, `keyboard-mouse`, `storage-shelf`, `desk-lamp`, `desk-accessories`, `plants` |
 
-Critical assets must define first meaningful render. Near/deferred assets must not block the first usable room.
+Critical asset loads the authored room first. Anchored GLB props mount progressively after the room is usable, so the original asset style returns without blocking first render.
 
-## Quality Visibility
+## Responsive Quality
 
-- Low: room shell, desk, chair, main monitor only.
-- Medium: critical plus architecture screen, laptop, server rack, hologram projector, ceiling lights, pipeline console.
-- High: all assets, including workstation props and plants.
+Render quality is automatic. Public UI must not expose Low/Medium/High controls.
 
 ## Room Anchors
 
@@ -104,11 +102,6 @@ Main readable content must remain DOM-based. 3D screens should be lightweight pr
 | `Hotspot_Terminal` | `keyboard-mouse` | open Terminal |
 | `Hotspot_EngineeringLab` | `storage-shelf` | open Automation |
 | `Hotspot_DeskAccessories` | `desk-accessories` | open Contact |
-| `Hotspot_Window` | `room-shell` | cycle environment |
-| `Hotspot_Door` | `room-shell` | toggle door |
-| `Hotspot_RoomLighting` | `room-shell` | toggle room lighting |
-| `Hotspot_CeilingLights` | `ceiling-lights` | toggle ceiling lights |
-| `Hotspot_DeskLamp` | `desk-lamp` | toggle desk lamp |
 | `Hotspot_Plants` | `plants` | inspect prop |
 
 ## Node Alias
@@ -140,7 +133,7 @@ Later stages must audit imported lights before adding any new lights. Not every 
 - `Collider_RightWall_Back`
 - `Collider_Ceiling`
 - `NavMesh_Room`
-- `Door_Pivot` stays available for interaction but is not a visible helper.
+- Door, window, lamp, and render quality controls are intentionally not exposed in the public UI.
 
 ## Section Data Contract
 
@@ -167,7 +160,7 @@ No portfolio facts were copied into 3D content. Labels and strategies are struct
 
 - Query param reserved for 3D section focus: `section`.
 - Navigation states: `overview`, `focusing`, `section-open`, `returning`.
-- Events: `hotspot.focus`, `hotspot.activate`, `camera.transition`, `route.sync`, `room.toggle`.
+- Events: `hotspot.focus`, `hotspot.activate`, `camera.transition`, `route.sync`.
 - Reduced motion is part of every camera preset.
 
 ## Stage 1 Validation

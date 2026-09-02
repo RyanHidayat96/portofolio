@@ -36,7 +36,6 @@ export type Portfolio3dPublicPath = `/models/portfolio-3d/${Portfolio3dAssetFile
 export type Portfolio3dLoadingTier = 'critical' | 'near' | 'deferred';
 export type Portfolio3dQualityTier = 'low' | 'medium' | 'high';
 export type Portfolio3dLightingMode = 'studio' | 'focus' | 'ambient';
-export type Portfolio3dEnvironmentVariant = 'studio' | 'dawn' | 'night';
 export type Portfolio3dCeilingLightAim = 'desk' | 'rack' | 'wide';
 export type Portfolio3dLightingGroup =
   | 'ambient-cove'
@@ -70,7 +69,6 @@ export interface SceneNodeInventory {
   readonly screens?: readonly Portfolio3dScreenNodeName[];
   readonly colliders?: readonly string[];
   readonly navMeshes?: readonly string[];
-  readonly doors?: readonly string[];
   readonly lights?: readonly string[];
   readonly runtimeHidden?: readonly string[];
 }
@@ -103,19 +101,11 @@ export type Portfolio3dHotspotId =
   | 'terminal'
   | 'automation'
   | 'contact'
-  | 'window'
-  | 'door'
-  | 'room-lighting'
-  | 'ceiling-lights'
-  | 'desk-lamp'
   | 'plants';
 
 export type Portfolio3dInteractionKind =
   | 'open-section'
-  | 'inspect-prop'
-  | 'cycle-environment'
-  | 'toggle-door'
-  | 'toggle-lighting';
+  | 'inspect-prop';
 
 export interface Portfolio3dHotspotDefinition {
   readonly id: Portfolio3dHotspotId;
@@ -202,11 +192,6 @@ export type Portfolio3dInteractionEvent =
       readonly type: 'route.sync';
       readonly sectionId: Portfolio3dSectionId;
       readonly path: string;
-    }
-  | {
-      readonly type: 'room.toggle';
-      readonly target: 'door' | 'window' | 'lighting';
-      readonly enabled: boolean;
     };
 
 export interface Portfolio3dLoadingProgress {

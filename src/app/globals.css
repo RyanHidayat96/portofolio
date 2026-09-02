@@ -6137,15 +6137,15 @@ textarea:focus-visible,
 }
 
 .portfolio-3d-shell canvas {
-  filter: brightness(1.24) saturate(1.12) contrast(1.03);
+  filter: brightness(1.34) saturate(1.1) contrast(1.02);
   touch-action: pan-y;
 }
 
 .portfolio-3d-cinematic-vignette {
   background:
-    radial-gradient(circle at 51% 45%, transparent 0, transparent 36%, rgba(3, 6, 10, 0.03) 56%, rgba(3, 6, 10, 0.34) 100%),
-    linear-gradient(90deg, rgba(3, 6, 10, 0.46) 0%, rgba(3, 6, 10, 0.18) 18%, rgba(3, 6, 10, 0.01) 45%, rgba(3, 6, 10, 0.14) 74%, rgba(3, 6, 10, 0.38) 100%),
-    linear-gradient(180deg, rgba(3, 6, 10, 0.18) 0%, transparent 24%, rgba(3, 6, 10, 0.24) 100%);
+    radial-gradient(circle at 51% 45%, transparent 0, transparent 42%, rgba(3, 6, 10, 0.02) 62%, rgba(3, 6, 10, 0.22) 100%),
+    linear-gradient(90deg, rgba(3, 6, 10, 0.32) 0%, rgba(3, 6, 10, 0.12) 18%, rgba(3, 6, 10, 0) 45%, rgba(3, 6, 10, 0.08) 74%, rgba(3, 6, 10, 0.24) 100%),
+    linear-gradient(180deg, rgba(3, 6, 10, 0.12) 0%, transparent 24%, rgba(3, 6, 10, 0.18) 100%);
 }
 
 .portfolio-3d-city-glow {
@@ -6181,8 +6181,7 @@ textarea:focus-visible,
 }
 
 .portfolio-3d-area-button,
-.portfolio-3d-chip-button,
-.portfolio-3d-room-chip {
+.portfolio-3d-chip-button {
   width: 100%;
   border: 1px solid rgba(180, 221, 245, 0.16);
   background: rgba(15, 23, 36, 0.56);
@@ -6224,29 +6223,16 @@ textarea:focus-visible,
   font-size: 0.72rem;
 }
 
-.portfolio-3d-room-chip {
-  display: flex;
-  min-height: 38px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-radius: 6px;
-  padding: 0.48rem 0.62rem;
-  text-align: left;
-  font-size: 0.75rem;
-}
 
 .portfolio-3d-area-button:hover:not(:disabled),
-.portfolio-3d-chip-button:hover:not(:disabled),
-.portfolio-3d-room-chip:hover:not(:disabled) {
+.portfolio-3d-chip-button:hover:not(:disabled) {
   border-color: rgba(83, 216, 255, 0.55);
   background: rgba(31, 51, 72, 0.72);
   transform: translateY(-1px);
 }
 
 .portfolio-3d-area-button[data-active='true'],
-.portfolio-3d-chip-button[data-active='true'],
-.portfolio-3d-room-chip[data-active='true'] {
+.portfolio-3d-chip-button[data-active='true'] {
   border-color: rgba(83, 216, 255, 0.82);
   background: linear-gradient(135deg, rgba(83, 216, 255, 0.22), rgba(15, 23, 36, 0.74));
   color: #ffffff;
@@ -6257,7 +6243,6 @@ textarea:focus-visible,
 
 .portfolio-3d-area-button:focus-visible,
 .portfolio-3d-chip-button:focus-visible,
-.portfolio-3d-room-chip:focus-visible,
 .portfolio-3d-top-actions a:focus-visible,
 .portfolio-3d-detail-card a:focus-visible,
 .portfolio-3d-detail-card button:focus-visible {

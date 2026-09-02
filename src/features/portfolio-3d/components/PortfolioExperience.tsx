@@ -4,7 +4,6 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Activity, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
 import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { withPortfolio3dBasePath } from '../asset-url';
-import { shouldUsePortfolio3dMediumDefault } from '../runtime-capabilities';
 import type {
   Portfolio3dHotspotDefinition,
   Portfolio3dHotspotId,
@@ -43,7 +42,6 @@ interface Portfolio3dErrorBoundaryState {
   readonly hasError: boolean;
 }
 
-const qualityTiers = ['low', 'medium', 'high'] as const satisfies readonly Portfolio3dQualityTier[];
 const portfolio3dAreaLabels = {
   overview: 'Overview',
   profile: 'About Me',
@@ -92,20 +90,8 @@ function PortfolioExperienceContent({
   fallback: React.ReactNode;
 }>): React.ReactElement {
   const webglStatus = useWebGLSupport();
-  const { state, setQualityTier } = usePortfolio3dState();
+  const { state } = usePortfolio3dState();
   const [assetProgress, setAssetProgress] = useState<Portfolio3dLoadingProgress>();
-  const responsiveDefaultsAppliedRef = useRef(false);
-
-  useEffect(() => {
-    if (responsiveDefaultsAppliedRef.current || typeof window === 'undefined') {
-      return;
-    }
-
-    responsiveDefaultsAppliedRef.current = true;
-    if (shouldUsePortfolio3dMediumDefault()) {
-      setQualityTier('low');
-    }
-  }, [setQualityTier]);
 
   return (
     <>
@@ -332,42 +318,7 @@ function Portfolio3dNavigation(): React.ReactElement {
           })}
         </div>
       </div>
-
-      <Portfolio3dQualityControl />
-      <Portfolio3dRoomControls />
     </nav>
-  );
-}
-function Portfolio3dQualityControl(): React.ReactElement {
-  const { state, setQualityTier } = usePortfolio3dState();
-
-  return (
-    <section
-      className="border-t border-[rgba(148,163,184,0.24)] pt-3"
-      aria-labelledby="portfolio-3d-quality-label"
-    >
-      <p
-        id="portfolio-3d-quality-label"
-        className="mono mb-2 text-[10px] uppercase tracking-[0.22em] text-[rgba(219,235,247,0.62)]"
-      >
-        Render
-      </p>
-      <div className="grid grid-cols-3 gap-1.5" role="group" aria-labelledby="portfolio-3d-quality-label">
-        {qualityTiers.map((tier) => (
-          <button
-            key={tier}
-            type="button"
-            className="portfolio-3d-chip-button capitalize"
-            data-active={state.qualityTier === tier}
-            aria-pressed={state.qualityTier === tier}
-            aria-label={`Use ${tier} render quality`}
-            onClick={() => setQualityTier(tier)}
-          >
-            {tier}
-          </button>
-        ))}
-      </div>
-    </section>
   );
 }
 function Portfolio3dInstructionHint(): React.ReactElement | null {
@@ -380,7 +331,7 @@ function Portfolio3dInstructionHint(): React.ReactElement | null {
   return (
     <div className="portfolio-3d-instruction-hint absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-3 px-3 py-2 md:flex">
       <p className="text-xs leading-5 text-[rgba(219,235,247,0.72)]">
-        Use Areas menu. Scene stays lightweight.
+        Use Areas menu. 3D scene loads progressively.
       </p>
       <button
         type="button"

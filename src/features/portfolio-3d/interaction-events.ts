@@ -1,4 +1,4 @@
-﻿import type { Portfolio3dInteractionEvent, Portfolio3dNavigationState } from './types';
+import type { Portfolio3dInteractionEvent, Portfolio3dNavigationState } from './types';
 
 export const portfolio3dNavigationStates = [
   'overview',
@@ -11,8 +11,7 @@ export const portfolio3dInteractionEventTypes = [
   'hotspot.focus',
   'hotspot.activate',
   'camera.transition',
-  'route.sync',
-  'room.toggle'
+  'route.sync'
 ] as const satisfies readonly Portfolio3dInteractionEvent['type'][];
 
 export const portfolio3dDefaultTransition = {

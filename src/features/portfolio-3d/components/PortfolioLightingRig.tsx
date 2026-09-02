@@ -3,6 +3,7 @@
 import { useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {
   getPortfolio3dTierValue,
   portfolio3dDeskTaskLight,
@@ -64,6 +65,21 @@ export function PortfolioLightingRig({
     () => resolveCeilingAimTarget(runtimeNodesByAsset, ceilingLightAim),
     [ceilingLightAim, runtimeNodesByAsset]
   );
+
+  useEffect(() => {
+    const previousEnvironment = scene.environment;
+    const pmremGenerator = new THREE.PMREMGenerator(gl);
+    const neutralRoom = new RoomEnvironment();
+    const environmentTexture = pmremGenerator.fromScene(neutralRoom).texture;
+
+    scene.environment = environmentTexture;
+
+    return () => {
+      scene.environment = previousEnvironment;
+      environmentTexture.dispose();
+      pmremGenerator.dispose();
+    };
+  }, [gl, scene]);
 
   useEffect(() => {
     gl.toneMappingExposure = profile.exposure;

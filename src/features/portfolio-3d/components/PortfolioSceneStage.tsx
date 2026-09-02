@@ -1,10 +1,9 @@
 'use client';
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion';
-import { usePortfolio3dPreload } from '../hooks/usePortfolio3dPreload';
 import {
   constrainPortfolio3dCameraPosition,
   createLookAtQuaternion,
@@ -21,7 +20,6 @@ import { usePortfolio3dState } from '../state/Portfolio3dState';
 import type {
   Portfolio3dAssetId,
   Portfolio3dCameraPreset,
-  Portfolio3dEnvironmentVariant,
   Portfolio3dLoadingProgress,
   Portfolio3dQualityTier,
   SceneAssetDefinition
@@ -29,7 +27,6 @@ import type {
 import { DynamicScreenLayer } from './DynamicScreenLayer';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { PortfolioLightingRig } from './PortfolioLightingRig';
-import { ProceduralWorkspaceScene } from './ProceduralWorkspaceScene';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
 import { SceneAssetBoundary } from './SceneAssetBoundary';
 
@@ -37,9 +34,19 @@ const roomShellAsset = portfolio3dAssetById['room-shell'];
 const criticalAssets = criticalPortfolio3dAssetIds.map((assetId) => portfolio3dAssetById[assetId]);
 const criticalAssetIdSet = new Set<Portfolio3dAssetId>(criticalPortfolio3dAssetIds);
 const anchoredSceneAssets = portfolio3dAssets.filter((asset) => asset.id !== 'room-shell');
-const doorOpenRotationOffset = -1.08;
-// Imported GLB room is retained as an asset contract, but disabled by default because it blocks first paint on local hardware.
-const enableImportedGlbScene = false;
+const initiallyEnabledAnchoredAssetIds = [
+  'ceiling-lights',
+  'desk',
+  'chair',
+  'main-monitor',
+  'architecture-screen',
+  'laptop'
+] as const satisfies readonly Portfolio3dAssetId[];
+
+const progressiveAssetOrder = [
+  'server-rack',
+  'hologram-projector'
+] as const satisfies readonly Portfolio3dAssetId[];
 
 export function PortfolioSceneStage({
   qualityTier = 'high',
@@ -52,21 +59,23 @@ export function PortfolioSceneStage({
   const [runtimeNodesByAsset, setRuntimeNodesByAsset] = useState<
     Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>
   >({});
-  const [loadedCriticalAssetIds, setLoadedCriticalAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
+  const [loadedCriticalAssetIds, setLoadedCriticalAssetIds] = useState<readonly Portfolio3dAssetId[]>(['room-shell']);
   const [failedCriticalAssetIds, setFailedCriticalAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
+  const [enabledAnchoredAssetIds, setEnabledAnchoredAssetIds] = useState<readonly Portfolio3dAssetId[]>(initiallyEnabledAnchoredAssetIds);
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
-  const useImportedAssets = enableImportedGlbScene ? qualityTier === 'high' : false;
-  const canRenderAnchoredAssets = useImportedAssets && (Boolean(roomNodes) || failedCriticalAssetIds.includes('room-shell'));
-  const criticalComplete =
-    !useImportedAssets || loadedCriticalAssetIds.length + failedCriticalAssetIds.length >= criticalAssets.length;
-  const tierAvailability = usePortfolio3dPreload(criticalComplete, qualityTier);
+  const canRenderAnchoredAssets = Boolean(roomNodes);
+  const criticalComplete = loadedCriticalAssetIds.length + failedCriticalAssetIds.length >= criticalAssets.length;
 
   const activePrimaryAssetId = useMemo(
     () =>
       portfolio3dSectionContracts.find((contract) => contract.id === state.activeSectionId)
         ?.primaryAssetId,
     [state.activeSectionId]
+  );
+  const enabledAnchoredAssetIdSet = useMemo(
+    () => new Set<Portfolio3dAssetId>(enabledAnchoredAssetIds),
+    [enabledAnchoredAssetIds]
   );
 
   const visibleAnchoredAssets = useMemo(
@@ -75,22 +84,41 @@ export function PortfolioSceneStage({
         shouldRenderSceneAsset({
           asset,
           activePrimaryAssetId,
-          criticalComplete,
-          qualityTier,
-          tierAvailability
+          enabledAnchoredAssetIds: enabledAnchoredAssetIdSet,
+          qualityTier
         })
       ),
-    [activePrimaryAssetId, criticalComplete, qualityTier, tierAvailability]
+    [activePrimaryAssetId, enabledAnchoredAssetIdSet, qualityTier]
   );
 
   useEffect(() => {
     onCriticalProgressChange?.({
-      totalCriticalAssets: useImportedAssets ? criticalAssets.length : 0,
-      loadedCriticalAssets: useImportedAssets ? loadedCriticalAssetIds.length : 0,
-      failedCriticalAssets: useImportedAssets ? failedCriticalAssetIds.length : 0,
+      totalCriticalAssets: criticalAssets.length,
+      loadedCriticalAssets: loadedCriticalAssetIds.length,
+      failedCriticalAssets: failedCriticalAssetIds.length,
       isCriticalComplete: criticalComplete
     });
-  }, [criticalComplete, failedCriticalAssetIds.length, loadedCriticalAssetIds.length, onCriticalProgressChange, useImportedAssets]);
+  }, [criticalComplete, failedCriticalAssetIds.length, loadedCriticalAssetIds.length, onCriticalProgressChange]);
+
+  useEffect(() => {
+    if (!criticalComplete || !canRenderAnchoredAssets) {
+      return;
+    }
+
+    const nextAssetId = getNextProgressiveAssetId(enabledAnchoredAssetIds, activePrimaryAssetId);
+    if (!nextAssetId) {
+      return;
+    }
+
+    const delayMs = enabledAnchoredAssetIds.length === 0 || nextAssetId === activePrimaryAssetId ? 180 : 780;
+    const timeoutId = window.setTimeout(() => {
+      setEnabledAnchoredAssetIds((current) =>
+        current.includes(nextAssetId) ? current : [...current, nextAssetId]
+      );
+    }, delayMs);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [activePrimaryAssetId, canRenderAnchoredAssets, criticalComplete, enabledAnchoredAssetIds]);
 
   const handleNodesMapped = useCallback((nodes: AssetRuntimeNodeMap): void => {
     setRuntimeNodesByAsset((current) => ({ ...current, [nodes.assetId]: nodes }));
@@ -142,43 +170,34 @@ export function PortfolioSceneStage({
         deskTaskLightingLevel={state.deskTaskLightingLevel}
       />
 
-      <ProceduralWorkspaceScene qualityTier={qualityTier} />
+      <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
+        <SceneAsset
+          asset={roomShellAsset}
+          onReady={handleAssetReady}
+          onNodesMapped={handleNodesMapped}
+          onNodesUnmapped={handleNodesUnmapped}
+        />
+      </SceneAssetBoundary>
 
-      {useImportedAssets ? (
-        <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
-          <SceneAsset
-            asset={roomShellAsset}
-            onReady={handleAssetReady}
-            onNodesMapped={handleNodesMapped}
-            onNodesUnmapped={handleNodesUnmapped}
-          />
-        </SceneAssetBoundary>
-      ) : null}
-
-      {canRenderAnchoredAssets
+      {canRenderAnchoredAssets && visibleAnchoredAssets.length > 0
         ? visibleAnchoredAssets.map((asset) => (
             <SceneAssetBoundary key={asset.id} asset={asset} onError={handleAssetError}>
-              <SceneAsset
-                asset={asset}
-                roomAnchors={roomNodes?.anchors}
-                onReady={handleAssetReady}
-                onNodesMapped={handleNodesMapped}
-                onNodesUnmapped={handleNodesUnmapped}
-              />
+              <Suspense fallback={null}>
+                <SceneAsset
+                  asset={asset}
+                  roomAnchors={roomNodes?.anchors}
+                  onReady={handleAssetReady}
+                  onNodesMapped={handleNodesMapped}
+                  onNodesUnmapped={handleNodesUnmapped}
+                />
+              </Suspense>
             </SceneAssetBoundary>
           ))
         : null}
 
-      {useImportedAssets ? <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} /> : null}
-      {useImportedAssets && qualityTier === 'high' ? (
+      <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
+      {qualityTier === 'high' ? (
         <HotspotInteractionLayer runtimeNodesByAsset={runtimeNodesByAsset} />
-      ) : null}
-      {useImportedAssets ? <RoomInteractionController roomNodes={roomNodes} isDoorOpen={state.isDoorOpen} /> : null}
-      {useImportedAssets && roomNodes ? (
-        <WindowBackdropLayer
-          anchor={roomNodes.anchors.get('Anchor_WindowBackdrop')}
-          environmentVariant={state.environmentVariant}
-        />
       ) : null}
     </>
   );
@@ -204,10 +223,8 @@ function SceneInvalidationController({
     state.ceilingLightAim,
     state.ceilingLightingLevel,
     state.deskTaskLightingLevel,
-    state.environmentVariant,
     state.focusedHotspotId,
     state.hoveredHotspotId,
-    state.isDoorOpen,
     state.lightingMode,
     state.navigationState,
     state.roomLightingLevel
@@ -219,21 +236,16 @@ function SceneInvalidationController({
 function shouldRenderSceneAsset({
   asset,
   activePrimaryAssetId,
-  criticalComplete,
-  qualityTier,
-  tierAvailability
+  enabledAnchoredAssetIds,
+  qualityTier
 }: Readonly<{
   asset: SceneAssetDefinition;
   activePrimaryAssetId?: Portfolio3dAssetId;
-  criticalComplete: boolean;
+  enabledAnchoredAssetIds: ReadonlySet<Portfolio3dAssetId>;
   qualityTier: Portfolio3dQualityTier;
-  tierAvailability: Readonly<{ near: boolean; deferred: boolean }>;
 }>): boolean {
-  if (asset.loadingTier === 'critical') {
-    return true;
-  }
 
-  if (!criticalComplete) {
+  if (!asset.qualityVisibility[qualityTier]) {
     return false;
   }
 
@@ -241,11 +253,18 @@ function shouldRenderSceneAsset({
     return true;
   }
 
-  if (!asset.qualityVisibility[qualityTier]) {
-    return false;
+  return enabledAnchoredAssetIds.has(asset.id);
+}
+
+function getNextProgressiveAssetId(
+  enabledAssetIds: readonly Portfolio3dAssetId[],
+  activePrimaryAssetId?: Portfolio3dAssetId
+): Portfolio3dAssetId | undefined {
+  if (activePrimaryAssetId && activePrimaryAssetId !== 'room-shell' && !enabledAssetIds.includes(activePrimaryAssetId)) {
+    return activePrimaryAssetId;
   }
 
-  return asset.loadingTier === 'near' ? tierAvailability.near : tierAvailability.deferred;
+  return progressiveAssetOrder.find((assetId) => !enabledAssetIds.includes(assetId));
 }
 
 interface CameraTransitionState {
@@ -338,74 +357,6 @@ function CameraNavigationRig({
   return null;
 }
 
-function RoomInteractionController({
-  roomNodes,
-  isDoorOpen
-}: Readonly<{
-  roomNodes?: AssetRuntimeNodeMap;
-  isDoorOpen: boolean;
-}>): null {
-  const { invalidate } = useThree();
-  const prefersReducedMotion = useReducedMotion();
-  const closedDoorRotationRef = useRef<number | null>(null);
-  const isDoorOpenRef = useRef(isDoorOpen);
-  const shouldAnimateDoorRef = useRef(false);
-
-  useEffect(() => {
-    isDoorOpenRef.current = isDoorOpen;
-    shouldAnimateDoorRef.current = true;
-    invalidate();
-  }, [invalidate, isDoorOpen]);
-
-  useEffect(() => {
-    const doorPivot = roomNodes?.doorPivot;
-    if (!doorPivot || closedDoorRotationRef.current !== null) {
-      return;
-    }
-
-    closedDoorRotationRef.current = doorPivot.rotation.y;
-  }, [roomNodes]);
-
-  useFrame((rootState, delta) => {
-    if (!shouldAnimateDoorRef.current) {
-      return;
-    }
-
-    const doorPivot = roomNodes?.doorPivot;
-    const closedRotation = closedDoorRotationRef.current;
-    if (!doorPivot || closedRotation === null) {
-      shouldAnimateDoorRef.current = false;
-      return;
-    }
-
-    const targetRotation = isDoorOpenRef.current
-      ? closedRotation + doorOpenRotationOffset
-      : closedRotation;
-
-    if (prefersReducedMotion) {
-      doorPivot.rotation.y = targetRotation;
-      shouldAnimateDoorRef.current = false;
-      rootState.invalidate();
-      return;
-    }
-
-    doorPivot.rotation.y = THREE.MathUtils.lerp(
-      doorPivot.rotation.y,
-      targetRotation,
-      1 - Math.exp(-delta * 8)
-    );
-
-    if (Math.abs(doorPivot.rotation.y - targetRotation) <= 0.002) {
-      doorPivot.rotation.y = targetRotation;
-      shouldAnimateDoorRef.current = false;
-    }
-
-    rootState.invalidate();
-  });
-
-  return null;
-}
-
 function applyCameraState(
   camera: THREE.Camera,
   preset: Portfolio3dCameraPreset,
@@ -492,38 +443,6 @@ function getObjectFocusPoint(object: THREE.Object3D): THREE.Vector3 {
   return target;
 }
 
-function WindowBackdropLayer({
-  anchor,
-  environmentVariant
-}: Readonly<{
-  anchor?: THREE.Object3D;
-  environmentVariant: Portfolio3dEnvironmentVariant;
-}>): React.ReactElement {
-  const position = useMemo(() => {
-    const worldPosition = new THREE.Vector3(0, 1.55, -2.26);
-    anchor?.getWorldPosition(worldPosition);
-    return [worldPosition.x, worldPosition.y, worldPosition.z - 0.04] as [number, number, number];
-  }, [anchor]);
-  const backdrop = windowBackdropByEnvironment[environmentVariant];
-
-  return (
-    <mesh position={position} rotation={[0, 0, 0]} renderOrder={-1}>
-      <planeGeometry args={[2.8, 1.45]} />
-      <meshBasicMaterial
-        color={backdrop.color}
-        transparent
-        opacity={backdrop.opacity}
-        depthWrite={false}
-      />
-    </mesh>
-  );
-}
-
-const windowBackdropByEnvironment = {
-  studio: { color: '#07131c', opacity: 0.62 },
-  dawn: { color: '#263750', opacity: 0.7 },
-  night: { color: '#030814', opacity: 0.78 }
-} as const satisfies Record<Portfolio3dEnvironmentVariant, { readonly color: string; readonly opacity: number }>;
 
 export function getPortfolioSceneCriticalAssets(): readonly SceneAssetDefinition[] {
   return criticalAssets;

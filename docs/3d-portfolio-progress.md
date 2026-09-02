@@ -58,11 +58,11 @@ Last updated: 2026-09-02
 - `room-shell.glb` copied to `public/models/portfolio-3d/room-shell.glb` for browser-safe runtime loading while preserving the original asset in `assets/`.
 - `RoomShellStage` created and connected to the single Stage 2 Canvas.
 - Room shell loads as root environment through `GLTFLoader` and `getPortfolio3dAssetUrl('room-shell')`.
-- Scene graph cache created for anchors, hotspots, colliders, navmesh, imported lights, and `Door_Pivot`.
+- Scene graph cache created for anchors, hotspots, colliders, navmesh, imported lights, and bounds.
 - `Anchor_*`, `Hotspot_*`, `Room_Colliders`, `Collider_*`, and `NavMesh_Room` are hidden from render but remain in graph.
 - Imported room-shell lights are cached with shadows off and visibility off; base Stage 3 lighting uses a small ambient/directional setup only.
 - Overview camera rig uses centralized overview preset and room bounds fallback because room-shell has no authored camera node.
-- Separate `WindowBackdropLayer` added outside the GLB shell.
+- Extra window/environment controls are no longer used; the GLB room remains the visual source of truth.
 - Development-only missing-node warnings are guarded by a one-time warning set.
 
 ## Stage 4 Completion Evidence
@@ -71,19 +71,19 @@ Last updated: 2026-09-02
 - Generic manifest-driven asset runtime added through `SceneAsset`; models load by `asset.id` and `getPortfolio3dAssetUrl`.
 - Scene cloning and material cloning are explicit before runtime placement or node mapping, so shared cached GLTF scenes are not mutated.
 - Root asset uses manifest root transform; anchored assets use `Anchor_*` from room-shell and fall back to manifest transform with one-time development warnings when anchors are missing.
-- Runtime node mapping caches anchors, hotspots, dynamic screens, colliders, navmesh, lights, `Door_Pivot`, and bounds without enabling interaction logic yet.
+- Runtime node mapping caches anchors, hotspots, dynamic screens, colliders, navmesh, lights, and bounds without enabling room-control UI.
 - Per-asset `SceneAssetBoundary` isolates load/render errors and shows a lightweight wireframe placeholder only for loading/error states.
 - Critical progress is wired from the scene into `ExperienceShell`; the loading overlay tracks only critical assets and does not wait for near/deferred assets.
-- Critical preload runs immediately; near assets preload after critical completion; deferred assets preload on idle only when browser connection/device signals are not constrained.
+- Critical room shell loads first; selected core assets mount behind independent Suspense boundaries, and heavier detail assets wait for relevant sections.
 - Stage 3 `RoomShellStage` now aliases the reusable `PortfolioSceneStage` loader pipeline for continuity.
 
 ## Stage 5 Completion Evidence
 
 - Scene rendering now uses all manifest assets, not only hardcoded critical assets.
-- Critical workstation remains first path: room shell, desk, chair, and main monitor render before non-critical props.
-- Near assets render after critical completion: architecture screen, laptop, server rack, hologram projector, and ceiling lights.
-- Deferred assets render after idle on capable devices: pipeline console, keyboard/mouse, storage shelf, desk lamp, desk accessories, and plants.
-- Low quality keeps critical workstation visible and can still render the active section asset when navigation selects one.
+- Critical path is room shell only; workstation props no longer block first usable render.
+- Near assets are retained in the manifest but no longer block first paint.
+- Anchored GLB assets render progressively after the room is usable, preserving original model fidelity without blocking first paint.
+- Public Low/Medium/High render selection has been removed; runtime quality is automatic.
 - High quality is the default 3D state for full Stage 5 composition; quality tier is now centralized in `Portfolio3dState`.
 - Manifest now owns local placement offsets for desktop props and plants, keeping transform numbers out of scene components.
 - Anchor placement applies local transform relative to the room `Anchor_*`; missing anchor fallback still uses manifest transform only.
@@ -97,7 +97,7 @@ Last updated: 2026-09-02
 - Shadow policy is centralized; only selected pendant, one high-tier rail spot, and high-tier desk task light can cast shadows.
 - Shadow map size, bias, normal bias, radius, range, intensity, color, and tone-mapping exposure are configured from shared lighting/renderer config.
 - Runtime mesh shadow receive/cast behavior preserves cloned glTF PBR materials while glass/hologram/display surfaces get safe render order/depth-write treatment.
-- Lighting state now includes `lightingMode` and `roomLightingLevel` for later hotspot control without full UI.
+- Lighting state keeps a fixed studio default for the public 3D scene.
 - No bloom, neon/glitch, mass material replacement, GLB mutation, or extra dependency was added.
 
 ## Stage 7 Completion Evidence
@@ -117,8 +117,8 @@ Last updated: 2026-09-02
 - Pointer handling raycasts only against the bound hotspot target list and restores the previous raycaster layer mask after each hit-test.
 - Pointer down/up tracking distinguishes click/tap from drag gestures before activation.
 - DOM section navigation now uses the same hotspot activation path where a section hotspot exists, with keyboard focus feedback.
-- Room controls added for window environment, door toggle through `Door_Pivot`, ambient lighting mode, ceiling light dim/toggle/aim, and desk lamp toggle.
-- Interaction state now tracks hovered/focused hotspot, environment variant, door state, ceiling/desk light levels, ceiling aim target, and dismissible hint state.
+- Room controls are not exposed; door, window, ceiling, desk-lamp, and render toggles remain disabled for a cleaner portfolio UI.
+- Interaction state now prioritizes portfolio section navigation and dismissible guidance; room-control state has been removed from public behavior.
 - Short dismissible instruction hint added over the 3D canvas.
 
 ## Stage 9 Completion Evidence
@@ -135,8 +135,8 @@ Last updated: 2026-09-02
 
 - `ExperienceShell` now uses modern viewport sizing, safe-area padding, skip link, contact CTA, scrollable control/content panel, and non-noisy loading status.
 - 3D canvas is treated as visual navigation only for assistive technology, while equivalent keyboard controls and readable section content remain in DOM.
-- Navigation now has larger tap targets, responsive section grids, room controls, and explicit low/medium/high render-quality control.
-- Mobile defaults to medium render quality on narrow/coarse-pointer devices while camera navigation remains guided.
+- Navigation now has larger tap targets and responsive section controls without room toggles or public render-quality controls.
+- Render quality is automatic from centralized state and renderer DPR caps while camera navigation remains guided.
 - Section panel now restores focus to the active heading after section changes and keeps `Escape` back-to-overview behavior.
 - Full HTML fallback added with all mapped portfolio sections, internal navigation, contact links, CV access, standard portfolio link, and Retry 3D recovery.
 - Critical asset failure now surfaces a compact recovery banner with controls and HTML portfolio escape path.
@@ -147,10 +147,10 @@ Last updated: 2026-09-02
 
 - Static asset baseline documented in `docs/3d-portfolio-performance.md` with tiered GLB size totals and an explicit note for the unreferenced extra public GLB.
 - Critical-first render policy is enforced: non-critical assets wait for critical completion, while active section assets remain available after the critical tier is complete.
-- Preload policy now respects render quality and runtime constraints, with module-level preload caching to avoid duplicate tier preloads.
+- GLB mounting is progressive after the critical room shell, avoiding the previous all-at-once model parse bottleneck.
 - Runtime capability helper centralizes network, device memory, CPU, pointer, viewport, DPR, and mobile/constrained defaults.
 - Canvas render loop now runs on demand when visible and stops when the document is hidden.
-- Camera transitions, door animation, scene state changes, dynamic screen updates, and pointer interactions explicitly invalidate frames only when needed.
+- Camera transitions, scene state changes, dynamic screen updates, and pointer interactions explicitly invalidate frames only when needed.
 - Pointer hover raycasting is throttled through `requestAnimationFrame` and reuses the intersection array to reduce repeated allocation.
 - Dynamic screen material cleanup keeps original materials restored and disposes generated preview texture maps.
 - GLB assets were not rewritten, compressed, renamed, or deleted.
@@ -192,3 +192,9 @@ Last updated: 2026-09-02
 ## Current Stop Point
 
 Stage 12 is complete. All planned 3D portfolio stages are complete. No next stage remains.
+
+
+## Runtime UX Cleanup
+
+- Room controls removed from public UI; the room uses its default presentation state.
+- Render quality selector removed from public UI; the runtime now uses an automatic high-quality lightweight scene with responsive layout constraints.

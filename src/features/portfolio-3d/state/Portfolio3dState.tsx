@@ -4,7 +4,6 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 import { getPortfolio3dRouteTarget } from '../route-map';
 import type {
   Portfolio3dCeilingLightAim,
-  Portfolio3dEnvironmentVariant,
   Portfolio3dHotspotDefinition,
   Portfolio3dHotspotId,
   Portfolio3dInputSource,
@@ -23,8 +22,6 @@ interface Portfolio3dState {
   readonly roomLightingLevel: number;
   readonly hoveredHotspotId?: Portfolio3dHotspotId;
   readonly focusedHotspotId?: Portfolio3dHotspotId;
-  readonly environmentVariant: Portfolio3dEnvironmentVariant;
-  readonly isDoorOpen: boolean;
   readonly ceilingLightingLevel: number;
   readonly ceilingLightAim: Portfolio3dCeilingLightAim;
   readonly deskTaskLightingLevel: number;
@@ -37,8 +34,6 @@ interface Portfolio3dContextValue {
   readonly setActiveSection: (sectionId: Portfolio3dSectionId) => void;
   readonly setNavigationState: (navigationState: Portfolio3dNavigationState) => void;
   readonly setQualityTier: (qualityTier: Portfolio3dQualityTier) => void;
-  readonly setLightingMode: (lightingMode: Portfolio3dLightingMode) => void;
-  readonly setRoomLightingLevel: (roomLightingLevel: number) => void;
   readonly setHoveredHotspot: (hotspotId: Portfolio3dHotspotId | undefined, source?: Portfolio3dInputSource) => void;
   readonly setFocusedHotspot: (hotspotId: Portfolio3dHotspotId | undefined, source?: Portfolio3dInputSource) => void;
   readonly setInstructionHintDismissed: (isDismissed: boolean) => void;
@@ -48,14 +43,6 @@ interface Portfolio3dContextValue {
 
 const Portfolio3dContext = createContext<Portfolio3dContextValue | null>(null);
 const transitionStates = new Set<Portfolio3dNavigationState>(['focusing', 'returning']);
-const environmentVariants: readonly Portfolio3dEnvironmentVariant[] = ['studio', 'dawn', 'night'];
-const ceilingLightAims: readonly Portfolio3dCeilingLightAim[] = ['desk', 'rack', 'wide'];
-const lightingModes: readonly Portfolio3dLightingMode[] = ['studio', 'focus', 'ambient'];
-const roomLightingLevelByMode: Record<Portfolio3dLightingMode, number> = {
-  studio: 0.86,
-  focus: 0.74,
-  ambient: 0.92
-};
 
 export function Portfolio3dProvider({
   children,
@@ -67,11 +54,9 @@ export function Portfolio3dProvider({
   const [state, setState] = useState<Portfolio3dState>({
     activeSectionId: initialSectionId,
     navigationState: initialSectionId === 'overview' ? 'overview' : 'focusing',
-    qualityTier: 'low',
+    qualityTier: 'high',
     lightingMode: 'studio',
     roomLightingLevel: 1,
-    environmentVariant: 'studio',
-    isDoorOpen: false,
     ceilingLightingLevel: 1,
     ceilingLightAim: 'desk',
     deskTaskLightingLevel: 1,
@@ -90,17 +75,6 @@ export function Portfolio3dProvider({
     setState((current) => ({ ...current, qualityTier }));
   }, []);
 
-  const setLightingMode = useCallback((lightingMode: Portfolio3dLightingMode): void => {
-    setState((current) => ({
-      ...current,
-      lightingMode,
-      roomLightingLevel: roomLightingLevelByMode[lightingMode]
-    }));
-  }, []);
-
-  const setRoomLightingLevel = useCallback((roomLightingLevel: number): void => {
-    setState((current) => ({ ...current, roomLightingLevel: clamp01(roomLightingLevel) }));
-  }, []);
 
   const setHoveredHotspot = useCallback(
     (hotspotId: Portfolio3dHotspotId | undefined, source: Portfolio3dInputSource = 'pointer'): void => {
@@ -198,8 +172,6 @@ export function Portfolio3dProvider({
       setActiveSection,
       setNavigationState,
       setQualityTier,
-      setLightingMode,
-      setRoomLightingLevel,
       setHoveredHotspot,
       setFocusedHotspot,
       setInstructionHintDismissed,
@@ -213,10 +185,8 @@ export function Portfolio3dProvider({
       setFocusedHotspot,
       setHoveredHotspot,
       setInstructionHintDismissed,
-      setLightingMode,
       setNavigationState,
       setQualityTier,
-      setRoomLightingLevel,
       state
     ]
   );
@@ -261,39 +231,6 @@ function activateHotspotInState(
     };
   }
 
-  if (definition.interactionKind === 'cycle-environment') {
-    const environmentVariant = cycleArrayValue(environmentVariants, current.environmentVariant);
-
-    return {
-      ...current,
-      environmentVariant,
-      focusedHotspotId: definition.id,
-      lastEvent: {
-        type: 'room.toggle',
-        target: 'window',
-        enabled: environmentVariant !== 'studio'
-      }
-    };
-  }
-
-  if (definition.interactionKind === 'toggle-door') {
-    const isDoorOpen = !current.isDoorOpen;
-
-    return {
-      ...current,
-      isDoorOpen,
-      focusedHotspotId: definition.id,
-      lastEvent: {
-        type: 'room.toggle',
-        target: 'door',
-        enabled: isDoorOpen
-      }
-    };
-  }
-
-  if (definition.interactionKind === 'toggle-lighting') {
-    return toggleLightingState(current, definition);
-  }
 
   return {
     ...current,
@@ -302,57 +239,6 @@ function activateHotspotInState(
       type: 'hotspot.activate',
       hotspotId: definition.id,
       source
-    }
-  };
-}
-
-function toggleLightingState(
-  current: Portfolio3dState,
-  definition: Portfolio3dHotspotDefinition
-): Portfolio3dState {
-  if (definition.id === 'ceiling-lights') {
-    const ceilingLightingLevel = cycleSteppedLightLevel(current.ceilingLightingLevel);
-    const ceilingLightAim = cycleArrayValue(ceilingLightAims, current.ceilingLightAim);
-
-    return {
-      ...current,
-      ceilingLightingLevel,
-      ceilingLightAim,
-      focusedHotspotId: definition.id,
-      lastEvent: {
-        type: 'room.toggle',
-        target: 'lighting',
-        enabled: ceilingLightingLevel > 0
-      }
-    };
-  }
-
-  if (definition.id === 'desk-lamp') {
-    const deskTaskLightingLevel = current.deskTaskLightingLevel > 0 ? 0 : 1;
-
-    return {
-      ...current,
-      deskTaskLightingLevel,
-      focusedHotspotId: definition.id,
-      lastEvent: {
-        type: 'room.toggle',
-        target: 'lighting',
-        enabled: deskTaskLightingLevel > 0
-      }
-    };
-  }
-
-  const lightingMode = cycleArrayValue(lightingModes, current.lightingMode);
-
-  return {
-    ...current,
-    lightingMode,
-    roomLightingLevel: roomLightingLevelByMode[lightingMode],
-    focusedHotspotId: definition.id,
-    lastEvent: {
-      type: 'room.toggle',
-      target: 'lighting',
-      enabled: roomLightingLevelByMode[lightingMode] > 0
     }
   };
 }
@@ -368,23 +254,3 @@ function getNextNavigationState(
   return 'focusing';
 }
 
-function cycleArrayValue<T extends string>(values: readonly T[], current: T): T {
-  const currentIndex = values.indexOf(current);
-  return values[(currentIndex + 1) % values.length] ?? values[0];
-}
-
-function cycleSteppedLightLevel(current: number): number {
-  if (current > 0.7) {
-    return 0.42;
-  }
-
-  if (current > 0) {
-    return 0;
-  }
-
-  return 1;
-}
-
-function clamp01(value: number): number {
-  return Math.min(1, Math.max(0, value));
-}

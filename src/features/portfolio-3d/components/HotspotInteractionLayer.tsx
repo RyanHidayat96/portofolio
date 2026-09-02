@@ -241,7 +241,7 @@ export function HotspotInteractionLayer({
       {boundHotspots.map(({ definition, object }) => {
         const isHighlighted =
           state.hoveredHotspotId === definition.id || state.focusedHotspotId === definition.id;
-        const isActive = isHotspotActive(definition, state.activeSectionId, state.isDoorOpen, state.environmentVariant);
+        const isActive = isHotspotActive(definition, state.activeSectionId);
 
         return (
           <HotspotMarker
@@ -330,30 +330,12 @@ function findHotspotNodeName(object: THREE.Object3D): string | undefined {
 }
 
 function getHotspotVerticalOffset(definition: Portfolio3dHotspotDefinition): number {
-  if (definition.interactionKind === 'toggle-lighting') {
-    return -0.035;
-  }
-
   return definition.interactionKind === 'open-section' ? 0.065 : 0.045;
 }
 
 function isHotspotActive(
   definition: Portfolio3dHotspotDefinition,
-  activeSectionId: string,
-  isDoorOpen: boolean,
-  environmentVariant: string
+  activeSectionId: string
 ): boolean {
-  if (definition.sectionId === activeSectionId) {
-    return true;
-  }
-
-  if (definition.id === 'door') {
-    return isDoorOpen;
-  }
-
-  if (definition.id === 'window') {
-    return environmentVariant !== 'studio';
-  }
-
-  return false;
+  return definition.sectionId === activeSectionId;
 }
