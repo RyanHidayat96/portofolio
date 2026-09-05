@@ -31,6 +31,7 @@ import {
   isPortfolio3dSafeHref,
   type Portfolio3dPanelBlock
 } from '../screen-content';
+import { ArcadePipelineScreen } from './ArcadePipelineScreen';
 import { ExperienceShell } from './ExperienceShell';
 import { Portfolio3dHtmlFallback } from './Portfolio3dHtmlFallback';
 import { useDocumentVisibility } from '../hooks/useDocumentVisibility';
@@ -92,6 +93,22 @@ function PortfolioExperienceContent({
   const webglStatus = useWebGLSupport();
   const { state } = usePortfolio3dState();
   const [assetProgress, setAssetProgress] = useState<Portfolio3dLoadingProgress>();
+  const isPipelineActive = state.activeSectionId === 'pipeline';
+  const isSettledAtSection = state.navigationState === 'section-open';
+  // Delay the arcade view shell transition so the camera animation finishes first.
+  const [isArcadeViewDelayed, setIsArcadeViewDelayed] = useState(false);
+
+  useEffect(() => {
+    if (isPipelineActive && isSettledAtSection) {
+      // Small delay so camera fully settles before nav slides out
+      const t = window.setTimeout(() => setIsArcadeViewDelayed(true), 200);
+      return () => window.clearTimeout(t);
+    }
+    setIsArcadeViewDelayed(false);
+    return undefined;
+  }, [isPipelineActive, isSettledAtSection]);
+
+  const isArcadeView = isPipelineActive && isSettledAtSection && isArcadeViewDelayed;
 
   return (
     <>
@@ -108,9 +125,16 @@ function PortfolioExperienceContent({
           ) : null
         }
         navigationSlot={<Portfolio3dNavigation />}
-        sectionPanelSlot={state.activeSectionId === 'overview' ? null : <Portfolio3dSectionPanel />}
+        sectionPanelSlot={
+          state.activeSectionId === 'overview'
+            ? null
+            : isPipelineActive
+              ? isSettledAtSection ? <ArcadePipelineScreen /> : null
+              : <Portfolio3dSectionPanel />
+        }
         instructionHintSlot={<Portfolio3dInstructionHint />}
         assetProgress={assetProgress}
+        isArcadeView={isArcadeView}
       />
     </>
   );

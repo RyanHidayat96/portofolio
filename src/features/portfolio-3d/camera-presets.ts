@@ -4,9 +4,9 @@ export const portfolio3dCameraPresets = [
   {
     id: 'overview',
     label: 'Room overview',
-    position: [0, 1.7, 4.5],
-    target: [0, 0.9, 0],
-    fov: 48,
+    position: [3.0, 2.7, 3.9],
+    target: [-0.2, 0.6, -0.3],
+    fov: 44,
     near: 0.08,
     far: 35,
     targetNodeName: 'walls',
@@ -117,14 +117,14 @@ export const portfolio3dCameraPresets = [
   {
     id: 'pipeline',
     label: 'Pipeline console',
-    position: [-0.1, 1.1, -0.6],
-    target: [-0.06, 0.76, -1.58],
-    fov: 34,
+    position: [-0.15, 1.28, 1.07],
+    target: [-1.08, 1.28, 1.07],
+    fov: 40,
     near: 0.05,
-    far: 18,
-    targetNodeName: 'lamp.001',
+    far: 20,
+    targetNodeName: 'gaming mashine',
     reducedMotionMs: 80,
-    transitionMs: 620
+    transitionMs: 850
   },
   {
     id: 'terminal',

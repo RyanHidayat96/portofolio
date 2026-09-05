@@ -176,6 +176,7 @@ export function PortfolioSceneStage({
         runtimeNodesByAsset={runtimeNodesByAsset}
       />
       <CameraNavigationRig runtimeNodesByAsset={runtimeNodesByAsset} />
+      <CameraDebugOverlay />
       {isSingleRoomPreview ? (
         <SingleRoomPreviewLighting />
       ) : (
@@ -261,8 +262,29 @@ function SingleRoomPreviewLighting(): React.ReactElement {
   );
 }
 
+function CameraDebugOverlay(): null {
+  const { camera } = useThree();
+  const { state } = usePortfolio3dState();
+
+  useFrame(() => {
+    // Expose camera position on window for live debugging via DevTools console.
+    // Open browser console and run: setInterval(() => console.log(window.__dbgCam), 500)
+    (window as unknown as Record<string, unknown>).__dbgCam = {
+      pos: camera.position.toArray().map((v: number) => +v.toFixed(3)),
+      section: state.activeSectionId,
+      navState: state.navigationState,
+    };
+  });
+
+  return null;
+}
+
+// Shared ref so CameraNavigationRig can disable/update OrbitControls during transitions.
+const sharedOrbitControlsRef: { current: OrbitControlsImpl | null } = { current: null };
+
 function InteractiveOrbitControls(): null {
   const { camera, gl, invalidate } = useThree();
+  const { state } = usePortfolio3dState();
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
 
   useEffect(() => {
@@ -281,18 +303,26 @@ function InteractiveOrbitControls(): null {
     };
 
     controls.addEventListener('change', onChange);
+    sharedOrbitControlsRef.current = controls;
     controlsRef.current = controls;
 
     return () => {
       controls.removeEventListener('change', onChange);
       controls.dispose();
+      sharedOrbitControlsRef.current = null;
       controlsRef.current = null;
     };
   }, [camera, gl.domElement, invalidate]);
 
   useFrame(() => {
-    if (controlsRef.current?.enableDamping) {
-      controlsRef.current.update();
+    const ctrl = controlsRef.current;
+    if (!ctrl) return;
+    // Only run orbit damping in overview — prevent fighting camera animation.
+    if (state.navigationState === 'overview') {
+      ctrl.enabled = true;
+      ctrl.update();
+    } else {
+      ctrl.enabled = false;
     }
   });
 
@@ -374,6 +404,7 @@ interface CameraTransitionState {
   readonly durationMs: number;
   readonly startPosition: THREE.Vector3;
   readonly targetPosition: THREE.Vector3;
+  readonly targetLookAt: THREE.Vector3;
   readonly startQuaternion: THREE.Quaternion;
   readonly targetQuaternion: THREE.Quaternion;
 }
@@ -430,9 +461,15 @@ function CameraNavigationRig({
       durationMs: prefersReducedMotion ? preset.reducedMotionMs : preset.transitionMs,
       startPosition: camera.position.clone(),
       targetPosition,
+      targetLookAt: target.clone(),
       startQuaternion: camera.quaternion.clone(),
       targetQuaternion
     };
+
+    // Disable OrbitControls immediately so it doesn't fight the transition.
+    if (sharedOrbitControlsRef.current) {
+      sharedOrbitControlsRef.current.enabled = false;
+    }
 
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.near = preset.near;
@@ -465,6 +502,15 @@ function CameraNavigationRig({
     camera.position.copy(transition.targetPosition);
     camera.quaternion.copy(transition.targetQuaternion);
     transitionRef.current = null;
+
+    // After landing, update OrbitControls target so it orbits around the look-at point.
+    // Only re-enable controls in overview; in section views keep them off.
+    if (sharedOrbitControlsRef.current) {
+      sharedOrbitControlsRef.current.target.copy(transition.targetLookAt);
+      sharedOrbitControlsRef.current.enabled = transition.finalNavigationState === 'overview';
+      sharedOrbitControlsRef.current.update();
+    }
+
     setNavigationState(transition.finalNavigationState);
     rootState.invalidate();
   });
@@ -491,36 +537,9 @@ function applyCameraState(
 
 function resolveCameraTarget(
   preset: Portfolio3dCameraPreset,
-  runtimeNodesByAsset: Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>
+  _runtimeNodesByAsset: Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>
 ): THREE.Vector3 {
-  if (preset.id === 'overview') {
-    const target = new THREE.Vector3(...preset.target);
-    const roomBounds = runtimeNodesByAsset['room-shell']?.bounds;
-
-    if (roomBounds && !roomBounds.isEmpty()) {
-      roomBounds.getCenter(target);
-      if (isSingleRoomPreview) {
-        target.x -= 0.9;
-      }
-      target.y = 1.18;
-    }
-
-    return target;
-  }
-
-  const screenNode = preset.screenNodeName
-    ? findRuntimeNode(preset.screenNodeName, runtimeNodesByAsset)
-    : undefined;
-  const targetNode = preset.targetNodeName
-    ? findRuntimeNode(preset.targetNodeName, runtimeNodesByAsset)
-    : undefined;
-  const runtimeTarget = screenNode ?? targetNode;
-
-  if (!runtimeTarget) {
-    return new THREE.Vector3(...preset.target);
-  }
-
-  return getObjectFocusPoint(runtimeTarget);
+  return new THREE.Vector3(...preset.target);
 }
 
 function findRuntimeNode(
