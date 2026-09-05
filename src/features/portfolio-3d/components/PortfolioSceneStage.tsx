@@ -3,6 +3,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion';
 import {
   constrainPortfolio3dCameraPosition,
@@ -169,6 +170,7 @@ export function PortfolioSceneStage({
 
   return (
     <>
+      <InteractiveOrbitControls />
       <SceneInvalidationController
         qualityTier={qualityTier}
         runtimeNodesByAsset={runtimeNodesByAsset}
@@ -228,7 +230,7 @@ function SingleRoomPreviewLighting(): React.ReactElement {
 
   useEffect(() => {
     const previousExposure = gl.toneMappingExposure;
-    gl.toneMappingExposure = 0.75;
+    gl.toneMappingExposure = 1.15;
 
     return () => {
       gl.toneMappingExposure = previousExposure;
@@ -237,26 +239,64 @@ function SingleRoomPreviewLighting(): React.ReactElement {
 
   return (
     <>
-      <color attach="background" args={['#05070b']} />
-      <fog attach="fog" args={['#05070b', 7.5, 18]} />
-      <ambientLight intensity={0.34} color="#c7d7e8" />
+      <color attach="background" args={['#060a10']} />
+      <fog attach="fog" args={['#060a10', 15, 45]} />
+      <ambientLight intensity={0.65} color="#dbe8f5" />
       <hemisphereLight
-        color="#dcecff"
-        groundColor="#101923"
-        intensity={0.44}
+        color="#eaf4ff"
+        groundColor="#1a2634"
+        intensity={0.6}
       />
       <directionalLight
-        position={[2.8, 3.2, 4.2]}
-        intensity={0.68}
-        color="#f5fbff"
+        position={[4.0, 5.0, 5.0]}
+        intensity={1.1}
+        color="#ffffff"
       />
       <directionalLight
-        position={[-3.4, 2.2, 2.1]}
-        intensity={0.18}
-        color="#68dfff"
+        position={[-4.0, 3.0, 3.0]}
+        intensity={0.45}
+        color="#70d6ff"
       />
     </>
   );
+}
+
+function InteractiveOrbitControls(): null {
+  const { camera, gl, invalidate } = useThree();
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
+
+  useEffect(() => {
+    const controls = new OrbitControlsImpl(camera, gl.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.8;
+    controls.zoomSpeed = 1.0;
+    controls.panSpeed = 0.8;
+    controls.minDistance = 1.2;
+    controls.maxDistance = 12.0;
+    controls.maxPolarAngle = Math.PI / 2 + 0.05;
+
+    const onChange = (): void => {
+      invalidate();
+    };
+
+    controls.addEventListener('change', onChange);
+    controlsRef.current = controls;
+
+    return () => {
+      controls.removeEventListener('change', onChange);
+      controls.dispose();
+      controlsRef.current = null;
+    };
+  }, [camera, gl.domElement, invalidate]);
+
+  useFrame(() => {
+    if (controlsRef.current?.enableDamping) {
+      controlsRef.current.update();
+    }
+  });
+
+  return null;
 }
 
 function SceneInvalidationController({
@@ -394,12 +434,12 @@ function CameraNavigationRig({
       targetQuaternion
     };
 
-    camera.near = preset.near;
-    camera.far = preset.far;
     if (camera instanceof THREE.PerspectiveCamera) {
+      camera.near = preset.near;
+      camera.far = preset.far;
       camera.fov = preset.fov;
+      camera.updateProjectionMatrix();
     }
-    camera.updateProjectionMatrix();
     invalidate();
   }, [camera, invalidate, prefersReducedMotion, runtimeNodesByAsset, state.activeSectionId, state.navigationState]);
 
@@ -440,14 +480,13 @@ function applyCameraState(
 ): void {
   camera.position.copy(position);
   camera.quaternion.copy(quaternion);
-  camera.near = preset.near;
-  camera.far = preset.far;
 
   if (camera instanceof THREE.PerspectiveCamera) {
+    camera.near = preset.near;
+    camera.far = preset.far;
     camera.fov = preset.fov;
+    camera.updateProjectionMatrix();
   }
-
-  camera.updateProjectionMatrix();
 }
 
 function resolveCameraTarget(
@@ -502,6 +541,11 @@ function findRuntimeNode(
 
     if (nodes.root.name === nodeName) {
       return nodes.root;
+    }
+
+    const foundInRoot = nodes.root.getObjectByName(nodeName);
+    if (foundInRoot) {
+      return foundInRoot;
     }
   }
 

@@ -1,9 +1,10 @@
 'use client';
 
-import { useLoader } from '@react-three/fiber';
+import { useLoader, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { getPortfolio3dAssetUrl } from '../asset-url';
 import {
   PORTFOLIO_3D_HOTSPOT_NODE_USER_DATA_KEY,
@@ -28,6 +29,16 @@ const warnedMissingAnchors = new Set<string>();
 const warnedMissingNodes = new Set<string>();
 const authoredRenderAssetFileNames = new Set<SceneAssetDefinition['fileName']>(['haker_room.glb']);
 
+let dracoLoaderInstance: DRACOLoader | null = null;
+
+function getDracoLoader(): DRACOLoader {
+  if (!dracoLoaderInstance) {
+    dracoLoaderInstance = new DRACOLoader();
+    dracoLoaderInstance.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+  }
+  return dracoLoaderInstance;
+}
+
 export function SceneAsset({
   asset,
   roomAnchors,
@@ -41,7 +52,10 @@ export function SceneAsset({
   onNodesMapped?: (nodes: AssetRuntimeNodeMap) => void;
   onNodesUnmapped?: (assetId: SceneAssetDefinition['id']) => void;
 }>): React.ReactElement {
-  const gltf = useLoader(GLTFLoader, getPortfolio3dAssetUrl(asset.id));
+  const { invalidate } = useThree();
+  const gltf = useLoader(GLTFLoader, getPortfolio3dAssetUrl(asset.id), (loader) => {
+    loader.setDRACOLoader(getDracoLoader());
+  });
   const runtime = useMemo(
     () => createSceneAssetRuntime(asset, gltf.scene, roomAnchors),
     [asset, gltf.scene, roomAnchors]
@@ -50,9 +64,10 @@ export function SceneAsset({
   useLayoutEffect(() => {
     onNodesMapped?.(runtime.nodes);
     onReady?.(asset.id);
+    invalidate();
 
     return () => onNodesUnmapped?.(asset.id);
-  }, [asset.id, onNodesMapped, onNodesUnmapped, onReady, runtime.nodes]);
+  }, [asset.id, invalidate, onNodesMapped, onNodesUnmapped, onReady, runtime.nodes]);
 
   useEffect(() => () => disposeClonedMaterials(runtime.clonedMaterials), [runtime.clonedMaterials]);
 

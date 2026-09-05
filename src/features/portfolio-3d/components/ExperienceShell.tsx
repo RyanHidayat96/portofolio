@@ -22,7 +22,7 @@ export function ExperienceShell({
   assetProgress?: Portfolio3dLoadingProgress;
 }>): React.ReactElement {
   const isLoadingCritical =
-    webglStatus === 'supported' && assetProgress ? !assetProgress.isCriticalComplete : false;
+    webglStatus === 'supported' ? (!assetProgress || !assetProgress.isCriticalComplete) : false;
   const isWaitingForRuntime = webglStatus === 'checking' || isLoadingCritical;
   const hasCriticalAssetFailure = Boolean(
     assetProgress && assetProgress.isCriticalComplete && assetProgress.failedCriticalAssets > 0
