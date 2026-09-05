@@ -12,6 +12,12 @@ const identityTransform: Transform3d = {
   scale: [1, 1, 1]
 };
 
+const fullRoomPreviewTransform: Transform3d = {
+  position: [0, 0, 0],
+  rotation: [0, 0, 0],
+  scale: [1, 1, 1]
+};
+
 const visibleAll = { low: true, medium: true, high: true } as const;
 const visibleMediumHigh = { low: false, medium: true, high: true } as const;
 const visibleHighOnly = { low: false, medium: false, high: true } as const;
@@ -67,50 +73,19 @@ const plantsWindowTransform: Transform3d = {
 export const portfolio3dAssets = [
   {
     id: 'room-shell',
-    fileName: 'room-shell.glb',
-    sourcePath: 'assets/room-shell.glb',
-    publicPath: '/models/portfolio-3d/room-shell.glb',
-    byteSize: 3910936,
-    sceneName: 'Room_Shell_Scene',
-    rootNodeName: 'Room_Shell_Root',
+    fileName: 'haker_room.glb',
+    sourcePath: 'assets/haker_room.glb',
+    publicPath: '/models/portfolio-3d/haker_room.glb',
+    byteSize: 5534084,
+    sceneName: 'Scene',
+    rootNodeName: 'Scene',
     loadingTier: 'critical',
     qualityVisibility: visibleAll,
     placement: { strategy: 'root' },
-    fallbackTransform: identityTransform,
-    boundingBox: { min: [-3.12, -0.098, -2.37], max: [3.12, 3.12, 2.25] },
-    nodes: {
-      anchors: [
-        'Anchor_Desk',
-        'Anchor_Chair',
-        'Anchor_MainMonitor',
-        'Anchor_ArchitectureScreen',
-        'Anchor_ServerRack',
-        'Anchor_HologramProjector',
-        'Anchor_StorageShelf',
-        'Anchor_PipelineConsole',
-        'Anchor_CeilingLights',
-        'Anchor_WindowBackdrop'
-      ],
-      hotspots: ['Hotspot_Profile'],
-      colliders: [
-        'Room_Colliders',
-        'Collider_Floor',
-        'Collider_BackWall',
-        'Collider_LeftWall_Back',
-        'Collider_LeftWall_Front',
-        'Collider_RightWall_Back',
-        'Collider_Ceiling'
-      ],
-      navMeshes: ['NavMesh_Room'],
-      lights: ['Cove_WallWash_1', 'Cove_WallWash_2', 'Cove_WallWash_3', 'Cove_WallWash_4'],
-      runtimeHidden: ['Room_Colliders', 'NavMesh_Room']
-    },
-    extensions: [
-      'KHR_lights_punctual',
-      'KHR_materials_clearcoat',
-      'KHR_materials_emissive_strength',
-      'KHR_materials_transmission'
-    ]
+    fallbackTransform: fullRoomPreviewTransform,
+    boundingBox: { min: [-43.886, -10.948, -72.448], max: [13.842, 75.673, 36.833] },
+    nodes: {},
+    extensions: ['KHR_materials_emissive_strength']
   },
   {
     id: 'desk',

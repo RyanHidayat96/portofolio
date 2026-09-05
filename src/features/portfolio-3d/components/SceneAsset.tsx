@@ -26,6 +26,7 @@ export interface AssetRuntimeNodeMap {
 
 const warnedMissingAnchors = new Set<string>();
 const warnedMissingNodes = new Set<string>();
+const authoredRenderAssetFileNames = new Set<SceneAssetDefinition['fileName']>(['haker_room.glb']);
 
 export function SceneAsset({
   asset,
@@ -67,13 +68,20 @@ export function createSceneAssetRuntime(
   readonly nodes: AssetRuntimeNodeMap;
   readonly clonedMaterials: readonly THREE.Material[];
 } {
+  const shouldPreserveAuthoredRenderState = authoredRenderAssetFileNames.has(asset.fileName);
   const scene = sourceScene.clone(true);
-  const clonedMaterials = cloneSceneMaterials(scene);
-  configureRuntimeMeshRenderState(scene);
+  const clonedMaterials = shouldPreserveAuthoredRenderState ? [] : cloneSceneMaterials(scene);
+
+  if (!shouldPreserveAuthoredRenderState) {
+    configureRuntimeMeshRenderState(scene);
+  }
+
   applySceneAssetPlacement(scene, asset, roomAnchors);
 
   scene.updateMatrixWorld(true);
-  const nodes = mapSceneAssetNodes(asset, scene);
+  const nodes = mapSceneAssetNodes(asset, scene, {
+    preserveImportedLights: shouldPreserveAuthoredRenderState
+  });
 
   return { scene, nodes, clonedMaterials };
 }
@@ -240,7 +248,11 @@ function applyLocalAnchorTransform(scene: THREE.Object3D, transform: Transform3d
   scene.scale.multiply(new THREE.Vector3(...transform.scale));
 }
 
-function mapSceneAssetNodes(asset: SceneAssetDefinition, scene: THREE.Group): AssetRuntimeNodeMap {
+function mapSceneAssetNodes(
+  asset: SceneAssetDefinition,
+  scene: THREE.Group,
+  options: Readonly<{ preserveImportedLights?: boolean }> = {}
+): AssetRuntimeNodeMap {
   const anchors = new Map<string, THREE.Object3D>();
   const hotspots = new Map<string, THREE.Object3D>();
   const screens = new Map<string, THREE.Object3D>();
@@ -282,7 +294,10 @@ function mapSceneAssetNodes(asset: SceneAssetDefinition, scene: THREE.Group): As
     if (object instanceof THREE.Light) {
       lights.set(name || object.uuid, object);
       object.castShadow = false;
-      object.visible = false;
+
+      if (!options.preserveImportedLights) {
+        object.visible = false;
+      }
     }
   });
 

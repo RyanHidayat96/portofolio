@@ -12,8 +12,7 @@ import {
 } from '../camera-navigation';
 import {
   criticalPortfolio3dAssetIds,
-  portfolio3dAssetById,
-  portfolio3dAssets
+  portfolio3dAssetById
 } from '../scene-manifest';
 import { portfolio3dSectionContracts } from '../section-contracts';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
@@ -32,20 +31,11 @@ import { SceneAssetBoundary } from './SceneAssetBoundary';
 
 const roomShellAsset = portfolio3dAssetById['room-shell'];
 const criticalAssets = criticalPortfolio3dAssetIds.map((assetId) => portfolio3dAssetById[assetId]);
-const anchoredSceneAssets = portfolio3dAssets.filter((asset) => asset.id !== 'room-shell');
-const initiallyEnabledAnchoredAssetIds = [
-  'desk',
-  'main-monitor'
-] as const satisfies readonly Portfolio3dAssetId[];
-
-const progressiveAssetOrder = [
-  'chair',
-  'architecture-screen',
-  'laptop',
-  'ceiling-lights',
-  'server-rack',
-  'hologram-projector'
-] as const satisfies readonly Portfolio3dAssetId[];
+// Modular GLB assets are paused while the full-room haker_room.glb preview is evaluated.
+const anchoredSceneAssets: readonly SceneAssetDefinition[] = [];
+const initiallyEnabledAnchoredAssetIds = [] as const satisfies readonly Portfolio3dAssetId[];
+const progressiveAssetOrder = [] as const satisfies readonly Portfolio3dAssetId[];
+const isSingleRoomPreview = anchoredSceneAssets.length === 0;
 
 export function PortfolioSceneStage({
   qualityTier = 'high',
@@ -68,7 +58,7 @@ export function PortfolioSceneStage({
   const failedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => failedAssetIds.includes(assetId));
   const criticalComplete = loadedCriticalAssetIds.length + failedCriticalAssetIds.length >= criticalAssets.length;
   const enabledAssetsSettled = enabledAnchoredAssetIds.every(
-    (assetId) => loadedAssetIds.includes(assetId) || failedAssetIds.includes(assetId)
+    (assetId) => Boolean(runtimeNodesByAsset[assetId]) || failedAssetIds.includes(assetId)
   );
 
   const activePrimaryAssetId = useMemo(
@@ -105,15 +95,6 @@ export function PortfolioSceneStage({
   }, [criticalComplete, failedCriticalAssetIds.length, loadedCriticalAssetIds.length, onCriticalProgressChange]);
 
   useEffect(() => {
-    console.info('[portfolio-3d-profile] staging state', JSON.stringify({
-      activePrimaryAssetId,
-      criticalComplete,
-      canRenderAnchoredAssets,
-      enabledAssetsSettled,
-      enabledAnchoredAssetIds,
-      loadedAssetIds,
-      failedAssetIds
-    }));
     if (!criticalComplete || !canRenderAnchoredAssets) {
       return;
     }
@@ -179,7 +160,6 @@ export function PortfolioSceneStage({
   }, []);
 
   const handleAssetReady = useCallback((assetId: Portfolio3dAssetId): void => {
-    console.info('[portfolio-3d-profile] asset ready', assetId);
     setLoadedAssetIds((current) => current.includes(assetId) ? current : [...current, assetId]);
   }, []);
 
@@ -194,15 +174,19 @@ export function PortfolioSceneStage({
         runtimeNodesByAsset={runtimeNodesByAsset}
       />
       <CameraNavigationRig runtimeNodesByAsset={runtimeNodesByAsset} />
-      <PortfolioLightingRig
-        runtimeNodesByAsset={runtimeNodesByAsset}
-        qualityTier={qualityTier}
-        lightingMode={state.lightingMode}
-        roomLightingLevel={state.roomLightingLevel}
-        ceilingLightingLevel={state.ceilingLightingLevel}
-        ceilingLightAim={state.ceilingLightAim}
-        deskTaskLightingLevel={state.deskTaskLightingLevel}
-      />
+      {isSingleRoomPreview ? (
+        <SingleRoomPreviewLighting />
+      ) : (
+        <PortfolioLightingRig
+          runtimeNodesByAsset={runtimeNodesByAsset}
+          qualityTier={qualityTier}
+          lightingMode={state.lightingMode}
+          roomLightingLevel={state.roomLightingLevel}
+          ceilingLightingLevel={state.ceilingLightingLevel}
+          ceilingLightAim={state.ceilingLightAim}
+          deskTaskLightingLevel={state.deskTaskLightingLevel}
+        />
+      )}
 
       <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
         <SceneAsset
@@ -229,10 +213,48 @@ export function PortfolioSceneStage({
           ))
         : null}
 
-      <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
-      {qualityTier === 'high' ? (
+      {!isSingleRoomPreview ? (
+        <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
+      ) : null}
+      {qualityTier === 'high' && !isSingleRoomPreview ? (
         <HotspotInteractionLayer runtimeNodesByAsset={runtimeNodesByAsset} />
       ) : null}
+    </>
+  );
+}
+
+function SingleRoomPreviewLighting(): React.ReactElement {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const previousExposure = gl.toneMappingExposure;
+    gl.toneMappingExposure = 0.75;
+
+    return () => {
+      gl.toneMappingExposure = previousExposure;
+    };
+  }, [gl]);
+
+  return (
+    <>
+      <color attach="background" args={['#05070b']} />
+      <fog attach="fog" args={['#05070b', 7.5, 18]} />
+      <ambientLight intensity={0.34} color="#c7d7e8" />
+      <hemisphereLight
+        color="#dcecff"
+        groundColor="#101923"
+        intensity={0.44}
+      />
+      <directionalLight
+        position={[2.8, 3.2, 4.2]}
+        intensity={0.68}
+        color="#f5fbff"
+      />
+      <directionalLight
+        position={[-3.4, 2.2, 2.1]}
+        intensity={0.18}
+        color="#68dfff"
+      />
     </>
   );
 }
@@ -294,6 +316,10 @@ function getNextProgressiveAssetId(
   enabledAssetIds: readonly Portfolio3dAssetId[],
   activePrimaryAssetId?: Portfolio3dAssetId
 ): Portfolio3dAssetId | undefined {
+  if (progressiveAssetOrder.length === 0) {
+    return undefined;
+  }
+
   if (activePrimaryAssetId && activePrimaryAssetId !== 'room-shell' && !enabledAssetIds.includes(activePrimaryAssetId)) {
     return activePrimaryAssetId;
   }
@@ -322,21 +348,36 @@ function CameraNavigationRig({
   const prefersReducedMotion = useReducedMotion();
   const transitionRef = useRef<CameraTransitionState | null>(null);
   const initializedRef = useRef(false);
+  const overviewBoundsAppliedRef = useRef(false);
 
   useEffect(() => {
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
     const target = resolveCameraTarget(preset, runtimeNodesByAsset);
     const targetPosition = constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     const targetQuaternion = createLookAtQuaternion(targetPosition, target);
+    const hasRoomBounds = Boolean(runtimeNodesByAsset['room-shell']?.bounds);
 
     if (!initializedRef.current && state.activeSectionId === 'overview') {
       initializedRef.current = true;
+      overviewBoundsAppliedRef.current = hasRoomBounds;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
       invalidate();
       return;
     }
 
     initializedRef.current = true;
+
+    if (
+      state.activeSectionId === 'overview' &&
+      state.navigationState === 'overview' &&
+      hasRoomBounds &&
+      !overviewBoundsAppliedRef.current
+    ) {
+      overviewBoundsAppliedRef.current = true;
+      applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      invalidate();
+      return;
+    }
 
     if (state.navigationState !== 'focusing' && state.navigationState !== 'returning') {
       return;
@@ -419,6 +460,9 @@ function resolveCameraTarget(
 
     if (roomBounds && !roomBounds.isEmpty()) {
       roomBounds.getCenter(target);
+      if (isSingleRoomPreview) {
+        target.x -= 0.9;
+      }
       target.y = 1.18;
     }
 
