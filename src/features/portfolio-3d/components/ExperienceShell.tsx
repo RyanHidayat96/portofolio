@@ -10,6 +10,7 @@ export function ExperienceShell({
   fallbackSlot,
   navigationSlot,
   sectionPanelSlot,
+  focusControlsSlot,
   instructionHintSlot,
   assetProgress,
   isArcadeView = false
@@ -19,6 +20,7 @@ export function ExperienceShell({
   fallbackSlot: React.ReactNode;
   navigationSlot: React.ReactNode;
   sectionPanelSlot?: React.ReactNode;
+  focusControlsSlot?: React.ReactNode;
   instructionHintSlot?: React.ReactNode;
   assetProgress?: Portfolio3dLoadingProgress;
   isArcadeView?: boolean;
@@ -105,7 +107,7 @@ export function ExperienceShell({
           )}
         </div>
 
-        <header className={`pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isArcadeView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <header inert={isArcadeView} aria-hidden={isArcadeView} className={`pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isArcadeView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="max-w-[390px]">
               <p
@@ -141,22 +143,20 @@ export function ExperienceShell({
 
         <aside
           id="portfolio-3d-panel"
+          inert={isArcadeView}
+          aria-hidden={isArcadeView}
           className={`portfolio-3d-glass-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-y-auto p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-all duration-500 ${isArcadeView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
           aria-label="3D portfolio controls and section content"
         >
           {navigationSlot}
         </aside>
 
+        {focusControlsSlot}
+
         {sectionPanelSlot ? (
-          isArcadeView ? (
-            <section className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center p-3 sm:p-6 lg:p-10">
-              {sectionPanelSlot}
-            </section>
-          ) : (
             <section className="portfolio-3d-section-popover pointer-events-auto relative z-20 mx-4 mt-[100dvh] p-4 lg:absolute lg:bottom-5 lg:right-5 lg:mx-0 lg:mt-0 lg:max-h-[42dvh] lg:w-[min(28rem,calc(100vw-2.5rem))] lg:overflow-y-auto">
               {sectionPanelSlot}
             </section>
-          )
         ) : null}
       </section>
     </main>

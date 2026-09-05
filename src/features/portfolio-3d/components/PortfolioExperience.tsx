@@ -3,6 +3,7 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Activity, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
 import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { withPortfolio3dBasePath } from '../asset-url';
 import type {
   Portfolio3dHotspotDefinition,
@@ -31,7 +32,7 @@ import {
   isPortfolio3dSafeHref,
   type Portfolio3dPanelBlock
 } from '../screen-content';
-import { ArcadePipelineScreen } from './ArcadePipelineScreen';
+import { ArcadePipelineControls, ArcadePipelineScreen } from './ArcadePipelineScreen';
 import { ExperienceShell } from './ExperienceShell';
 import { Portfolio3dHtmlFallback } from './Portfolio3dHtmlFallback';
 import { useDocumentVisibility } from '../hooks/useDocumentVisibility';
@@ -93,22 +94,10 @@ function PortfolioExperienceContent({
   const webglStatus = useWebGLSupport();
   const { state } = usePortfolio3dState();
   const [assetProgress, setAssetProgress] = useState<Portfolio3dLoadingProgress>();
+  const [arcadeScreenElement, setArcadeScreenElement] = useState<HTMLElement | null>(null);
   const isPipelineActive = state.activeSectionId === 'pipeline';
   const isSettledAtSection = state.navigationState === 'section-open';
-  // Delay the arcade view shell transition so the camera animation finishes first.
-  const [isArcadeViewDelayed, setIsArcadeViewDelayed] = useState(false);
-
-  useEffect(() => {
-    if (isPipelineActive && isSettledAtSection) {
-      // Small delay so camera fully settles before nav slides out
-      const t = window.setTimeout(() => setIsArcadeViewDelayed(true), 200);
-      return () => window.clearTimeout(t);
-    }
-    setIsArcadeViewDelayed(false);
-    return undefined;
-  }, [isPipelineActive, isSettledAtSection]);
-
-  const isArcadeView = isPipelineActive && isSettledAtSection && isArcadeViewDelayed;
+  const isArcadeView = isPipelineActive && isSettledAtSection;
 
   return (
     <>
@@ -121,6 +110,7 @@ function PortfolioExperienceContent({
             <FoundationCanvas
               qualityTier={state.qualityTier}
               onCriticalProgressChange={setAssetProgress}
+              onArcadeScreenReady={setArcadeScreenElement}
             />
           ) : null
         }
@@ -129,13 +119,15 @@ function PortfolioExperienceContent({
           state.activeSectionId === 'overview'
             ? null
             : isPipelineActive
-              ? isSettledAtSection ? <ArcadePipelineScreen /> : null
+              ? null
               : <Portfolio3dSectionPanel />
         }
+        focusControlsSlot={isArcadeView ? <ArcadePipelineControls /> : null}
         instructionHintSlot={<Portfolio3dInstructionHint />}
         assetProgress={assetProgress}
         isArcadeView={isArcadeView}
       />
+      {arcadeScreenElement ? createPortal(<ArcadePipelineScreen interactive={isArcadeView} />, arcadeScreenElement) : null}
     </>
   );
 }
@@ -221,10 +213,12 @@ function Portfolio3dRouteController(): null {
 
 function FoundationCanvas({
   qualityTier,
-  onCriticalProgressChange
+  onCriticalProgressChange,
+  onArcadeScreenReady
 }: Readonly<{
   qualityTier: Portfolio3dQualityTier;
   onCriticalProgressChange?: (progress: Portfolio3dLoadingProgress) => void;
+  onArcadeScreenReady?: (element: HTMLElement | null) => void;
 }>): React.ReactElement {
   const isDocumentVisible = useDocumentVisibility();
   const dpr = useMemo(() => getInitialPortfolio3dDpr(qualityTier), [qualityTier]);
@@ -249,6 +243,7 @@ function FoundationCanvas({
         <FoundationScene
           qualityTier={qualityTier}
           onCriticalProgressChange={onCriticalProgressChange}
+          onArcadeScreenReady={onArcadeScreenReady}
         />
       </Suspense>
     </Canvas>
@@ -275,15 +270,18 @@ function CanvasVisibilityInvalidator({
 
 function FoundationScene({
   qualityTier,
-  onCriticalProgressChange
+  onCriticalProgressChange,
+  onArcadeScreenReady
 }: Readonly<{
   qualityTier: Portfolio3dQualityTier;
   onCriticalProgressChange?: (progress: Portfolio3dLoadingProgress) => void;
+  onArcadeScreenReady?: (element: HTMLElement | null) => void;
 }>): React.ReactElement {
   return (
     <RoomShellStage
       qualityTier={qualityTier}
       onCriticalProgressChange={onCriticalProgressChange}
+      onArcadeScreenReady={onArcadeScreenReady}
     />
   );
 }
@@ -316,6 +314,7 @@ function Portfolio3dNavigation(): React.ReactElement {
                 type="button"
                 className="portfolio-3d-area-button"
                 data-active={isActive}
+                data-portfolio-section={contract.id}
                 aria-pressed={isActive}
                 disabled={isLocked}
                 onFocus={() => setFocusedHotspot(hotspot?.id, 'keyboard')}

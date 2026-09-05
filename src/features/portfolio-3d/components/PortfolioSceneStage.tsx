@@ -5,6 +5,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion';
+import { getArcadeCameraPosition, resolveArcadeScreen, type ArcadeScreenPlacement } from '../arcade-screen';
 import {
   constrainPortfolio3dCameraPosition,
   createLookAtQuaternion,
@@ -25,6 +26,7 @@ import type {
   SceneAssetDefinition
 } from '../types';
 import { DynamicScreenLayer } from './DynamicScreenLayer';
+import { ArcadeScreenSurface } from './ArcadeScreenSurface';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { PortfolioLightingRig } from './PortfolioLightingRig';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
@@ -40,10 +42,12 @@ const isSingleRoomPreview = anchoredSceneAssets.length === 0;
 
 export function PortfolioSceneStage({
   qualityTier = 'high',
-  onCriticalProgressChange
+  onCriticalProgressChange,
+  onArcadeScreenReady
 }: Readonly<{
   qualityTier?: Portfolio3dQualityTier;
   onCriticalProgressChange?: (progress: Portfolio3dLoadingProgress) => void;
+  onArcadeScreenReady?: (element: HTMLElement | null) => void;
 }>): React.ReactElement {
   const { state } = usePortfolio3dState();
   const [runtimeNodesByAsset, setRuntimeNodesByAsset] = useState<
@@ -54,6 +58,7 @@ export function PortfolioSceneStage({
   const [enabledAnchoredAssetIds, setEnabledAnchoredAssetIds] = useState<readonly Portfolio3dAssetId[]>(initiallyEnabledAnchoredAssetIds);
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
+  const arcadeScreen = useMemo(() => roomNodes ? resolveArcadeScreen(roomNodes.root) : undefined, [roomNodes]);
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
   const failedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => failedAssetIds.includes(assetId));
@@ -175,7 +180,7 @@ export function PortfolioSceneStage({
         qualityTier={qualityTier}
         runtimeNodesByAsset={runtimeNodesByAsset}
       />
-      <CameraNavigationRig runtimeNodesByAsset={runtimeNodesByAsset} />
+      <CameraNavigationRig runtimeNodesByAsset={runtimeNodesByAsset} arcadeScreen={arcadeScreen} />
       <CameraDebugOverlay />
       {isSingleRoomPreview ? (
         <SingleRoomPreviewLighting />
@@ -215,6 +220,8 @@ export function PortfolioSceneStage({
             </SceneAssetBoundary>
           ))
         : null}
+
+      {arcadeScreen ? <ArcadeScreenSurface screen={arcadeScreen} onScreenReady={onArcadeScreenReady} /> : null}
 
       {!isSingleRoomPreview ? (
         <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
@@ -324,7 +331,7 @@ function InteractiveOrbitControls(): null {
     } else {
       ctrl.enabled = false;
     }
-  });
+  }, -2);
 
   return null;
 }
@@ -410,11 +417,13 @@ interface CameraTransitionState {
 }
 
 function CameraNavigationRig({
-  runtimeNodesByAsset
+  runtimeNodesByAsset,
+  arcadeScreen
 }: Readonly<{
   runtimeNodesByAsset: Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>;
+  arcadeScreen?: ArcadeScreenPlacement;
 }>): null {
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, size } = useThree();
   const { state, setNavigationState } = usePortfolio3dState();
   const prefersReducedMotion = useReducedMotion();
   const transitionRef = useRef<CameraTransitionState | null>(null);
@@ -423,8 +432,12 @@ function CameraNavigationRig({
 
   useEffect(() => {
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
-    const target = resolveCameraTarget(preset, runtimeNodesByAsset);
-    const targetPosition = constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
+    const isArcadeFocus = state.activeSectionId === 'pipeline' && arcadeScreen;
+    if (state.activeSectionId === 'pipeline' && !runtimeNodesByAsset['room-shell']) return;
+    const target = isArcadeFocus ? arcadeScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
+    const targetPosition = isArcadeFocus
+      ? getArcadeCameraPosition(arcadeScreen, size.width / Math.max(size.height, 1), preset.fov)
+      : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     const targetQuaternion = createLookAtQuaternion(targetPosition, target);
     const hasRoomBounds = Boolean(runtimeNodesByAsset['room-shell']?.bounds);
 
@@ -445,6 +458,12 @@ function CameraNavigationRig({
       !overviewBoundsAppliedRef.current
     ) {
       overviewBoundsAppliedRef.current = true;
+      applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      invalidate();
+      return;
+    }
+
+    if (isArcadeFocus && state.navigationState === 'section-open') {
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
       invalidate();
       return;
@@ -478,7 +497,7 @@ function CameraNavigationRig({
       camera.updateProjectionMatrix();
     }
     invalidate();
-  }, [camera, invalidate, prefersReducedMotion, runtimeNodesByAsset, state.activeSectionId, state.navigationState]);
+  }, [arcadeScreen, camera, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
 
   useFrame((rootState) => {
     const transition = transitionRef.current;
@@ -513,7 +532,7 @@ function CameraNavigationRig({
 
     setNavigationState(transition.finalNavigationState);
     rootState.invalidate();
-  });
+  }, -1);
 
   return null;
 }

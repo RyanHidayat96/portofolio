@@ -6126,6 +6126,207 @@ textarea:focus-visible,
     transform: none;
   }
 }
+/* The DOM display sits behind a depth-tested transparent opening in the WebGL canvas. */
+.arcade-css-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.arcade-screen-document {
+  overflow: hidden;
+  backface-visibility: hidden;
+  container-type: inline-size;
+  background: #090e14;
+  color: #eef5ff;
+}
+
+.arcade-pipeline-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  letter-spacing: 0;
+}
+
+.arcade-pipeline-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 16px 22px;
+  border-bottom: 1px solid #293442;
+  background: #141d26;
+  color: #6ee7a8;
+}
+
+.arcade-pipeline-heading h2 {
+  min-width: 0;
+  margin: 0;
+  color: #eef5ff;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.arcade-simulation-label {
+  margin-left: auto;
+  color: #b5c5d4;
+  font-size: 13px;
+}
+
+.arcade-pipeline-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: #63798b #090e14;
+  touch-action: pan-y;
+}
+
+.arcade-focus-controls {
+  position: absolute;
+  inset: 18px 16px auto;
+  z-index: 30;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.arcade-focus-controls > * {
+  pointer-events: auto;
+}
+
+.arcade-pipeline-screen :focus-visible,
+.arcade-focus-controls :focus-visible {
+  outline: 2px solid #55d7ff;
+  outline-offset: -3px;
+}
+
+.pipeline-simulator-screen {
+  display: grid;
+  gap: 0;
+  padding: 18px 22px;
+}
+
+.pipeline-simulator-screen .panel-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.pipeline-simulator-screen .pipeline-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #293442;
+}
+
+.pipeline-simulator-screen .pipeline-controls label {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.pipeline-simulator-screen .pipeline-controls select {
+  min-width: 0;
+  min-height: 48px;
+  margin: 0;
+}
+
+.pipeline-simulator-screen .pipeline-actions {
+  margin: 0;
+}
+
+.pipeline-simulator-screen .pipeline-actions button {
+  min-height: 48px;
+  padding: 10px 18px;
+  transform: none;
+}
+
+.pipeline-simulator-screen .pipeline-scenario-detail,
+.pipeline-simulator-screen .pipeline-execution > div:first-child p {
+  display: none;
+}
+
+.pipeline-simulator-screen .pipeline-results {
+  min-width: 0;
+  padding-top: 18px;
+}
+
+.pipeline-simulator-screen .pipeline-execution h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.pipeline-simulator-screen .pipeline-signal-rail {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.pipeline-simulator-screen .pipeline-stage-list {
+  margin-top: 16px;
+  gap: 8px;
+}
+
+.pipeline-simulator-screen .pipeline-stage-list > li {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.pipeline-simulator-screen .pipeline-stage-list p {
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.pipeline-simulator-screen .pipeline-reports {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding-top: 18px;
+  border-top: 1px solid #293442;
+}
+
+@container (max-width: 600px) {
+  .arcade-pipeline-heading {
+    padding: 12px 16px;
+  }
+
+  .arcade-pipeline-heading h2 {
+    font-size: 20px;
+  }
+
+  .pipeline-simulator-screen {
+    padding: 14px 16px;
+  }
+
+  .pipeline-simulator-screen .pipeline-controls {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .pipeline-simulator-screen .pipeline-controls select,
+  .pipeline-simulator-screen .pipeline-actions button {
+    min-height: 56px;
+    font-size: 16px;
+  }
+
+  .pipeline-simulator-screen .pipeline-signal-rail {
+    display: none;
+  }
+
+  .pipeline-simulator-screen .pipeline-reports {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* 3D portfolio cinematic shell */
 .portfolio-3d-shell {
   background:

@@ -22,7 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const playbackDelayMs = 120;
 
-export function PipelineSimulatorPanel(): React.ReactElement {
+export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
   const simulator = useMemo(() => new PipelineSimulator(), []);
   const [scenarioId, setScenarioId] = useState<PipelineScenarioId>("success");
   const [currentRun, setCurrentRun] = useState<PipelineRunResult | null>(null);
@@ -74,11 +74,13 @@ export function PipelineSimulatorPanel(): React.ReactElement {
   useEffect(() => clearTimers, [clearTimers]);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-      <Panel className="p-5">
-        <p className="mono text-sm text-[#55d7ff]">{pipelinePanelMetadata.eyebrow}</p>
-        <h1 className="mt-3 text-2xl font-semibold">{pipelinePanelMetadata.title}</h1>
-        <p className="mt-3 text-sm leading-6 text-[#8a96a8]">{pipelinePanelMetadata.description}</p>
+    <div className={variant === "screen" ? "pipeline-simulator-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
+      <Panel className="pipeline-controls p-5">
+        {variant !== "screen" ? <>
+          <p className="mono text-sm text-[#55d7ff]">{pipelinePanelMetadata.eyebrow}</p>
+          <h1 className="mt-3 text-2xl font-semibold">{pipelinePanelMetadata.title}</h1>
+          <p className="mt-3 text-sm leading-6 text-[#8a96a8]">{pipelinePanelMetadata.description}</p>
+        </> : null}
 
         <label className="mt-6 block text-sm font-semibold text-[#c8d4e6]" htmlFor="pipeline-mode">
           Pipeline Scenario
@@ -97,7 +99,7 @@ export function PipelineSimulatorPanel(): React.ReactElement {
           ))}
         </select>
 
-        <div className="mt-4 border border-[var(--border)] bg-[#0b0f16] p-4">
+        <div className="pipeline-scenario-detail mt-4 border border-[var(--border)] bg-[#0b0f16] p-4">
           <div className="flex items-start gap-3">
             <GitBranch aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
             <div>
@@ -114,14 +116,14 @@ export function PipelineSimulatorPanel(): React.ReactElement {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2">
+        <div className="pipeline-actions mt-5 grid grid-cols-2 gap-2">
           <Button
             variant="primary"
             icon={<Play aria-hidden="true" size={17} />}
             onClick={runPipeline}
             disabled={isRunning}
             cursorLabel="RUN"
-            magnetic
+            magnetic={variant !== "screen"}
           >
             Run
           </Button>
@@ -129,15 +131,15 @@ export function PipelineSimulatorPanel(): React.ReactElement {
             icon={<RotateCcw aria-hidden="true" size={17} />}
             onClick={resetPipeline}
             cursorLabel="RESET"
-            magnetic
+            magnetic={variant !== "screen"}
           >
             Reset
           </Button>
         </div>
       </Panel>
 
-      <div className="grid gap-5">
-        <Panel className="p-5 sm:p-7">
+      <div className="pipeline-results grid gap-5">
+        <Panel className="pipeline-execution p-5 sm:p-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="mono text-sm text-[#55d7ff]">PIPELINE EXECUTION</p>
@@ -153,14 +155,14 @@ export function PipelineSimulatorPanel(): React.ReactElement {
 
           <PipelineSignalRail stages={snapshot.stages} />
 
-          <ol className="mt-7 grid gap-3">
+          <ol className="pipeline-stage-list mt-7 grid gap-3">
             {snapshot.stages.map((stage, index) => (
               <PipelineStageItem key={stage.id} index={index} stage={stage} />
             ))}
           </ol>
         </Panel>
 
-        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="pipeline-reports grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Panel className="p-5">
             <div className="flex items-start gap-3">
               <ShieldCheck aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
