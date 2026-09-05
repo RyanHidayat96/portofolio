@@ -79,28 +79,35 @@ export function createSceneAssetRuntime(
 }
 
 function cloneSceneMaterials(scene: THREE.Object3D): readonly THREE.Material[] {
-  const clonedMaterials: THREE.Material[] = [];
+  const clonedMaterials = new Map<string, THREE.Material>();
 
   scene.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) {
       return;
     }
 
+    const role = getRuntimeMeshRole(object);
+    const getClone = (material: THREE.Material): THREE.Material => {
+      const key = `${material.uuid}:${role.key}`;
+      const existing = clonedMaterials.get(key);
+      if (existing) {
+        return existing;
+      }
+
+      const clone = material.clone();
+      clonedMaterials.set(key, clone);
+      return clone;
+    };
+
     if (Array.isArray(object.material)) {
-      object.material = object.material.map((material) => {
-        const clonedMaterial = material.clone();
-        clonedMaterials.push(clonedMaterial);
-        return clonedMaterial;
-      });
+      object.material = object.material.map(getClone);
       return;
     }
 
-    const clonedMaterial = object.material.clone();
-    clonedMaterials.push(clonedMaterial);
-    object.material = clonedMaterial;
+    object.material = getClone(object.material);
   });
 
-  return clonedMaterials;
+  return [...clonedMaterials.values()];
 }
 
 function configureRuntimeMeshRenderState(scene: THREE.Object3D): void {
@@ -109,16 +116,7 @@ function configureRuntimeMeshRenderState(scene: THREE.Object3D): void {
       return;
     }
 
-    const nodeName = object.name.toLowerCase();
-    const isRuntimeOnly =
-      nodeName.startsWith('anchor_') ||
-      nodeName.startsWith('hotspot_') ||
-      nodeName.startsWith('collider_') ||
-      nodeName === 'room_colliders' ||
-      nodeName === 'navmesh_room';
-    const isGlass = nodeName.includes('glass') || nodeName.includes('hologram');
-    const isDisplaySurface =
-      nodeName.startsWith('screen_') || nodeName.includes('display') || nodeName.includes('led');
+    const { isRuntimeOnly, isGlass, isDisplaySurface } = getRuntimeMeshRole(object);
 
     object.castShadow = !isRuntimeOnly && !isGlass && !isDisplaySurface;
     object.receiveShadow = !isRuntimeOnly && !isGlass;
@@ -134,6 +132,31 @@ function configureRuntimeMeshRenderState(scene: THREE.Object3D): void {
 
     tuneRuntimeMaterial(object.material, isRuntimeOnly, isGlass, isDisplaySurface);
   });
+}
+
+function getRuntimeMeshRole(object: THREE.Object3D): {
+  readonly key: string;
+  readonly isRuntimeOnly: boolean;
+  readonly isGlass: boolean;
+  readonly isDisplaySurface: boolean;
+} {
+  const nodeName = object.name.toLowerCase();
+  const isRuntimeOnly =
+    nodeName.startsWith('anchor_') ||
+    nodeName.startsWith('hotspot_') ||
+    nodeName.startsWith('collider_') ||
+    nodeName === 'room_colliders' ||
+    nodeName === 'navmesh_room';
+  const isGlass = nodeName.includes('glass') || nodeName.includes('hologram');
+  const isDisplaySurface =
+    nodeName.startsWith('screen_') || nodeName.includes('display') || nodeName.includes('led');
+
+  return {
+    key: `${isRuntimeOnly ? 'runtime' : 'visible'}:${isGlass ? 'glass' : 'solid'}:${isDisplaySurface ? 'display' : 'surface'}`,
+    isRuntimeOnly,
+    isGlass,
+    isDisplaySurface
+  };
 }
 
 function tuneRuntimeMaterial(

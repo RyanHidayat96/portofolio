@@ -40,6 +40,12 @@ const keyboardMouseDeskTransform: Transform3d = {
   scale: [1, 1, 1]
 };
 
+const chairAnchorTransform: Transform3d = {
+  position: [2.34, -0.008, -3.305],
+  rotation: [0, Math.PI, 0],
+  scale: [0.01, 0.01, 0.01]
+};
+
 const deskLampTransform: Transform3d = {
   position: [0.18, 0.755, 0.12],
   rotation: [0, -0.18, 0],
@@ -127,16 +133,16 @@ export const portfolio3dAssets = [
     fileName: 'chair.glb',
     sourcePath: 'assets/chair.glb',
     publicPath: '/models/portfolio-3d/chair.glb',
-    byteSize: 2765540,
-    sceneName: 'RyanOS_Chair',
-    rootNodeName: 'Chair_Root',
+    byteSize: 5354108,
+    sceneName: 'AuxScene',
+    rootNodeName: 'empty_1',
     loadingTier: 'near',
     qualityVisibility: visibleMediumHigh,
-    placement: roomAnchor('Anchor_Chair'),
-    fallbackTransform: identityTransform,
-    boundingBox: { min: [-0.381, 0, -0.394], max: [0.381, 1.328, 0.339] },
+    placement: roomAnchor('Anchor_Chair', chairAnchorTransform),
+    fallbackTransform: chairAnchorTransform,
+    boundingBox: { min: [198.263, 0.819, -362.974], max: [269.737, 122.013, -298.026] },
     nodes: {},
-    extensions: ['KHR_materials_emissive_strength']
+    extensions: []
   },
   {
     id: 'main-monitor',

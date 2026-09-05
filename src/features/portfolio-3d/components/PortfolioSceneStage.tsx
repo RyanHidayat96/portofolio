@@ -32,18 +32,17 @@ import { SceneAssetBoundary } from './SceneAssetBoundary';
 
 const roomShellAsset = portfolio3dAssetById['room-shell'];
 const criticalAssets = criticalPortfolio3dAssetIds.map((assetId) => portfolio3dAssetById[assetId]);
-const criticalAssetIdSet = new Set<Portfolio3dAssetId>(criticalPortfolio3dAssetIds);
 const anchoredSceneAssets = portfolio3dAssets.filter((asset) => asset.id !== 'room-shell');
 const initiallyEnabledAnchoredAssetIds = [
-  'ceiling-lights',
   'desk',
-  'chair',
-  'main-monitor',
-  'architecture-screen',
-  'laptop'
+  'main-monitor'
 ] as const satisfies readonly Portfolio3dAssetId[];
 
 const progressiveAssetOrder = [
+  'chair',
+  'architecture-screen',
+  'laptop',
+  'ceiling-lights',
   'server-rack',
   'hologram-projector'
 ] as const satisfies readonly Portfolio3dAssetId[];
@@ -59,13 +58,18 @@ export function PortfolioSceneStage({
   const [runtimeNodesByAsset, setRuntimeNodesByAsset] = useState<
     Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>
   >({});
-  const [loadedCriticalAssetIds, setLoadedCriticalAssetIds] = useState<readonly Portfolio3dAssetId[]>(['room-shell']);
-  const [failedCriticalAssetIds, setFailedCriticalAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
+  const [loadedAssetIds, setLoadedAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
+  const [failedAssetIds, setFailedAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
   const [enabledAnchoredAssetIds, setEnabledAnchoredAssetIds] = useState<readonly Portfolio3dAssetId[]>(initiallyEnabledAnchoredAssetIds);
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
   const canRenderAnchoredAssets = Boolean(roomNodes);
+  const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
+  const failedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => failedAssetIds.includes(assetId));
   const criticalComplete = loadedCriticalAssetIds.length + failedCriticalAssetIds.length >= criticalAssets.length;
+  const enabledAssetsSettled = enabledAnchoredAssetIds.every(
+    (assetId) => loadedAssetIds.includes(assetId) || failedAssetIds.includes(assetId)
+  );
 
   const activePrimaryAssetId = useMemo(
     () =>
@@ -101,7 +105,26 @@ export function PortfolioSceneStage({
   }, [criticalComplete, failedCriticalAssetIds.length, loadedCriticalAssetIds.length, onCriticalProgressChange]);
 
   useEffect(() => {
+    console.info('[portfolio-3d-profile] staging state', JSON.stringify({
+      activePrimaryAssetId,
+      criticalComplete,
+      canRenderAnchoredAssets,
+      enabledAssetsSettled,
+      enabledAnchoredAssetIds,
+      loadedAssetIds,
+      failedAssetIds
+    }));
     if (!criticalComplete || !canRenderAnchoredAssets) {
+      return;
+    }
+
+    const isActiveAssetMissing = Boolean(
+      activePrimaryAssetId &&
+      activePrimaryAssetId !== 'room-shell' &&
+      !enabledAnchoredAssetIds.includes(activePrimaryAssetId)
+    );
+
+    if (!isActiveAssetMissing && !enabledAssetsSettled) {
       return;
     }
 
@@ -111,14 +134,32 @@ export function PortfolioSceneStage({
     }
 
     const delayMs = enabledAnchoredAssetIds.length === 0 || nextAssetId === activePrimaryAssetId ? 180 : 780;
-    const timeoutId = window.setTimeout(() => {
+    const enableNextAsset = (): void => {
       setEnabledAnchoredAssetIds((current) =>
         current.includes(nextAssetId) ? current : [...current, nextAssetId]
       );
-    }, delayMs);
+    };
+
+    if (nextAssetId === activePrimaryAssetId) {
+      const timeoutId = window.setTimeout(enableNextAsset, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(enableNextAsset, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(enableNextAsset, delayMs);
 
     return () => window.clearTimeout(timeoutId);
-  }, [activePrimaryAssetId, canRenderAnchoredAssets, criticalComplete, enabledAnchoredAssetIds]);
+  }, [
+    activePrimaryAssetId,
+    canRenderAnchoredAssets,
+    criticalComplete,
+    enabledAnchoredAssetIds,
+    enabledAssetsSettled
+  ]);
 
   const handleNodesMapped = useCallback((nodes: AssetRuntimeNodeMap): void => {
     setRuntimeNodesByAsset((current) => ({ ...current, [nodes.assetId]: nodes }));
@@ -138,19 +179,12 @@ export function PortfolioSceneStage({
   }, []);
 
   const handleAssetReady = useCallback((assetId: Portfolio3dAssetId): void => {
-    setLoadedCriticalAssetIds((current) =>
-      current.includes(assetId) || !criticalAssetIdSet.has(assetId)
-        ? current
-        : [...current, assetId]
-    );
+    console.info('[portfolio-3d-profile] asset ready', assetId);
+    setLoadedAssetIds((current) => current.includes(assetId) ? current : [...current, assetId]);
   }, []);
 
   const handleAssetError = useCallback((assetId: Portfolio3dAssetId): void => {
-    setFailedCriticalAssetIds((current) =>
-      current.includes(assetId) || !criticalAssetIdSet.has(assetId)
-        ? current
-        : [...current, assetId]
-    );
+    setFailedAssetIds((current) => current.includes(assetId) ? current : [...current, assetId]);
   }, []);
 
   return (

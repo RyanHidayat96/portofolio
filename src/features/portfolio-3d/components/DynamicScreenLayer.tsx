@@ -24,30 +24,47 @@ export function DynamicScreenLayer({
   runtimeNodesByAsset
 }: Readonly<{
   runtimeNodesByAsset: RuntimeNodesByAsset;
+}>): React.ReactElement {
+  return (
+    <>
+      {portfolio3dScreenPreviews.map((preview) => (
+        <DynamicScreenBinding
+          key={preview.screenNodeName}
+          preview={preview}
+          screen={findRuntimeScreen(preview.screenNodeName, runtimeNodesByAsset)}
+        />
+      ))}
+    </>
+  );
+}
+
+function DynamicScreenBinding({
+  preview,
+  screen
+}: Readonly<{
+  preview: ScreenPreview;
+  screen?: THREE.Object3D;
 }>): null {
   const { invalidate } = useThree();
 
   useEffect(() => {
+    if (!screen) {
+      return;
+    }
+
     const bindings: ScreenMaterialBinding[] = [];
 
-    portfolio3dScreenPreviews.forEach((preview) => {
-      const screen = findRuntimeScreen(preview.screenNodeName, runtimeNodesByAsset);
-      if (!screen) {
-        return;
-      }
+    collectScreenMeshes(screen).forEach((mesh) => {
+      const originalMaterial = mesh.material;
+      const previewMaterial = createPreviewMaterial(originalMaterial, preview);
 
-      collectScreenMeshes(screen).forEach((mesh) => {
-        const originalMaterial = mesh.material;
-        const previewMaterial = createPreviewMaterial(originalMaterial, preview);
+      mesh.material = Array.isArray(originalMaterial)
+        ? [previewMaterial, ...originalMaterial.slice(1)]
+        : previewMaterial;
+      mesh.renderOrder = Math.max(mesh.renderOrder, 4);
+      mesh.userData.portfolio3dDynamicScreen = preview.screenNodeName;
 
-        mesh.material = Array.isArray(originalMaterial)
-          ? [previewMaterial, ...originalMaterial.slice(1)]
-          : previewMaterial;
-        mesh.renderOrder = Math.max(mesh.renderOrder, 4);
-        mesh.userData.portfolio3dDynamicScreen = preview.screenNodeName;
-
-        bindings.push({ mesh, originalMaterial, previewMaterial });
-      });
+      bindings.push({ mesh, originalMaterial, previewMaterial });
     });
 
     if (bindings.length > 0) {
@@ -61,7 +78,7 @@ export function DynamicScreenLayer({
       });
       invalidate();
     };
-  }, [invalidate, runtimeNodesByAsset]);
+  }, [invalidate, preview, screen]);
 
   return null;
 }

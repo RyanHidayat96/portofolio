@@ -44,15 +44,6 @@ export function getPortfolio3dRuntimeCapabilities(): Portfolio3dRuntimeCapabilit
   };
 }
 
-export function shouldUsePortfolio3dMediumDefault(
-  capabilities = getPortfolio3dRuntimeCapabilities()
-): boolean {
-  return Boolean(
-    capabilities.isCoarsePointer ||
-      capabilities.isNarrowViewport ||
-      (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 6)
-  );
-}
 
 export function getPortfolio3dDprLimit(
   qualityTier: Portfolio3dQualityTier,
