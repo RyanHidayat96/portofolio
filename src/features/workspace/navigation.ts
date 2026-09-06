@@ -100,11 +100,11 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "terminal",
     label: "Terminal",
     icon: TerminalSquare,
-    description: "Run commands for profile, projects, labs, and contact."
+    description: "Run commands for profile, labs, and contact."
   },
   challenge: {
     id: "challenge",
-    label: "Test Me",
+    label: "Challenge",
     icon: Brain,
     description: "Try engineering reasoning scenarios."
   },
@@ -161,13 +161,6 @@ export function getPaletteActions(): readonly PaletteAction[] {
       section: "experience",
       description: "Public career summary with full details in CV.",
       keywords: ["career", "experience"]
-    },
-    {
-      id: "quick-flagship",
-      label: "Open Project Themes",
-      section: "projects",
-      description: "Public-safe build, quality, and delivery themes.",
-      keywords: ["project", "case study", "full stack"]
     },
     {
       id: "quick-architecture",
@@ -237,10 +230,6 @@ function getActionLabel(item: WorkspaceNavigationItem): string {
 
   if (item.id === "experience") {
     return "View Experience";
-  }
-
-  if (item.id === "projects") {
-    return "View Projects";
   }
 
   if (item.id === "architecture") {

@@ -24,7 +24,6 @@ const suggestedCommandNames = [
   "quality",
   "performance",
   "pipeline",
-  "challenge",
   "hire"
 ] as const;
 
@@ -65,7 +64,7 @@ export function TerminalPanel({
   const isScreenMode = variant === "screen";
   const autocompleteMatch = getAutocompleteMatch(input, registryCommands);
   const routeCommandCount = registryCommands.filter((command) =>
-    ["about", "skills", "career", "experience", "projects", "quality", "architecture", "api", "challenge"].includes(
+    ["about", "skills", "career", "experience", "quality", "architecture", "api"].includes(
       command.name
     )
   ).length;

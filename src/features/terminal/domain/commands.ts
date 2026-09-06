@@ -147,14 +147,6 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
       )
     )
   );
-  registry.register(
-    new StaticCommand("projects", "Open project case studies.", (_args, context) =>
-      navigate(
-        "projects",
-        ...context.projects.map((project) => `${project.title} [${project.categories.join(", ")}]`)
-      )
-    )
-  );
 
   registry.register(
     new StaticCommand("stack", "Show build, quality, data, and delivery stack.", (_args, context) =>
@@ -171,11 +163,11 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
       const buildGroup = context.skillGroups.find((group) => group.id === "build");
 
       return navigate(
-        "projects",
+        "experience",
         "Build capability:",
         ...(buildGroup?.skills.map((skill) => `${skill.name}: ${skill.purpose}`) ?? []),
         "",
-        "Project names and role details are summarized visually. Full detail stays in the CV."
+        "Build detail stays in experience summary and CV."
       );
     })
   );
@@ -255,15 +247,6 @@ export function createPortfolioCommandRegistry(): TerminalCommandRegistry {
   registry.register(
     new StaticCommand("api", "Open API playground.", () =>
       navigate("api", "API playground ready. Public route handlers available.")
-    )
-  );
-
-  registry.register(
-    new StaticCommand(
-      "challenge",
-      "Open engineering challenge.",
-      () => navigate("challenge", "Engineering challenge ready. Pick a scenario."),
-      ["test-me"]
     )
   );
 

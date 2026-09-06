@@ -3,14 +3,11 @@ import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { apiEndpoints } from "@/data/api-endpoints";
 import { capabilities } from "@/data/capabilities";
-import { challengeScenarios } from "@/data/challenges";
 import { profile } from "@/data/profile";
 import { FullCycleExperience } from "@/features/workspace/components/FullCycleExperience";
 import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
 import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
 import {
-  BadgeCheck,
-  Brain,
   BriefcaseBusiness,
   Code2,
   Download,
@@ -112,10 +109,10 @@ function RecruiterOverviewPanel({
     },
     {
       label: "02",
-      title: "Check proof",
-      detail: "Selected projects summarize implementation, testing, performance, and impact.",
-      cta: "View Projects",
-      section: "projects"
+      title: "Review experience",
+      detail: "Role scope, delivery depth, and career direction stay in the experience section.",
+      cta: "View Experience",
+      section: "experience"
     },
     {
       label: "03",
@@ -268,54 +265,6 @@ function RecruiterOverviewPanel({
         </div>
       </Panel>
 
-      <Panel className="recruiter-scan-projects p-5 sm:p-7">
-        <div className="recruiter-scan-section-header">
-          <div>
-            <p className="mono text-sm text-[var(--accent)]">selected.work</p>
-            <h2>Project themes, not internal detail.</h2>
-          </div>
-          <Button
-            icon={<BadgeCheck aria-hidden="true" size={17} />}
-            onClick={() => onNavigate("projects")}
-          >
-            View Projects
-          </Button>
-        </div>
-        <div className="recruiter-scan-project-grid">
-          {[
-            {
-              label: "Build",
-              title: "Enterprise application systems",
-              detail: "Frontend, backend, API, data, and workflow ownership.",
-              tech: ["React", "Next.js", "Node.js", "SQL", "API"]
-            },
-            {
-              label: "Quality",
-              title: "Automation and test systems",
-              detail: "Web, mobile, API, regression, reporting, and release confidence.",
-              tech: ["Playwright", "Appium", "Postman", "Jest", "K6"]
-            },
-            {
-              label: "Ship",
-              title: "Delivery readiness systems",
-              detail: "CI/CD, Docker, runners, quality gates, and operational signals.",
-              tech: ["GitLab CI/CD", "Docker", "Runner", "Reports", "Gates"]
-            }
-          ].map((item) => (
-            <article key={item.title}>
-              <Badge tone={item.label === "Quality" ? "success" : "info"}>{item.label}</Badge>
-              <h3>{item.title}</h3>
-              <p>{item.detail}</p>
-              <div>
-                {item.tech.map((technology) => (
-                  <span key={technology}>{technology}</span>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-      </Panel>
-
     </div>
   );
 }
@@ -380,22 +329,6 @@ function EngineerOverviewPanel({
       command: "pipeline",
       signal: "delivery states",
       icon: GitBranch
-    },
-    {
-      section: "challenge",
-      title: "Engineering Challenges",
-      description: `Test reasoning across ${challengeScenarios.length} build, data, quality, and delivery scenarios.`,
-      command: "test-me",
-      signal: "decision critique",
-      icon: Brain
-    },
-    {
-      section: "projects",
-      title: "Case Studies",
-      description: "Open public-safe project themes without internal role detail.",
-      command: "projects",
-      signal: "project themes",
-      icon: BadgeCheck
     }
   ];
 
@@ -429,8 +362,8 @@ function EngineerOverviewPanel({
             <Badge tone="info">Interactive Workspace</Badge>
             <h1>Developer playground for the full portfolio system.</h1>
             <p>
-              Explore architecture, live route handlers, deterministic simulations, terminal
-              commands, and reasoning challenges without burying the quick hiring path.
+              Explore architecture, live route handlers, deterministic simulations, and terminal
+              commands without burying the quick hiring path.
             </p>
             <div className="engineer-playground-actions">
               <Button

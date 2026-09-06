@@ -67,7 +67,7 @@ const sectionMetadata: Readonly<Record<WorkspaceSection, RouteMetadataText>> = {
     description: `Interactive ${branding.appName} terminal command surface.`
   },
   challenge: {
-    title: "Test Me",
+    title: "Challenge",
     description: "Scenario-based decision challenge."
   },
   contact: {

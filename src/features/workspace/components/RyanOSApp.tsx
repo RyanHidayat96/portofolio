@@ -150,7 +150,7 @@ const ChallengePanel = dynamic(
       (module) => module.ChallengePanel
     ),
   {
-    loading: () => <WorkspacePanelLoading label="Test Me" />
+    loading: () => <WorkspacePanelLoading label="Challenge" />
   }
 );
 
