@@ -53,6 +53,46 @@ const initiallyEnabledAnchoredAssetIds = [] as const satisfies readonly Portfoli
 const progressiveAssetOrder = [] as const satisfies readonly Portfolio3dAssetId[];
 const isSingleRoomPreview = anchoredSceneAssets.length === 0;
 
+const profileCameraDistanceScale = {
+  cameraDistanceScale: 0.85
+} as const;
+const experienceCameraDistanceScale = {
+  cameraDistanceScale: 0.80
+} as const;
+const architectureCameraDistanceScale = {
+  cameraDistanceScale: 0.78
+} as const;
+const pipelineCameraDistanceScale = {
+  cameraDistanceScale: 1
+} as const;
+const automationCameraDistanceScale = {
+  cameraDistanceScale: 1
+} as const;
+const performanceCameraDistanceScale = {
+  cameraDistanceScale: 0.80
+} as const;
+const backendCameraDistanceScale = {
+  cameraDistanceScale: 0.89
+} as const;
+const terminalCameraDistanceScale = {
+  cameraDistanceScale: 1.15
+} as const;
+const contactCameraDistanceScale = {
+  cameraDistanceScale: 0.80
+} as const;
+
+const embeddedScreenDistanceScaleById = {
+  profile: profileCameraDistanceScale.cameraDistanceScale,
+  experience: experienceCameraDistanceScale.cameraDistanceScale,
+  architecture: architectureCameraDistanceScale.cameraDistanceScale,
+  pipeline: pipelineCameraDistanceScale.cameraDistanceScale,
+  automation: automationCameraDistanceScale.cameraDistanceScale,
+  performance: performanceCameraDistanceScale.cameraDistanceScale,
+  backend: backendCameraDistanceScale.cameraDistanceScale,
+  terminal: terminalCameraDistanceScale.cameraDistanceScale,
+  contact: contactCameraDistanceScale.cameraDistanceScale
+} as const;
+
 export function PortfolioSceneStage({
   qualityTier = 'high',
   onCriticalProgressChange,
@@ -507,22 +547,16 @@ function CameraNavigationRig({
     const embeddedScreen = embeddedScreenId ? embeddedScreens[embeddedScreenId] : undefined;
     if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
     const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
-    const artworkFraming = embeddedScreenId === 'profile'
-      ? { horizontalCoverage: 0.84, verticalCoverage: 0.8 }
-      : embeddedScreenId === 'experience'
-        ? { horizontalCoverage: 0.84, verticalCoverage: 0.8 }
-        : embeddedScreenId === 'architecture'
-          ? { horizontalCoverage: 0.86, verticalCoverage: 0.8 }
-          : embeddedScreenId === 'contact'
-            ? { horizontalCoverage: 0.82, verticalCoverage: 0.76 }
-            : undefined;
+    const cameraDistanceScale = embeddedScreenId
+      ? embeddedScreenDistanceScaleById[embeddedScreenId]
+      : undefined;
     const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture' || embeddedScreenId === 'contact';
     const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
         size.width / Math.max(size.height, 1),
         preset.fov,
-        artworkFraming
+        cameraDistanceScale
       )
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     if (preset.id === 'overview' && size.width < 768) {

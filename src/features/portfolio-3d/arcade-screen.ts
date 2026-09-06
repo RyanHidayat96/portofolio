@@ -439,14 +439,16 @@ export function getArcadeCameraPosition(
   screen: ArcadeScreenPlacement,
   aspect: number,
   fov: number,
-  framing: Readonly<{ horizontalCoverage?: number; verticalCoverage?: number }> = {}
+  cameraDistanceScale = 1
 ): THREE.Vector3 {
-  const horizontalCoverage = framing.horizontalCoverage ?? 0.88;
-  const verticalCoverage = framing.verticalCoverage ?? 0.72;
+  // Fit the fixed screen surface first, then let each menu tune the camera distance.
+  const horizontalCoverage = 0.88;
+  const verticalCoverage = 0.72;
   const tangent = Math.tan(THREE.MathUtils.degToRad(fov / 2));
-  const distance = Math.max(
+  const fittedDistance = Math.max(
     screen.height / (2 * tangent * verticalCoverage),
     screen.width / (2 * tangent * Math.max(aspect, 0.1) * horizontalCoverage)
   );
+  const distance = fittedDistance * Math.max(cameraDistanceScale, 0.1);
   return screen.position.clone().addScaledVector(screen.normal, distance);
 }
