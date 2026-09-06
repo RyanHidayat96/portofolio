@@ -120,7 +120,6 @@ const portfolioSections: readonly WorkspaceSection[] = [
   "overview",
   "profile",
   "experience",
-  "projects",
   "contact"
 ];
 
@@ -130,8 +129,7 @@ const labSections: readonly WorkspaceSection[] = [
   "automation",
   "performance",
   "pipeline",
-  "terminal",
-  "challenge"
+  "terminal"
 ];
 
 export function getNavigationItem(section: WorkspaceSection): WorkspaceNavigationItem {
