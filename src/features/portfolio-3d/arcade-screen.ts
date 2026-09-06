@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type EmbeddedScreenId = 'pipeline' | 'automation';
+export type EmbeddedScreenId = 'pipeline' | 'automation' | 'performance' | 'backend';
 
 export interface ArcadeScreenPlacement {
   readonly position: THREE.Vector3;
@@ -16,6 +16,14 @@ export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement
 
 export function resolveAutomationScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
   return resolveScreenByMaterial(root, [], 'screen.002');
+}
+
+export function resolvePerformanceScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveScreenByMaterial(root, [], 'screen.001');
+}
+
+export function resolveApiScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveScreenByMaterial(root, [], 'Material');
 }
 
 function resolveScreenByMaterial(
@@ -38,6 +46,155 @@ function resolveScreenByMaterial(
   });
   if (!screen) return undefined;
 
+  return resolveMaterialScreenPlacement(screen, materialName)
+    ?? resolveWholeMeshScreenPlacement(screen);
+}
+
+function resolveMaterialScreenPlacement(
+  screen: THREE.Mesh,
+  materialName: string
+): ArcadeScreenPlacement | undefined {
+  const geometry = screen.geometry;
+  const positions = geometry.getAttribute('position');
+  if (!positions || positions.count === 0) return undefined;
+
+  const materials = Array.isArray(screen.material) ? screen.material : [screen.material];
+  const materialIndexes = new Set<number>();
+  materials.forEach((material, index) => {
+    if (material.name === materialName) {
+      materialIndexes.add(index);
+    }
+  });
+  if (materialIndexes.size === 0) return undefined;
+
+  const triangles = collectMaterialTriangles(geometry, materialIndexes);
+  if (triangles.length === 0) return undefined;
+
+  const vertices: THREE.Vector3[] = [];
+  const normal = new THREE.Vector3();
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+
+  triangles.forEach(([ai, bi, ci]) => {
+    a.fromBufferAttribute(positions, ai);
+    b.fromBufferAttribute(positions, bi);
+    c.fromBufferAttribute(positions, ci);
+    vertices.push(a.clone(), b.clone(), c.clone());
+    normal.add(new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)));
+  });
+
+  if (normal.lengthSq() < 0.000001) return undefined;
+  normal.normalize();
+
+  let up = new THREE.Vector3(0, 1, 0).projectOnPlane(normal);
+  if (up.lengthSq() < 0.000001) {
+    up = new THREE.Vector3(0, 0, 1).projectOnPlane(normal);
+  }
+  if (up.lengthSq() < 0.000001) return undefined;
+  up.normalize();
+
+  const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+  const ranges = getProjectionRanges(vertices, right, up, normal);
+  const width = ranges.right.max - ranges.right.min;
+  const height = ranges.up.max - ranges.up.min;
+  if (width <= 0 || height <= 0) return undefined;
+
+  const center = right.clone().multiplyScalar((ranges.right.min + ranges.right.max) / 2)
+    .add(up.clone().multiplyScalar((ranges.up.min + ranges.up.max) / 2))
+    .add(normal.clone().multiplyScalar(ranges.normal.max + 0.006));
+
+  return toWorldScreenPlacement(screen, center, right, up, width, height);
+}
+
+function collectMaterialTriangles(
+  geometry: THREE.BufferGeometry,
+  materialIndexes: ReadonlySet<number>
+): Array<readonly [number, number, number]> {
+  const index = geometry.index;
+  const triangles: Array<readonly [number, number, number]> = [];
+  const groups = geometry.groups.length > 0
+    ? geometry.groups
+    : [{ start: 0, count: index ? index.count : geometry.getAttribute('position').count, materialIndex: 0 }];
+
+  groups.forEach((group) => {
+    if (!materialIndexes.has(group.materialIndex ?? 0)) return;
+
+    const end = group.start + group.count;
+    for (let offset = group.start; offset + 2 < end; offset += 3) {
+      triangles.push(index
+        ? [index.getX(offset), index.getX(offset + 1), index.getX(offset + 2)]
+        : [offset, offset + 1, offset + 2]);
+    }
+  });
+
+  return triangles;
+}
+
+function getProjectionRanges(
+  vertices: readonly THREE.Vector3[],
+  right: THREE.Vector3,
+  up: THREE.Vector3,
+  normal: THREE.Vector3
+): {
+  readonly right: { min: number; max: number };
+  readonly up: { min: number; max: number };
+  readonly normal: { min: number; max: number };
+} {
+  const ranges = {
+    right: { min: Infinity, max: -Infinity },
+    up: { min: Infinity, max: -Infinity },
+    normal: { min: Infinity, max: -Infinity }
+  };
+
+  vertices.forEach((vertex) => {
+    const rightValue = vertex.dot(right);
+    const upValue = vertex.dot(up);
+    const normalValue = vertex.dot(normal);
+    ranges.right.min = Math.min(ranges.right.min, rightValue);
+    ranges.right.max = Math.max(ranges.right.max, rightValue);
+    ranges.up.min = Math.min(ranges.up.min, upValue);
+    ranges.up.max = Math.max(ranges.up.max, upValue);
+    ranges.normal.min = Math.min(ranges.normal.min, normalValue);
+    ranges.normal.max = Math.max(ranges.normal.max, normalValue);
+  });
+
+  return ranges;
+}
+
+function toWorldScreenPlacement(
+  screen: THREE.Mesh,
+  center: THREE.Vector3,
+  right: THREE.Vector3,
+  up: THREE.Vector3,
+  width: number,
+  height: number
+): ArcadeScreenPlacement | undefined {
+  screen.updateWorldMatrix(true, false);
+  const position = center.clone().applyMatrix4(screen.matrixWorld);
+  const worldRight = center.clone().addScaledVector(right, width)
+    .applyMatrix4(screen.matrixWorld).sub(position);
+  const worldUp = center.clone().addScaledVector(up, height)
+    .applyMatrix4(screen.matrixWorld).sub(position);
+  const worldWidth = worldRight.length() * 0.98;
+  const worldHeight = worldUp.length() * 0.98;
+  if (worldWidth <= 0 || worldHeight <= 0) return undefined;
+  worldRight.normalize();
+  worldUp.normalize();
+  const worldNormal = new THREE.Vector3().crossVectors(worldRight, worldUp).normalize();
+
+  return {
+    position,
+    quaternion: new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(worldRight, worldUp, worldNormal)
+    ),
+    normal: worldNormal,
+    width: worldWidth,
+    height: worldHeight
+  };
+}
+
+function resolveWholeMeshScreenPlacement(screen: THREE.Mesh): ArcadeScreenPlacement | undefined {
   const positions = screen.geometry.getAttribute('position');
   if (!positions || positions.count === 0) return undefined;
   screen.updateWorldMatrix(true, false);

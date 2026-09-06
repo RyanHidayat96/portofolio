@@ -8,7 +8,9 @@ import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion'
 import {
   getArcadeCameraPosition,
   resolveArcadeScreen,
+  resolveApiScreen,
   resolveAutomationScreen,
+  resolvePerformanceScreen,
   type ArcadeScreenPlacement,
   type EmbeddedScreenId
 } from '../arcade-screen';
@@ -66,9 +68,11 @@ export function PortfolioSceneStage({
   const roomNodes = runtimeNodesByAsset['room-shell'];
   const arcadeScreen = useMemo(() => roomNodes ? resolveArcadeScreen(roomNodes.root) : undefined, [roomNodes]);
   const automationScreen = useMemo(() => roomNodes ? resolveAutomationScreen(roomNodes.root) : undefined, [roomNodes]);
+  const performanceScreen = useMemo(() => roomNodes ? resolvePerformanceScreen(roomNodes.root) : undefined, [roomNodes]);
+  const apiScreen = useMemo(() => roomNodes ? resolveApiScreen(roomNodes.root) : undefined, [roomNodes]);
   const embeddedScreens = useMemo(
-    () => ({ pipeline: arcadeScreen, automation: automationScreen }),
-    [arcadeScreen, automationScreen]
+    () => ({ pipeline: arcadeScreen, automation: automationScreen, performance: performanceScreen, backend: apiScreen }),
+    [arcadeScreen, apiScreen, automationScreen, performanceScreen]
   );
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
@@ -240,6 +244,12 @@ export function PortfolioSceneStage({
       ) : null}
       {automationScreen ? (
         <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {performanceScreen ? (
+        <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {apiScreen ? (
+        <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
 
       {!isSingleRoomPreview ? (
@@ -569,7 +579,9 @@ function CameraNavigationRig({
 }
 
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
-  return sectionId === 'pipeline' || sectionId === 'automation' ? sectionId : undefined;
+  return sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend'
+    ? sectionId
+    : undefined;
 }
 
 function applyCameraState(

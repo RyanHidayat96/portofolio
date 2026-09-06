@@ -27,12 +27,17 @@ interface PerformanceReleasePosture {
   readonly tone: "success" | "danger";
 }
 
-export function PerformanceLab(): React.ReactElement {
+interface PerformanceLabProps {
+  readonly variant?: "workspace" | "screen";
+}
+
+export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): React.ReactElement {
   const [config, setConfig] = useState<PerformanceRunConfig>(initialConfig);
   const scenario = findPerformanceScenario(config.scenarioId);
   const result = useMemo(() => simulatePerformanceRun(config), [config]);
   const failedThresholds = result.thresholds.filter((threshold) => threshold.status === "failed");
   const releasePosture = getPerformanceReleasePosture(result.qualityGate, failedThresholds.length);
+  const isScreenMode = variant === "screen";
 
   const updateScenario = (scenarioId: PerformanceScenarioId): void => {
     setConfig(createDefaultPerformanceConfig(scenarioId));
@@ -53,7 +58,7 @@ export function PerformanceLab(): React.ReactElement {
   };
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
+    <div className={isScreenMode ? "performance-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
       <Panel className="p-5">
         <p className="mono text-sm text-[#55d7ff]">k6.workflow.demo</p>
         <h1 className="mt-3 text-2xl font-semibold">Performance Lab</h1>
@@ -108,7 +113,7 @@ export function PerformanceLab(): React.ReactElement {
           icon={<RotateCcw aria-hidden="true" size={17} />}
           onClick={() => setConfig(createDefaultPerformanceConfig(config.scenarioId))}
           cursorLabel="RESET"
-          magnetic
+          magnetic={!isScreenMode}
         >
           Reset Scenario
         </Button>

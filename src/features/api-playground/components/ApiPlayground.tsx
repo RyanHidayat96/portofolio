@@ -28,11 +28,16 @@ interface ApiLifecycleStep {
   readonly status: ApiLifecycleStatus;
 }
 
-export function ApiPlayground(): React.ReactElement {
+interface ApiPlaygroundProps {
+  readonly variant?: "workspace" | "screen";
+}
+
+export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): React.ReactElement {
   const [activePath, setActivePath] = useState(apiEndpoints[0]?.path ?? "");
   const [response, setResponse] = useState<ApiResponseState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const isScreenMode = variant === "screen";
   const endpoint = apiEndpoints.find((item) => item.path === activePath) ?? apiEndpoints[0];
 
   async function sendRequest(): Promise<void> {
@@ -69,7 +74,7 @@ export function ApiPlayground(): React.ReactElement {
   const lifecycleSteps = getApiLifecycleSteps({ endpoint, response, error, isLoading });
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
+    <div className={isScreenMode ? "api-playground-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
       <Panel className="api-playground-index p-4">
         <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
@@ -107,7 +112,7 @@ export function ApiPlayground(): React.ReactElement {
               onClick={sendRequest}
               disabled={isLoading}
               cursorLabel="SEND"
-              magnetic
+              magnetic={!isScreenMode}
             >
               {isLoading ? "Sending" : "Send"}
             </Button>

@@ -6232,6 +6232,193 @@ textarea:focus-visible,
   touch-action: pan-y;
 }
 
+.monitor-performance-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  letter-spacing: 0;
+}
+
+.monitor-performance-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 16px 22px;
+  border-bottom: 1px solid #264238;
+  background: #111f1c;
+  color: #6ee7a8;
+}
+
+.monitor-performance-heading h2 {
+  min-width: 0;
+  margin: 0;
+  color: #eef5ff;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.monitor-performance-label {
+  margin-left: auto;
+  color: #b5d8c9;
+  font-size: 13px;
+}
+
+.monitor-performance-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: #4fd18b #090e14;
+  touch-action: pan-y;
+}
+
+.monitor-api-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  letter-spacing: 0;
+}
+
+.monitor-api-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 16px 22px;
+  border-bottom: 1px solid #274d37;
+  background: #101d17;
+  color: #6ee7a8;
+}
+
+.monitor-api-heading h2 {
+  min-width: 0;
+  margin: 0;
+  color: #eef5ff;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.monitor-api-label {
+  margin-left: auto;
+  color: #b5d8c9;
+  font-size: 13px;
+}
+
+.monitor-api-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: #4fd18b #090e14;
+  touch-action: pan-y;
+  container-type: inline-size;
+}
+
+.api-playground-screen {
+  display: grid;
+  grid-template-columns: minmax(185px, 0.7fr) minmax(0, 1.3fr);
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  color: #eef5ff;
+}
+
+.api-playground-screen > * {
+  min-width: 0;
+}
+
+.api-playground-screen > :nth-child(2) {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.api-playground-screen > :nth-child(2) > :nth-child(2) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.api-playground-screen .panel-surface {
+  min-width: 0;
+  border-color: #274d37;
+  background: #0d1914;
+}
+
+.api-playground-screen h1,
+.api-playground-screen h2 {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.api-playground-screen .api-playground-index > p:nth-of-type(2) {
+  display: none;
+}
+
+.api-playground-screen .api-endpoint-button,
+.api-playground-screen .api-fact-card,
+.api-playground-screen .api-contract-list > div,
+.api-playground-screen .api-response-body,
+.api-playground-screen .api-lifecycle-rail li {
+  border-color: #274d37;
+  background: #0a1510;
+}
+
+.api-playground-screen .api-endpoint-button,
+.api-playground-screen .api-fact-card,
+.api-playground-screen .api-contract-list > div,
+.api-playground-screen .api-response-body {
+  padding: 10px;
+}
+
+.api-playground-screen .api-endpoint-button span {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.api-playground-screen .api-lifecycle-rail {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.api-playground-screen .api-lifecycle-rail li {
+  gap: 4px;
+  padding: 9px;
+}
+
+.api-playground-screen .api-lifecycle-rail strong,
+.api-playground-screen .api-lifecycle-rail span {
+  font-size: 10px;
+}
+
+.api-playground-screen .api-response-body {
+  min-height: 180px;
+  max-height: 260px;
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@container (max-width: 760px) {
+  .api-playground-screen,
+  .api-playground-screen > :nth-child(2) > :nth-child(2) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .api-playground-screen .api-playground-index {
+    display: none;
+  }
+}
+
 .automation-lab-screen {
   display: grid;
   grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
@@ -6305,6 +6492,107 @@ textarea:focus-visible,
   padding: 10px 12px;
 }
 
+.performance-lab-screen {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.68fr) minmax(0, 1.32fr);
+  gap: 0;
+  padding: 18px 22px;
+}
+
+.performance-lab-screen > .panel-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.performance-lab-screen > .panel-surface:first-child {
+  padding-right: 20px;
+  border-right: 1px solid #264238;
+}
+
+.performance-lab-screen > .panel-surface:first-child h1 {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.performance-lab-screen > .panel-surface:first-child > p:nth-of-type(2),
+.performance-lab-screen .performance-posture-card,
+.performance-lab-screen > .panel-surface:first-child > div:last-child {
+  display: none;
+}
+
+.performance-lab-screen button,
+.performance-lab-screen input,
+.performance-lab-screen select {
+  transform: none;
+}
+
+.performance-lab-screen > .grid {
+  min-width: 0;
+  gap: 18px;
+  padding-left: 20px;
+}
+
+.performance-lab-screen > .grid > .panel-surface,
+.performance-lab-screen > .grid > div > .panel-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.performance-lab-screen > .grid > .panel-surface {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #264238;
+}
+
+.performance-lab-screen .performance-scenario-map {
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.performance-lab-screen .performance-scenario-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.performance-lab-screen .performance-scenario-node {
+  padding: 12px;
+}
+
+.performance-lab-screen .performance-scenario-node small {
+  display: none;
+}
+
+.performance-lab-screen .mt-7.grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.performance-lab-screen .mt-7.grid section {
+  padding: 10px;
+}
+
+.performance-lab-screen .mt-7.grid p:first-child {
+  font-size: 12px;
+}
+
+.performance-lab-screen .mt-7.grid .mono {
+  font-size: 18px;
+}
+
+.performance-lab-screen > .grid > div:last-child {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 18px;
+}
+
+.performance-lab-screen > .grid > div:last-child h2 {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
 .arcade-focus-controls {
   position: absolute;
   inset: 18px 16px auto;
@@ -6321,6 +6609,8 @@ textarea:focus-visible,
 
 .arcade-pipeline-screen :focus-visible,
 .monitor-automation-screen :focus-visible,
+.monitor-performance-screen :focus-visible,
+.monitor-api-screen :focus-visible,
 .arcade-focus-controls :focus-visible {
   outline: 2px solid #55d7ff;
   outline-offset: -3px;
@@ -6477,6 +6767,45 @@ textarea:focus-visible,
 
   .automation-lab-screen .automation-screen-results > div:last-child {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .monitor-performance-heading {
+    padding: 12px 16px;
+  }
+
+  .monitor-performance-heading h2 {
+    font-size: 20px;
+  }
+
+  .performance-lab-screen {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 16px;
+  }
+
+  .performance-lab-screen > .panel-surface:first-child {
+    padding: 0 0 16px;
+    border-right: 0;
+    border-bottom: 1px solid #264238;
+  }
+
+  .performance-lab-screen > .grid {
+    padding: 16px 0 0;
+  }
+
+  .performance-lab-screen .performance-scenario-grid,
+  .performance-lab-screen .mt-7.grid,
+  .performance-lab-screen > .grid > div:last-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 780px) {
+  .performance-lab-screen .performance-scenario-map {
+    display: none;
+  }
+
+  .performance-lab-screen .mt-7.grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
