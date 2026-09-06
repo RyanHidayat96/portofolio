@@ -162,8 +162,8 @@ function resolveArtworkScreenPlacement(
 }
 
 function getTextureRightAxis(
-  positions: THREE.BufferAttribute,
-  uvs: THREE.BufferAttribute,
+  positions: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  uvs: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
   triangles: readonly (readonly [number, number, number])[]
 ): THREE.Vector3 | undefined {
   const a = new THREE.Vector3();

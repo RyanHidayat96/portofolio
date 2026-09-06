@@ -22,11 +22,11 @@ function canUseWebGL(): boolean {
   try {
     const canvas = document.createElement('canvas');
     const context =
-      canvas.getContext('webgl2') ||
-      canvas.getContext('webgl') ||
+      canvas.getContext('webgl2') ??
+      canvas.getContext('webgl') ??
       canvas.getContext('experimental-webgl');
 
-    if (!context) {
+    if (!context || !isWebGLContext(context)) {
       return false;
     }
 
@@ -37,5 +37,11 @@ function canUseWebGL(): boolean {
   } catch {
     return false;
   }
+}
+
+function isWebGLContext(
+  context: RenderingContext
+): context is WebGLRenderingContext | WebGL2RenderingContext {
+  return 'getExtension' in context;
 }
 

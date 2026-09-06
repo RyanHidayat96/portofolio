@@ -494,7 +494,7 @@ function Portfolio3dNavigation(): React.ReactElement {
           {portfolio3dNavigationContracts.map((contract) => {
             const isActive = state.activeSectionId === contract.id;
             const isLocked = isTransitioning && !isActive && contract.id !== 'overview';
-            const hotspot = getHotspotById(contract.hotspotId);
+            const hotspot = getHotspotById('hotspotId' in contract ? contract.hotspotId : undefined);
             const Icon = portfolio3dAreaIcons[contract.id] ?? Monitor;
 
             return (

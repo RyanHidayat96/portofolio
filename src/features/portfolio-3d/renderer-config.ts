@@ -29,7 +29,7 @@ export const portfolio3dRendererShadowType = THREE.PCFSoftShadowMap;
 
 export function getInitialPortfolio3dDpr(
   qualityTier: Portfolio3dQualityTier = 'high'
-): readonly [number, number] {
+): [number, number] {
   if (typeof window === 'undefined') {
     return [1, 1.25];
   }

@@ -378,9 +378,17 @@ function configureLightShadow(light: THREE.Light, qualityTier: Portfolio3dQualit
   shadow.bias = portfolio3dShadowSettings.bias;
   shadow.normalBias = portfolio3dShadowSettings.normalBias;
   shadow.radius = portfolio3dShadowSettings.radius;
-  shadow.camera.near = portfolio3dShadowSettings.near;
-  shadow.camera.far = portfolio3dShadowSettings.far;
-  shadow.camera.updateProjectionMatrix();
+  const shadowCamera = shadow.camera;
+  if (
+    !(shadowCamera instanceof THREE.PerspectiveCamera) &&
+    !(shadowCamera instanceof THREE.OrthographicCamera)
+  ) {
+    return;
+  }
+
+  shadowCamera.near = portfolio3dShadowSettings.near;
+  shadowCamera.far = portfolio3dShadowSettings.far;
+  shadowCamera.updateProjectionMatrix();
 }
 
 function getWorldPosition(anchor: THREE.Object3D, offset?: Vector3Tuple): MutableVector3Tuple {
@@ -406,7 +414,7 @@ function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-const ceilingAimTargets = {
+const ceilingAimTargets: Readonly<Record<Portfolio3dCeilingLightAim, CeilingAimConfig>> = {
   desk: {
     assetId: 'main-monitor',
     anchorNodeName: 'Anchor_DisplayCenter',
@@ -420,4 +428,4 @@ const ceilingAimTargets = {
   wide: {
     fallbackTarget: [0, 1.18, -0.72]
   }
-} as const satisfies Record<Portfolio3dCeilingLightAim, CeilingAimConfig>;
+};

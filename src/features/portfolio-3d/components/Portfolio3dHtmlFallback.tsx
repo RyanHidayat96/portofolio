@@ -15,12 +15,16 @@ interface FallbackSection {
   readonly content: Portfolio3dSectionPanelContent;
 }
 
-const fallbackSections = portfolio3dSectionContracts
-  .map((contract) => {
+const fallbackSections = portfolio3dSectionContracts.reduce<FallbackSection[]>(
+  (sections, contract) => {
     const content = getPortfolio3dPanelContent(contract.id);
-    return content ? { contract, content } : null;
-  })
-  .filter((section): section is FallbackSection => section !== null);
+    if (content) {
+      sections.push({ contract, content });
+    }
+    return sections;
+  },
+  []
+);
 
 const contactContent = getPortfolio3dPanelContent('contact');
 const primaryFallbackLinks = contactContent?.links.filter((link) =>
