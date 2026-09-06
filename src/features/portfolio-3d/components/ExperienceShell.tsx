@@ -112,9 +112,6 @@ export function ExperienceShell({
               >
                 RyanOS
               </p>
-              <p className="mt-3 text-base uppercase tracking-[0.12em] text-[rgba(168,213,238,0.94)] sm:text-xl">
-                3D Workspace Concept
-              </p>
             </div>
 
             <div className="portfolio-3d-top-actions pointer-events-auto hidden flex-wrap justify-end gap-2 sm:flex">

@@ -102,6 +102,23 @@ const embeddedScreenCoverageById = {
   contact: contactScreenCoverage
 } as const;
 
+type EmbeddedScreenMobileCameraConfig = Readonly<{
+  maxDistance: number;
+  lateralOffset: number;
+}>;
+
+// Portrait viewport camera rules stay separate per physical screen.
+const automationMobileCamera = {
+  maxDistance: 1.02,
+  lateralOffset: 0
+} as const satisfies EmbeddedScreenMobileCameraConfig;
+const backendMobileCamera = {
+  // Stay on the screen normal; the wider lens clears the chair without
+  // introducing an oblique view of the monitor.
+  maxDistance: 0.76,
+  lateralOffset: 0
+} as const satisfies EmbeddedScreenMobileCameraConfig;
+
 export function PortfolioSceneStage({
   qualityTier = 'high',
   onCriticalProgressChange,
@@ -510,15 +527,34 @@ function CameraNavigationRig({
       ? embeddedScreenCoverageById[embeddedScreenId]
       : undefined;
     const screenCoverage = screenCoverageConfig;
+    const mobileScreenCamera = getEmbeddedScreenMobileCameraConfig(
+      embeddedScreenId,
+      size.width,
+      size.height
+    );
+    const targetFov = getEmbeddedScreenTargetFov(
+      preset.fov,
+      embeddedScreen,
+      screenCoverage,
+      mobileScreenCamera,
+      size.width,
+      size.height
+    );
     const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture' || embeddedScreenId === 'contact';
     const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
         size.width / Math.max(size.height, 1),
-        preset.fov,
+        targetFov,
         screenCoverage
       )
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
+    if (embeddedScreen && mobileScreenCamera?.lateralOffset) {
+      const screenRight = new THREE.Vector3(1, 0, 0)
+        .applyQuaternion(embeddedScreen.quaternion)
+        .normalize();
+      targetPosition.addScaledVector(screenRight, mobileScreenCamera.lateralOffset);
+    }
     if (preset.id === 'overview' && size.width < 768 && size.height > size.width) {
       const direction = targetPosition.clone().sub(target);
       const framingScale = Math.min(3.2, Math.max(1, 1.35 * size.height / Math.max(size.width, 1)));
@@ -538,7 +574,7 @@ function CameraNavigationRig({
       initializedRef.current = true;
       overviewBoundsAppliedRef.current = hasRoomBounds;
       overviewViewportRef.current = viewportKey;
-      applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      applyCameraState(camera, preset, targetPosition, targetQuaternion, targetFov);
       syncOverviewOrbitControls(camera, target);
       invalidate();
       return;
@@ -554,14 +590,14 @@ function CameraNavigationRig({
     ) {
       overviewBoundsAppliedRef.current = true;
       overviewViewportRef.current = viewportKey;
-      applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      applyCameraState(camera, preset, targetPosition, targetQuaternion, targetFov);
       syncOverviewOrbitControls(camera, target);
       invalidate();
       return;
     }
 
     if (embeddedScreen && state.navigationState === 'section-open') {
-      applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      applyCameraState(camera, preset, targetPosition, targetQuaternion, targetFov);
       invalidate();
       return;
     }
@@ -585,8 +621,8 @@ function CameraNavigationRig({
       startQuaternion: camera.quaternion.clone(),
       targetQuaternion,
       smoothLens: isScreenJourney,
-      startFov: camera instanceof THREE.PerspectiveCamera ? camera.fov : preset.fov,
-      targetFov: preset.fov
+      startFov: camera instanceof THREE.PerspectiveCamera ? camera.fov : targetFov,
+      targetFov
     };
 
     // Disable OrbitControls immediately so it doesn't fight the transition.
@@ -597,7 +633,7 @@ function CameraNavigationRig({
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.near = preset.near;
       camera.far = preset.far;
-      if (!isScreenJourney) camera.fov = preset.fov;
+      if (!isScreenJourney) camera.fov = targetFov;
       camera.updateProjectionMatrix();
     }
     invalidate();
@@ -690,11 +726,53 @@ function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
     : undefined;
 }
 
+function getEmbeddedScreenMobileCameraConfig(
+  screenId: EmbeddedScreenId | undefined,
+  viewportWidth: number,
+  viewportHeight: number
+): EmbeddedScreenMobileCameraConfig | undefined {
+  if (viewportWidth >= 768 || viewportHeight <= viewportWidth) {
+    return undefined;
+  }
+
+  if (screenId === 'automation') return automationMobileCamera;
+  if (screenId === 'backend') return backendMobileCamera;
+  return undefined;
+}
+
+function getEmbeddedScreenTargetFov(
+  presetFov: number,
+  screen: ArcadeScreenPlacement | undefined,
+  coverage: ArcadeScreenCoverage | undefined,
+  mobileCamera: EmbeddedScreenMobileCameraConfig | undefined,
+  viewportWidth: number,
+  viewportHeight: number
+): number {
+  if (!screen || !coverage || !mobileCamera) {
+    return presetFov;
+  }
+
+  // The derived FOV keeps the camera in front of the physical monitor.
+  const aspect = viewportWidth / Math.max(viewportHeight, 1);
+  const horizontalCoverage = Math.max(coverage.horizontalCoverage, 0.1);
+  const fovTangent = screen.width / (
+    2 *
+    mobileCamera.maxDistance *
+    Math.max(aspect, 0.1) *
+    horizontalCoverage
+  );
+  const fittingFov = THREE.MathUtils.radToDeg(2 * Math.atan(fovTangent));
+
+  // Keep the result usable on small phones without changing desktop optics.
+  return Math.min(82, Math.max(presetFov, fittingFov));
+}
+
 function applyCameraState(
   camera: THREE.Camera,
   preset: Portfolio3dCameraPreset,
   position: THREE.Vector3,
-  quaternion: THREE.Quaternion
+  quaternion: THREE.Quaternion,
+  fov = preset.fov
 ): void {
   camera.position.copy(position);
   camera.quaternion.copy(quaternion);
@@ -702,7 +780,7 @@ function applyCameraState(
   if (camera instanceof THREE.PerspectiveCamera) {
     camera.near = preset.near;
     camera.far = preset.far;
-    camera.fov = preset.fov;
+    camera.fov = fov;
     camera.updateProjectionMatrix();
   }
 }
