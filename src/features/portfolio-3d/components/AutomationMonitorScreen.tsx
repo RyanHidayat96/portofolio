@@ -4,10 +4,12 @@ import { ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { AutomationLab } from '@/features/automation-lab/components/AutomationLab';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 export function AutomationMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
   useEffect(() => {
     if (interactive) headingRef.current?.focus({ preventScroll: true });
@@ -20,7 +22,13 @@ export function AutomationMonitorScreen({ interactive }: Readonly<{ interactive:
         <h2 ref={headingRef} tabIndex={-1}>Automation lab</h2>
         <span className="monitor-automation-label">Simulation</span>
       </header>
-      <div className="monitor-automation-scroll" tabIndex={interactive ? 0 : -1} aria-label="Automation controls and results">
+      <div
+        ref={scrollRef}
+        className="monitor-automation-scroll"
+        tabIndex={interactive ? 0 : -1}
+        aria-label="Automation controls and results"
+        onScroll={onScroll}
+      >
         <AutomationLab variant="screen" />
       </div>
     </section>

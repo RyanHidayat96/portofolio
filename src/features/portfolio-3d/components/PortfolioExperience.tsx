@@ -45,6 +45,7 @@ import { TerminalMonitorControls, TerminalMonitorScreen } from './TerminalMonito
 import { ExperienceShell } from './ExperienceShell';
 import { Portfolio3dHtmlFallback } from './Portfolio3dHtmlFallback';
 import { useDocumentVisibility } from '../hooks/useDocumentVisibility';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { useWebGLSupport } from '../hooks/useWebGLSupport';
 import { Portfolio3dProvider, usePortfolio3dState } from '../state/Portfolio3dState';
 import { RoomShellStage } from './RoomShellStage';
@@ -252,33 +253,53 @@ function PortfolioExperienceContent({
         : null}
       {embeddedScreenElements.architecture
         ? createPortal(
-          <section className="architecture-embedded-screen" aria-label="Architecture">
-            <div
-              className="architecture-embedded-content"
-              tabIndex={isScreenFocusView && isArchitectureActive ? 0 : -1}
-              onWheel={(event) => event.stopPropagation()}
-            >
-              <ArchitectureExplorer />
-            </div>
-          </section>,
+          <ArchitectureEmbeddedScreen interactive={isScreenFocusView && isArchitectureActive} />,
           embeddedScreenElements.architecture
         )
         : null}
       {embeddedScreenElements.contact
         ? createPortal(
-          <section className="contact-book-screen" aria-label="Contact">
-            <div
-              className="contact-book-content"
-              tabIndex={isScreenFocusView && isContactActive ? 0 : -1}
-              onWheel={(event) => event.stopPropagation()}
-            >
-              <ContactPanel />
-            </div>
-          </section>,
+          <ContactEmbeddedScreen interactive={isScreenFocusView && isContactActive} />,
           embeddedScreenElements.contact
         )
         : null}
     </>
+  );
+}
+
+function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
+
+  return (
+    <section className="architecture-embedded-screen" aria-label="Architecture">
+      <div
+        ref={scrollRef}
+        className="architecture-embedded-content"
+        tabIndex={interactive ? 0 : -1}
+        onWheel={(event) => event.stopPropagation()}
+        onScroll={onScroll}
+      >
+        <ArchitectureExplorer />
+      </div>
+    </section>
+  );
+}
+
+function ContactEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
+
+  return (
+    <section className="contact-book-screen" aria-label="Contact">
+      <div
+        ref={scrollRef}
+        className="contact-book-content"
+        tabIndex={interactive ? 0 : -1}
+        onWheel={(event) => event.stopPropagation()}
+        onScroll={onScroll}
+      >
+        <ContactPanel />
+      </div>
+    </section>
   );
 }
 

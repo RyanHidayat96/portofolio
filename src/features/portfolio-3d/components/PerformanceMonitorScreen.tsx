@@ -4,10 +4,12 @@ import { ArrowLeft, ExternalLink, Gauge } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { PerformanceLab } from '@/features/performance-lab/components/PerformanceLab';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 export function PerformanceMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
   useEffect(() => {
     if (interactive) headingRef.current?.focus({ preventScroll: true });
@@ -20,7 +22,13 @@ export function PerformanceMonitorScreen({ interactive }: Readonly<{ interactive
         <h2 ref={headingRef} tabIndex={-1}>Performance lab</h2>
         <span className="monitor-performance-label">Simulation</span>
       </header>
-      <div className="monitor-performance-scroll" tabIndex={interactive ? 0 : -1} aria-label="Performance controls and results">
+      <div
+        ref={scrollRef}
+        className="monitor-performance-scroll"
+        tabIndex={interactive ? 0 : -1}
+        aria-label="Performance controls and results"
+        onScroll={onScroll}
+      >
         <PerformanceLab variant="screen" />
       </div>
     </section>

@@ -1,48 +1,18 @@
 'use client';
 
 import { ArrowLeft, ExternalLink, GitBranch } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { PipelineSimulatorPanel } from '@/features/pipeline/components/PipelineSimulatorPanel';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 
 export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const lastScrollTopRef = useRef(0);
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
   useEffect(() => {
     if (interactive) headingRef.current?.focus({ preventScroll: true });
-  }, [interactive]);
-
-  useLayoutEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-
-    const restoreScroll = (): void => {
-      const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
-      scrollContainer.scrollTop = Math.min(lastScrollTopRef.current, maxScrollTop);
-    };
-
-    // CSS3D reparents the screen once after each layout switch. Restore across
-    // several frames so room view and focused view show the same last position.
-    let framesRemaining = 4;
-    let animationFrame = 0;
-    const restoreAcrossFrames = (): void => {
-      restoreScroll();
-      framesRemaining -= 1;
-      if (framesRemaining > 0) {
-        animationFrame = window.requestAnimationFrame(restoreAcrossFrames);
-      }
-    };
-
-    restoreAcrossFrames();
-    return () => {
-      if (interactive) {
-        lastScrollTopRef.current = scrollContainer.scrollTop;
-      }
-      window.cancelAnimationFrame(animationFrame);
-    };
   }, [interactive]);
 
   return (
@@ -57,11 +27,7 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
         className="arcade-pipeline-scroll"
         tabIndex={interactive ? 0 : -1}
         aria-label="Pipeline controls and results"
-        onScroll={(event) => {
-          if (interactive) {
-            lastScrollTopRef.current = event.currentTarget.scrollTop;
-          }
-        }}
+        onScroll={onScroll}
       >
         <PipelineSimulatorPanel variant="screen" />
       </div>

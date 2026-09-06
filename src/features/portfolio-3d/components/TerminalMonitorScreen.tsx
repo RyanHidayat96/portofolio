@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { TerminalPanel } from '@/features/terminal/components/TerminalPanel';
 import type { WorkspaceSection } from '@/features/workspace/types';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 import type { Portfolio3dSectionId } from '../types';
 
@@ -25,6 +26,7 @@ const terminalNavigationTargets = {
 
 export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
   const { setActiveSection } = usePortfolio3dState();
 
   useEffect(() => {
@@ -38,7 +40,13 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
         <h2 ref={headingRef} tabIndex={-1}>Terminal</h2>
         <span className="monitor-terminal-label">Command interface</span>
       </header>
-      <div className="monitor-terminal-scroll" tabIndex={interactive ? 0 : -1} aria-label="Terminal commands and output">
+      <div
+        ref={scrollRef}
+        className="monitor-terminal-scroll"
+        tabIndex={interactive ? 0 : -1}
+        aria-label="Terminal commands and output"
+        onScroll={onScroll}
+      >
         <TerminalPanel
           variant="screen"
           onNavigate={(section) => setActiveSection(terminalNavigationTargets[section] ?? 'overview')}

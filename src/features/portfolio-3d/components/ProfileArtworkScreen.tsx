@@ -1,12 +1,13 @@
 'use client';
 
 import { ArrowLeft, Code2, Database, ExternalLink, FlaskConical, GitBranch, UserRound } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { capabilities } from '@/data/capabilities';
 import { profile } from '@/data/profile';
 import { skillGroups } from '@/data/skills';
 import type { EngineeringDomain } from '@/data/types';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 const domainIcon = {
@@ -24,11 +25,11 @@ const publicSignalByDomain: Readonly<Record<EngineeringDomain, string>> = {
 };
 
 export function ProfileArtworkScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
-  const contentRef = useRef<HTMLDivElement | null>(null);
+  const { scrollRef: contentRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
   useEffect(() => {
     if (interactive) contentRef.current?.focus({ preventScroll: true });
-  }, [interactive]);
+  }, [contentRef, interactive]);
 
   return (
     <section className="profile-artwork-screen" aria-label="Profile">
@@ -42,6 +43,7 @@ export function ProfileArtworkScreen({ interactive }: Readonly<{ interactive: bo
         className="profile-artwork-content"
         tabIndex={interactive ? 0 : -1}
         onWheel={(event) => event.stopPropagation()}
+        onScroll={onScroll}
       >
         <section className="profile-frame-identity" aria-labelledby="profile-frame-name">
           <p className="profile-frame-kicker">whoami</p>

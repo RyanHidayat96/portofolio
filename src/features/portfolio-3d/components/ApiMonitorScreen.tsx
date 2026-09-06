@@ -4,10 +4,12 @@ import { ArrowLeft, ExternalLink, Send } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { ApiPlayground } from '@/features/api-playground/components/ApiPlayground';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 export function ApiMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
+  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
   useEffect(() => {
     if (interactive) headingRef.current?.focus({ preventScroll: true });
@@ -20,7 +22,13 @@ export function ApiMonitorScreen({ interactive }: Readonly<{ interactive: boolea
         <h2 ref={headingRef} tabIndex={-1}>API playground</h2>
         <span className="monitor-api-label">Live routes</span>
       </header>
-      <div className="monitor-api-scroll" tabIndex={interactive ? 0 : -1} aria-label="API controls and results">
+      <div
+        ref={scrollRef}
+        className="monitor-api-scroll"
+        tabIndex={interactive ? 0 : -1}
+        aria-label="API controls and results"
+        onScroll={onScroll}
+      >
         <ApiPlayground variant="screen" />
       </div>
     </section>

@@ -1,11 +1,12 @@
 'use client';
 
 import { ArrowLeft, ArrowRight, Briefcase, Building2, CheckCircle2, Code2, Database, ExternalLink, FlaskConical, GitBranch } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { capabilities } from '@/data/capabilities';
 import { publicCareerEvolution } from '@/data/career-evolution';
 import { publicExperience } from '@/data/public-experience';
 import { withPortfolio3dBasePath } from '../asset-url';
+import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 const domainIcon = {
@@ -22,11 +23,11 @@ const operatingPrinciples = [
 ] as const;
 
 export function ExperienceArtworkScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
-  const contentRef = useRef<HTMLDivElement | null>(null);
+  const { scrollRef: contentRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
   useEffect(() => {
     if (interactive) contentRef.current?.focus({ preventScroll: true });
-  }, [interactive]);
+  }, [contentRef, interactive]);
 
   return (
     <section className={`experience-artwork-screen ${interactive ? 'experience-artwork-screen--focused' : 'experience-artwork-screen--ambient'}`} aria-label="Experience">
@@ -36,7 +37,13 @@ export function ExperienceArtworkScreen({ interactive }: Readonly<{ interactive:
             <span>Experience</span>
             <span className="experience-artwork-heading-label">{publicCareerEvolution.badge}</span>
           </header>
-          <div ref={contentRef} className="experience-artwork-content" tabIndex={0} onWheel={(event) => event.stopPropagation()}>
+          <div
+            ref={contentRef}
+            className="experience-artwork-content"
+            tabIndex={interactive ? 0 : -1}
+            onWheel={(event) => event.stopPropagation()}
+            onScroll={onScroll}
+          >
             <p className="experience-artwork-kicker">{publicCareerEvolution.kicker}</p>
             <h2>{publicCareerEvolution.title}</h2>
             <p className="experience-artwork-summary">{publicCareerEvolution.summary}</p>
