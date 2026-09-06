@@ -80,9 +80,9 @@ export function PortfolioSceneStage({
   const architectureArtworkScreen = useMemo(() => roomNodes ? resolveArchitectureArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const embeddedScreens = useMemo(
     () => ({
-      profile: profileArtworkScreen,
+      profile: architectureArtworkScreen,
       experience: experienceArtworkScreen,
-      architecture: architectureArtworkScreen,
+      architecture: profileArtworkScreen,
       pipeline: arcadeScreen,
       automation: automationScreen,
       performance: performanceScreen,
@@ -271,14 +271,14 @@ export function PortfolioSceneStage({
       {terminalScreen ? (
         <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
-      {profileArtworkScreen ? (
-        <ArcadeScreenSurface screen={profileArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} />
+      {architectureArtworkScreen ? (
+        <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
       {experienceArtworkScreen ? (
         <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
-      {architectureArtworkScreen ? (
-        <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} />
+      {profileArtworkScreen ? (
+        <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
 
       {!isSingleRoomPreview ? (
