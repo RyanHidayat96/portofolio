@@ -10,7 +10,6 @@ export function ContactPanel(): React.ReactElement {
   const directLinks = [profile.contact.email, profile.contact.phone].filter(isConfiguredLink);
   const socialLinks = [profile.contact.linkedIn, profile.contact.github].filter(isConfiguredLink);
   const hasCv = isConfiguredLink(cv);
-  const primaryContactLinks = [...directLinks, ...socialLinks].slice(0, 3);
 
   return (
     <div className="contact-page">
@@ -29,9 +28,6 @@ export function ContactPanel(): React.ReactElement {
                 <span>{cv.value}</span>
               </a>
             ) : null}
-            {directLinks.map((link) => (
-              <ContactAnchor key={link.id} link={link} />
-            ))}
           </div>
         </section>
 
@@ -56,20 +52,6 @@ export function ContactPanel(): React.ReactElement {
             <li>Email or phone is the fastest follow-up path.</li>
           </ol>
         </section>
-      </Panel>
-
-      <Panel className="contact-conversion-strip p-5 sm:p-6">
-        <div>
-          <p className="mono text-sm text-[var(--accent)]">hiring.next.step</p>
-          <h2>For HR or technical hiring teams.</h2>
-          <p>Use CV for detail, then contact through the fastest available channel.</p>
-        </div>
-        <div className="contact-conversion-actions">
-          {hasCv ? <ContactAnchor link={cv} /> : null}
-          {primaryContactLinks.map((link) => (
-            <ContactAnchor key={link.id} link={link} />
-          ))}
-        </div>
       </Panel>
 
       <div className="contact-grid">

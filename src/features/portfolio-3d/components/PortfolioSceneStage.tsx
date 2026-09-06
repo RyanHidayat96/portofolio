@@ -11,6 +11,7 @@ import {
   resolveArchitectureArtworkScreen,
   resolveApiScreen,
   resolveAutomationScreen,
+  resolveContactBookScreen,
   resolveExperienceArtworkScreen,
   resolvePerformanceScreen,
   resolveProfileArtworkScreen,
@@ -78,6 +79,7 @@ export function PortfolioSceneStage({
   const profileArtworkScreen = useMemo(() => roomNodes ? resolveProfileArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const experienceArtworkScreen = useMemo(() => roomNodes ? resolveExperienceArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const architectureArtworkScreen = useMemo(() => roomNodes ? resolveArchitectureArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
+  const contactBookScreen = useMemo(() => roomNodes ? resolveContactBookScreen(roomNodes.root) : undefined, [roomNodes]);
   const embeddedScreens = useMemo(
     () => ({
       profile: architectureArtworkScreen,
@@ -87,9 +89,10 @@ export function PortfolioSceneStage({
       automation: automationScreen,
       performance: performanceScreen,
       backend: apiScreen,
-      terminal: terminalScreen
+      terminal: terminalScreen,
+      contact: contactBookScreen
     }),
-    [arcadeScreen, apiScreen, architectureArtworkScreen, automationScreen, experienceArtworkScreen, performanceScreen, profileArtworkScreen, terminalScreen]
+    [arcadeScreen, apiScreen, architectureArtworkScreen, automationScreen, contactBookScreen, experienceArtworkScreen, performanceScreen, profileArtworkScreen, terminalScreen]
   );
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
@@ -280,6 +283,9 @@ export function PortfolioSceneStage({
       {profileArtworkScreen ? (
         <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
+      {contactBookScreen ? (
+        <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
 
       {!isSingleRoomPreview ? (
         <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
@@ -359,9 +365,11 @@ function InteractiveOrbitControls(): null {
     controls.rotateSpeed = 0.8;
     controls.zoomSpeed = 1.0;
     controls.panSpeed = 0.8;
-    controls.minDistance = 1.2;
-    controls.maxDistance = 12.0;
-    controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    controls.enablePan = false;
+    controls.minDistance = 3.7;
+    controls.maxDistance = 6.2;
+    controls.minPolarAngle = 1.04;
+    controls.maxPolarAngle = 1.4;
 
     const onChange = (): void => {
       invalidate();
@@ -505,8 +513,10 @@ function CameraNavigationRig({
         ? { horizontalCoverage: 0.84, verticalCoverage: 0.8 }
         : embeddedScreenId === 'architecture'
           ? { horizontalCoverage: 0.86, verticalCoverage: 0.8 }
-        : undefined;
-    const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture';
+          : embeddedScreenId === 'contact'
+            ? { horizontalCoverage: 0.82, verticalCoverage: 0.76 }
+            : undefined;
+    const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture' || embeddedScreenId === 'contact';
     const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
@@ -536,6 +546,7 @@ function CameraNavigationRig({
       overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
       sharedOrbitControlsRef.current?.target.copy(target);
+      configureOverviewOrbitLimits(camera, target);
       invalidate();
       return;
     }
@@ -552,6 +563,7 @@ function CameraNavigationRig({
       overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
       sharedOrbitControlsRef.current?.target.copy(target);
+      configureOverviewOrbitLimits(camera, target);
       invalidate();
       return;
     }
@@ -634,7 +646,10 @@ function CameraNavigationRig({
       sharedOrbitControlsRef.current.target.copy(transition.targetLookAt);
       sharedOrbitControlsRef.current.enabled = transition.finalNavigationState === 'overview';
       // OrbitControls.lookAt uses world-up and would undo the artwork's camera roll.
-      if (transition.finalNavigationState === 'overview') sharedOrbitControlsRef.current.update();
+      if (transition.finalNavigationState === 'overview') {
+        configureOverviewOrbitLimits(camera, transition.targetLookAt);
+        sharedOrbitControlsRef.current.update();
+      }
     }
 
     if (transition.finalNavigationState === 'overview') screenJourneyRef.current = false;
@@ -645,8 +660,22 @@ function CameraNavigationRig({
   return null;
 }
 
+function configureOverviewOrbitLimits(camera: THREE.Camera, target: THREE.Vector3): void {
+  const controls = sharedOrbitControlsRef.current;
+  if (!controls) {
+    return;
+  }
+
+  const offset = camera.position.clone().sub(target);
+  const overviewAzimuth = Math.atan2(offset.x, offset.z);
+  const azimuthRange = 0.32;
+
+  controls.minAzimuthAngle = overviewAzimuth - azimuthRange;
+  controls.maxAzimuthAngle = overviewAzimuth + azimuthRange;
+}
+
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
-  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
+  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal' || sectionId === 'contact'
     ? sectionId
     : undefined;
 }

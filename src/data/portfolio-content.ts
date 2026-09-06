@@ -64,8 +64,8 @@ export const profile: Profile = {
     github: {
       id: "github",
       label: "GitHub",
-      value: "",
-      href: ""
+      value: "github.com/RyanHidayat96",
+      href: "https://github.com/RyanHidayat96"
     },
     cv: {
       id: "cv",

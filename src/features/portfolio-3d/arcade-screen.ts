@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type EmbeddedScreenId = 'profile' | 'experience' | 'architecture' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal';
+export type EmbeddedScreenId = 'profile' | 'experience' | 'architecture' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal' | 'contact';
 
 export interface ArcadeScreenPlacement {
   readonly position: THREE.Vector3;
@@ -14,6 +14,7 @@ export interface ArcadeScreenPlacement {
 const profileArtworkContentInset = 0.965;
 const experienceArtworkContentInset = 0.96;
 const architectureArtworkContentInset = 0.9;
+const contactBookContentInset = 0.78;
 
 export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
   return resolveScreenByMaterial(root, ['gaming_mashine', 'gaming mashine'], 'Material.013');
@@ -45,6 +46,10 @@ export function resolveExperienceArtworkScreen(root: THREE.Object3D): ArcadeScre
 
 export function resolveArchitectureArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
   return resolveArtworkScreen(root, 'poster', architectureArtworkContentInset);
+}
+
+export function resolveContactBookScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveArtworkScreen(root, 'RealisticNotebookAndPaper', contactBookContentInset);
 }
 
 function resolveArtworkScreen(

@@ -5,6 +5,7 @@ import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitB
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArchitectureExplorer } from '@/features/architecture/components/ArchitectureExplorer';
+import { ContactPanel } from '@/features/workspace/components/ContactPanel';
 import { withPortfolio3dBasePath } from '../asset-url';
 import type { EmbeddedScreenId } from '../arcade-screen';
 import type {
@@ -82,6 +83,10 @@ const portfolio3dAreaIcons = {
   contact: Activity
 } satisfies Partial<Record<Portfolio3dSectionId, LucideIcon>>;
 
+const portfolio3dNavigationContracts = portfolio3dSectionContracts.filter(
+  (contract) => contract.id !== 'projects' && contract.id !== 'fullstack'
+);
+
 export function PortfolioExperience(): React.ReactElement {
   const fallback = <Portfolio3dHtmlFallback />;
 
@@ -111,6 +116,7 @@ function PortfolioExperienceContent({
   const isProfileActive = state.activeSectionId === 'profile';
   const isExperienceActive = state.activeSectionId === 'experience';
   const isArchitectureActive = state.activeSectionId === 'architecture';
+  const isContactActive = state.activeSectionId === 'contact';
   const isSettledAtSection = state.navigationState === 'section-open';
   const activeEmbeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
   const isScreenFocusView = Boolean(
@@ -181,6 +187,19 @@ function PortfolioExperienceContent({
                       </a>
                     </nav>
                   )
+                : isContactActive
+                  ? (
+                    <nav className="arcade-focus-controls" aria-label="Contact view controls">
+                      <button type="button" className="button-base button-secondary" onClick={() => setActiveSection('overview')}>
+                        <ArrowLeft size={18} aria-hidden="true" />
+                        Back to Room
+                      </button>
+                      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/contact')}>
+                        <ExternalLink size={18} aria-hidden="true" />
+                        Full Page
+                      </a>
+                    </nav>
+                  )
                 : isPipelineActive
                   ? <ArcadePipelineControls />
                   : isAutomationActive
@@ -231,6 +250,20 @@ function PortfolioExperienceContent({
             </div>
           </section>,
           embeddedScreenElements.architecture
+        )
+        : null}
+      {embeddedScreenElements.contact
+        ? createPortal(
+          <section className="contact-book-screen" aria-label="Contact">
+            <div
+              className="contact-book-content"
+              tabIndex={isScreenFocusView && isContactActive ? 0 : -1}
+              onWheel={(event) => event.stopPropagation()}
+            >
+              <ContactPanel />
+            </div>
+          </section>,
+          embeddedScreenElements.contact
         )
         : null}
     </>
@@ -392,7 +425,7 @@ function FoundationScene({
 }
 
 function getEmbeddedScreenId(sectionId: Portfolio3dSectionId): EmbeddedScreenId | undefined {
-  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
+  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal' || sectionId === 'contact'
     ? sectionId
     : undefined;
 }
@@ -425,7 +458,7 @@ function Portfolio3dNavigation(): React.ReactElement {
           Areas
         </p>
         <div className="grid gap-1.5">
-          {portfolio3dSectionContracts.map((contract) => {
+          {portfolio3dNavigationContracts.map((contract) => {
             const isActive = state.activeSectionId === contract.id;
             const isLocked = isTransitioning && !isActive && contract.id !== 'overview';
             const hotspot = getHotspotById(contract.hotspotId);
