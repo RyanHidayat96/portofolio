@@ -37,11 +37,15 @@ function createLine(kind: TerminalLineKind, value: string): TerminalLine {
   };
 }
 
-export function TerminalPanel({
-  onNavigate
-}: Readonly<{
+interface TerminalPanelProps {
   onNavigate: (section: WorkspaceSection) => void;
-}>): React.ReactElement {
+  readonly variant?: "workspace" | "screen";
+}
+
+export function TerminalPanel({
+  onNavigate,
+  variant = "workspace"
+}: Readonly<TerminalPanelProps>): React.ReactElement {
   const registry = useMemo(() => createPortfolioCommandRegistry(), []);
   const registryCommands = useMemo(() => registry.list(), [registry]);
   const suggestedCommands = useMemo(
@@ -58,6 +62,7 @@ export function TerminalPanel({
   const [history, setHistory] = useState<readonly string[]>([]);
   const [historyCursor, setHistoryCursor] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isScreenMode = variant === "screen";
   const autocompleteMatch = getAutocompleteMatch(input, registryCommands);
   const routeCommandCount = registryCommands.filter((command) =>
     ["about", "skills", "career", "experience", "projects", "quality", "architecture", "api", "challenge"].includes(
@@ -145,8 +150,10 @@ export function TerminalPanel({
     }
   }
 
+  const visibleSuggestedCommands = isScreenMode ? suggestedCommands.slice(0, 6) : suggestedCommands;
+
   return (
-    <Panel className="terminal-panel overflow-hidden">
+    <Panel className={`terminal-panel ${isScreenMode ? "terminal-panel-screen" : ""} overflow-hidden`}>
       <div className="terminal-header">
         <div>
           <p className="mono text-sm text-[#55d7ff]">terminal.proof</p>
@@ -173,7 +180,7 @@ export function TerminalPanel({
       </div>
 
       <div className="terminal-command-rail" aria-label="Quick terminal commands">
-        {suggestedCommands.map((command) => (
+        {visibleSuggestedCommands.map((command) => (
           <button
             key={command.name}
             type="button"

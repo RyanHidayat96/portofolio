@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type EmbeddedScreenId = 'pipeline' | 'automation' | 'performance' | 'backend';
+export type EmbeddedScreenId = 'profile' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal';
 
 export interface ArcadeScreenPlacement {
   readonly position: THREE.Vector3;
@@ -26,6 +26,19 @@ export function resolveApiScreen(root: THREE.Object3D): ArcadeScreenPlacement | 
   return resolveScreenByMaterial(root, [], 'Material');
 }
 
+export function resolveTerminalScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveScreenByMaterial(root, [], 'screen');
+}
+
+export function resolveProfileArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  const artwork = findScreenMesh(root, [], 'poster 3');
+  if (!artwork) return undefined;
+
+  return resolveArtworkScreenPlacement(artwork, 'poster 3')
+    ?? resolveMaterialScreenPlacement(artwork, 'poster 3')
+    ?? resolveWholeMeshScreenPlacement(artwork);
+}
+
 function resolveScreenByMaterial(
   root: THREE.Object3D,
   nodeNames: readonly string[],
@@ -35,8 +48,23 @@ function resolveScreenByMaterial(
   const cabinet = nodeNames.length > 0
     ? nodeNames.map((nodeName) => root.getObjectByName(nodeName)).find(Boolean)
     : root;
+  const screen = findScreenMesh(cabinet, [], materialName);
+  if (!screen) return undefined;
+
+  return resolveMaterialScreenPlacement(screen, materialName)
+    ?? resolveWholeMeshScreenPlacement(screen);
+}
+
+function findScreenMesh(
+  root: THREE.Object3D | undefined,
+  nodeNames: readonly string[],
+  materialName: string
+): THREE.Mesh | undefined {
+  const container = nodeNames.length > 0
+    ? nodeNames.map((nodeName) => root?.getObjectByName(nodeName)).find(Boolean)
+    : root;
   let screen: THREE.Mesh | undefined;
-  cabinet?.traverse((object) => {
+  container?.traverse((object) => {
     const materials = object instanceof THREE.Mesh
       ? Array.isArray(object.material) ? object.material : [object.material]
       : [];
@@ -44,10 +72,89 @@ function resolveScreenByMaterial(
       screen = object;
     }
   });
-  if (!screen) return undefined;
+  return screen;
+}
 
-  return resolveMaterialScreenPlacement(screen, materialName)
-    ?? resolveWholeMeshScreenPlacement(screen);
+function resolveArtworkScreenPlacement(
+  screen: THREE.Mesh,
+  materialName: string
+): ArcadeScreenPlacement | undefined {
+  const fallback = resolveMaterialScreenPlacement(screen, materialName);
+  const geometry = screen.geometry;
+  const positions = geometry.getAttribute('position');
+  const uvs = geometry.getAttribute('uv');
+  if (!fallback || !positions || !uvs) return fallback;
+
+  const materials = Array.isArray(screen.material) ? screen.material : [screen.material];
+  const materialIndexes = new Set<number>();
+  materials.forEach((material, index) => {
+    if (material.name === materialName) materialIndexes.add(index);
+  });
+  const triangles = collectMaterialTriangles(geometry, materialIndexes);
+  const textureRight = getTextureRightAxis(positions, uvs, triangles);
+  if (!textureRight) return fallback;
+
+  screen.updateWorldMatrix(true, false);
+  const right = textureRight.transformDirection(screen.matrixWorld)
+    .projectOnPlane(fallback.normal)
+    .normalize();
+  if (right.lengthSq() < 0.000001) return fallback;
+
+  const up = new THREE.Vector3().crossVectors(fallback.normal, right).normalize();
+  const vertices = triangles.flatMap(([ai, bi, ci]) => [
+    new THREE.Vector3().fromBufferAttribute(positions, ai).applyMatrix4(screen.matrixWorld),
+    new THREE.Vector3().fromBufferAttribute(positions, bi).applyMatrix4(screen.matrixWorld),
+    new THREE.Vector3().fromBufferAttribute(positions, ci).applyMatrix4(screen.matrixWorld)
+  ]);
+  const ranges = getProjectionRanges(vertices, right, up, fallback.normal);
+  const width = ranges.right.max - ranges.right.min;
+  const height = ranges.up.max - ranges.up.min;
+  if (width <= 0 || height <= 0) return fallback;
+
+  const position = right.clone().multiplyScalar((ranges.right.min + ranges.right.max) / 2)
+    .add(up.clone().multiplyScalar((ranges.up.min + ranges.up.max) / 2))
+    .add(fallback.normal.clone().multiplyScalar(ranges.normal.max + 0.006));
+
+  return {
+    position,
+    quaternion: new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(right, up, fallback.normal)
+    ),
+    normal: fallback.normal,
+    width: width * 0.98,
+    height: height * 0.98
+  };
+}
+
+function getTextureRightAxis(
+  positions: THREE.BufferAttribute,
+  uvs: THREE.BufferAttribute,
+  triangles: readonly (readonly [number, number, number])[]
+): THREE.Vector3 | undefined {
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+
+  for (const [ai, bi, ci] of triangles) {
+    a.fromBufferAttribute(positions, ai);
+    b.fromBufferAttribute(positions, bi);
+    c.fromBufferAttribute(positions, ci);
+    const du1 = uvs.getX(bi) - uvs.getX(ai);
+    const dv1 = uvs.getY(bi) - uvs.getY(ai);
+    const du2 = uvs.getX(ci) - uvs.getX(ai);
+    const dv2 = uvs.getY(ci) - uvs.getY(ai);
+    const determinant = du1 * dv2 - du2 * dv1;
+    if (Math.abs(determinant) < 0.000001) continue;
+
+    const tangent = new THREE.Vector3()
+      .subVectors(b, a)
+      .multiplyScalar(dv2)
+      .sub(new THREE.Vector3().subVectors(c, a).multiplyScalar(dv1))
+      .multiplyScalar(1 / determinant);
+    if (tangent.lengthSq() > 0.000001) return tangent.normalize();
+  }
+
+  return undefined;
 }
 
 function resolveMaterialScreenPlacement(
@@ -256,12 +363,15 @@ function resolveWholeMeshScreenPlacement(screen: THREE.Mesh): ArcadeScreenPlacem
 export function getArcadeCameraPosition(
   screen: ArcadeScreenPlacement,
   aspect: number,
-  fov: number
+  fov: number,
+  framing: Readonly<{ horizontalCoverage?: number; verticalCoverage?: number }> = {}
 ): THREE.Vector3 {
+  const horizontalCoverage = framing.horizontalCoverage ?? 0.88;
+  const verticalCoverage = framing.verticalCoverage ?? 0.72;
   const tangent = Math.tan(THREE.MathUtils.degToRad(fov / 2));
   const distance = Math.max(
-    screen.height / (2 * tangent * 0.72),
-    screen.width / (2 * tangent * Math.max(aspect, 0.1) * 0.88)
+    screen.height / (2 * tangent * verticalCoverage),
+    screen.width / (2 * tangent * Math.max(aspect, 0.1) * horizontalCoverage)
   );
   return screen.position.clone().addScaledVector(screen.normal, distance);
 }

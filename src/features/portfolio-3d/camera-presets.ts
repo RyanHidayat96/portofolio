@@ -23,7 +23,7 @@ export const portfolio3dCameraPresets = [
     far: 20,
     targetNodeName: 'chair',
     reducedMotionMs: 80,
-    transitionMs: 650
+    transitionMs: 980
   },
   {
     id: 'experience',

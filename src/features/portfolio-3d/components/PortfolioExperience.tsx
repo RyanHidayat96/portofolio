@@ -37,6 +37,8 @@ import { ArcadePipelineControls, ArcadePipelineScreen } from './ArcadePipelineSc
 import { ApiMonitorControls, ApiMonitorScreen } from './ApiMonitorScreen';
 import { AutomationMonitorControls, AutomationMonitorScreen } from './AutomationMonitorScreen';
 import { PerformanceMonitorControls, PerformanceMonitorScreen } from './PerformanceMonitorScreen';
+import { ProfileArtworkControls, ProfileArtworkScreen } from './ProfileArtworkScreen';
+import { TerminalMonitorControls, TerminalMonitorScreen } from './TerminalMonitorScreen';
 import { ExperienceShell } from './ExperienceShell';
 import { Portfolio3dHtmlFallback } from './Portfolio3dHtmlFallback';
 import { useDocumentVisibility } from '../hooks/useDocumentVisibility';
@@ -103,6 +105,8 @@ function PortfolioExperienceContent({
   const isAutomationActive = state.activeSectionId === 'automation';
   const isPerformanceActive = state.activeSectionId === 'performance';
   const isBackendActive = state.activeSectionId === 'backend';
+  const isTerminalActive = state.activeSectionId === 'terminal';
+  const isProfileActive = state.activeSectionId === 'profile';
   const isSettledAtSection = state.navigationState === 'section-open';
   const activeEmbeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
   const isScreenFocusView = Boolean(
@@ -152,15 +156,19 @@ function PortfolioExperienceContent({
         }
         focusControlsSlot={
           isScreenFocusView
-            ? isPipelineActive
-              ? <ArcadePipelineControls />
-              : isAutomationActive
-                ? <AutomationMonitorControls />
-                : isPerformanceActive
-                  ? <PerformanceMonitorControls />
-                  : isBackendActive
-                    ? <ApiMonitorControls />
-                  : null
+            ? isProfileActive
+              ? <ProfileArtworkControls />
+              : isPipelineActive
+                ? <ArcadePipelineControls />
+                : isAutomationActive
+                  ? <AutomationMonitorControls />
+                  : isPerformanceActive
+                    ? <PerformanceMonitorControls />
+                    : isBackendActive
+                      ? <ApiMonitorControls />
+                      : isTerminalActive
+                        ? <TerminalMonitorControls />
+                        : null
             : null
         }
         instructionHintSlot={<Portfolio3dInstructionHint />}
@@ -178,6 +186,12 @@ function PortfolioExperienceContent({
         : null}
       {embeddedScreenElements.backend
         ? createPortal(<ApiMonitorScreen interactive={isScreenFocusView && isBackendActive} />, embeddedScreenElements.backend)
+        : null}
+      {embeddedScreenElements.terminal
+        ? createPortal(<TerminalMonitorScreen interactive={isScreenFocusView && isTerminalActive} />, embeddedScreenElements.terminal)
+        : null}
+      {embeddedScreenElements.profile
+        ? createPortal(<ProfileArtworkScreen interactive={isScreenFocusView && isProfileActive} />, embeddedScreenElements.profile)
         : null}
     </>
   );
@@ -338,7 +352,7 @@ function FoundationScene({
 }
 
 function getEmbeddedScreenId(sectionId: Portfolio3dSectionId): EmbeddedScreenId | undefined {
-  return sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend'
+  return sectionId === 'profile' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
     ? sectionId
     : undefined;
 }

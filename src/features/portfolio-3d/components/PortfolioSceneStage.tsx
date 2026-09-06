@@ -11,6 +11,8 @@ import {
   resolveApiScreen,
   resolveAutomationScreen,
   resolvePerformanceScreen,
+  resolveProfileArtworkScreen,
+  resolveTerminalScreen,
   type ArcadeScreenPlacement,
   type EmbeddedScreenId
 } from '../arcade-screen';
@@ -70,9 +72,18 @@ export function PortfolioSceneStage({
   const automationScreen = useMemo(() => roomNodes ? resolveAutomationScreen(roomNodes.root) : undefined, [roomNodes]);
   const performanceScreen = useMemo(() => roomNodes ? resolvePerformanceScreen(roomNodes.root) : undefined, [roomNodes]);
   const apiScreen = useMemo(() => roomNodes ? resolveApiScreen(roomNodes.root) : undefined, [roomNodes]);
+  const terminalScreen = useMemo(() => roomNodes ? resolveTerminalScreen(roomNodes.root) : undefined, [roomNodes]);
+  const profileArtworkScreen = useMemo(() => roomNodes ? resolveProfileArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const embeddedScreens = useMemo(
-    () => ({ pipeline: arcadeScreen, automation: automationScreen, performance: performanceScreen, backend: apiScreen }),
-    [arcadeScreen, apiScreen, automationScreen, performanceScreen]
+    () => ({
+      profile: profileArtworkScreen,
+      pipeline: arcadeScreen,
+      automation: automationScreen,
+      performance: performanceScreen,
+      backend: apiScreen,
+      terminal: terminalScreen
+    }),
+    [arcadeScreen, apiScreen, automationScreen, performanceScreen, profileArtworkScreen, terminalScreen]
   );
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
@@ -250,6 +261,12 @@ export function PortfolioSceneStage({
       ) : null}
       {apiScreen ? (
         <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {terminalScreen ? (
+        <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {profileArtworkScreen ? (
+        <ArcadeScreenSurface screen={profileArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
 
       {!isSingleRoomPreview ? (
@@ -467,14 +484,27 @@ function CameraNavigationRig({
     if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
     const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
     const targetPosition = embeddedScreen
-      ? getArcadeCameraPosition(embeddedScreen, size.width / Math.max(size.height, 1), preset.fov)
+      ? getArcadeCameraPosition(
+        embeddedScreen,
+        size.width / Math.max(size.height, 1),
+        preset.fov,
+        embeddedScreenId === 'profile'
+          ? { horizontalCoverage: 0.94, verticalCoverage: 0.9 }
+          : undefined
+      )
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     if (preset.id === 'overview' && size.width < 768) {
       const direction = targetPosition.clone().sub(target);
       const framingScale = Math.max(1, 1.1 * size.height / Math.max(size.width, 1));
       targetPosition.copy(target).addScaledVector(direction, framingScale);
     }
-    const targetQuaternion = createLookAtQuaternion(targetPosition, target);
+    const targetQuaternion = createLookAtQuaternion(
+      targetPosition,
+      target,
+      embeddedScreenId === 'profile' && embeddedScreen
+        ? new THREE.Vector3(0, 1, 0).applyQuaternion(embeddedScreen.quaternion)
+        : undefined
+    );
     const hasRoomBounds = Boolean(runtimeNodesByAsset['room-shell']?.bounds);
     const viewportKey = `${size.width}:${size.height}`;
 
@@ -579,7 +609,7 @@ function CameraNavigationRig({
 }
 
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
-  return sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend'
+  return sectionId === 'profile' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
     ? sectionId
     : undefined;
 }

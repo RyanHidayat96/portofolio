@@ -30,12 +30,16 @@ export function constrainPortfolio3dCameraPosition(position: THREE.Vector3): THR
   return position;
 }
 
-export function createLookAtQuaternion(position: THREE.Vector3, target: THREE.Vector3): THREE.Quaternion {
+export function createLookAtQuaternion(
+  position: THREE.Vector3,
+  target: THREE.Vector3,
+  up = new THREE.Vector3(0, 1, 0)
+): THREE.Quaternion {
   // Matrix4.lookAt(eye, target, up) sets column 2 = normalize(eye - target),
   // so local -Z of the resulting rotation points TOWARD target.
   // Since cameras render along local -Z, this correctly orients the camera to look at target.
   const matrix = new THREE.Matrix4();
-  matrix.lookAt(position, target, new THREE.Vector3(0, 1, 0));
+  matrix.lookAt(position, target, up);
   return new THREE.Quaternion().setFromRotationMatrix(matrix);
 }
 
