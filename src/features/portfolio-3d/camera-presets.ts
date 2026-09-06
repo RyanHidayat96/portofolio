@@ -21,7 +21,7 @@ export const portfolio3dCameraPresets = [
     fov: 38,
     near: 0.08,
     far: 20,
-    targetNodeName: 'chair',
+    targetNodeName: 'poster 3',
     reducedMotionMs: 80,
     transitionMs: 980
   },
@@ -33,9 +33,9 @@ export const portfolio3dCameraPresets = [
     fov: 38,
     near: 0.08,
     far: 20,
-    targetNodeName: 'poster 3',
+    targetNodeName: 'poster 2',
     reducedMotionMs: 80,
-    transitionMs: 650
+    transitionMs: 920
   },
   {
     id: 'projects',

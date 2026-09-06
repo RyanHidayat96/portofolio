@@ -14,34 +14,47 @@ export function ProfileArtworkScreen({ interactive }: Readonly<{ interactive: bo
   }, [interactive]);
 
   return (
-    <section className="profile-artwork-screen" aria-label="About Ryan Hidayat">
-      <header className="profile-artwork-heading">
-        <UserRound size={22} aria-hidden="true" />
-        <span>About Me</span>
-        <span className="profile-artwork-heading-label">Profile</span>
-      </header>
-      <div className="profile-artwork-content" tabIndex={interactive ? 0 : -1}>
-        <p className="profile-artwork-kicker">Full Stack x SDET</p>
-        <h2 ref={headingRef} tabIndex={-1}>{profile.name}</h2>
-        <p className="profile-artwork-role">{profile.role} with SDET depth.</p>
-        <p className="profile-artwork-summary">{profile.summary}</p>
-        <div className="profile-artwork-tags" aria-label="Focus areas">
-          {profile.focusAreas.slice(0, 4).map((focusArea) => <span key={focusArea}>{focusArea}</span>)}
+    <section className={`profile-artwork-screen ${interactive ? 'profile-artwork-screen--focused' : 'profile-artwork-screen--ambient'}`} aria-label="About Ryan Hidayat">
+      {interactive ? (
+        <>
+          <header className="profile-artwork-heading">
+            <UserRound size={22} aria-hidden="true" />
+            <span>About Me</span>
+            <span className="profile-artwork-heading-label">Profile</span>
+          </header>
+          <div className="profile-artwork-content" tabIndex={0}>
+            <p className="profile-artwork-kicker">Full Stack x SDET</p>
+            <h2 ref={headingRef} tabIndex={-1}>{profile.name}</h2>
+            <p className="profile-artwork-role">{profile.role} with SDET depth.</p>
+            <p className="profile-artwork-summary">{profile.summary}</p>
+            <div className="profile-artwork-tags" aria-label="Focus areas">
+              {profile.focusAreas.slice(0, 4).map((focusArea) => <span key={focusArea}>{focusArea}</span>)}
+            </div>
+            <p className="profile-artwork-note">
+              Career detail stays in the CV. This space keeps the engineering profile clear.
+            </p>
+            <div className="profile-artwork-actions">
+              <a href={withPortfolio3dBasePath(profile.contact.cv.href)} target="_blank" rel="noopener noreferrer">
+                <Download size={17} aria-hidden="true" />
+                CV
+              </a>
+              <a href={profile.contact.email.href}>
+                <Mail size={17} aria-hidden="true" />
+                Contact
+              </a>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="profile-artwork-ambient" aria-hidden="true">
+          <UserRound className="profile-artwork-ambient-icon" aria-hidden="true" />
+          <p>About Me</p>
+          <h2><span>Ryan</span><span>Hidayat</span></h2>
+          <strong>Full Stack x SDET</strong>
+          <span className="profile-artwork-ambient-line" />
+          <small>Profile online</small>
         </div>
-        <p className="profile-artwork-note">
-          Career detail stays in the CV. This space keeps the engineering profile clear.
-        </p>
-        <div className="profile-artwork-actions">
-          <a href={withPortfolio3dBasePath(profile.contact.cv.href)} target="_blank" rel="noopener noreferrer">
-            <Download size={17} aria-hidden="true" />
-            CV
-          </a>
-          <a href={profile.contact.email.href}>
-            <Mail size={17} aria-hidden="true" />
-            Contact
-          </a>
-        </div>
-      </div>
+      )}
     </section>
   );
 }

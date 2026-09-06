@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type EmbeddedScreenId = 'profile' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal';
+export type EmbeddedScreenId = 'profile' | 'experience' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal';
 
 export interface ArcadeScreenPlacement {
   readonly position: THREE.Vector3;
@@ -31,12 +31,27 @@ export function resolveTerminalScreen(root: THREE.Object3D): ArcadeScreenPlaceme
 }
 
 export function resolveProfileArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  const artwork = findScreenMesh(root, [], 'poster 3');
+  return resolveArtworkScreen(root, 'poster 3');
+}
+
+export function resolveExperienceArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveArtworkScreen(root, 'poster 2');
+}
+
+function resolveArtworkScreen(
+  root: THREE.Object3D,
+  materialName: string
+): ArcadeScreenPlacement | undefined {
+  const artwork = findScreenMesh(root, [], materialName);
   if (!artwork) return undefined;
 
-  return resolveArtworkScreenPlacement(artwork, 'poster 3')
-    ?? resolveMaterialScreenPlacement(artwork, 'poster 3')
+  const placement = resolveArtworkScreenPlacement(artwork, materialName)
+    ?? resolveMaterialScreenPlacement(artwork, materialName)
     ?? resolveWholeMeshScreenPlacement(artwork);
+
+  return placement
+    ? orientScreenTowardPoint(placement, new THREE.Vector3(0, placement.position.y, 0))
+    : undefined;
 }
 
 function resolveScreenByMaterial(
@@ -298,6 +313,29 @@ function toWorldScreenPlacement(
     normal: worldNormal,
     width: worldWidth,
     height: worldHeight
+  };
+}
+
+function orientScreenTowardPoint(
+  screen: ArcadeScreenPlacement,
+  point: THREE.Vector3
+): ArcadeScreenPlacement {
+  const towardPoint = point.clone().sub(screen.position);
+  if (screen.normal.dot(towardPoint) >= 0) {
+    return screen;
+  }
+
+  const normal = screen.normal.clone().negate().normalize();
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(screen.quaternion).normalize();
+  const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+
+  return {
+    ...screen,
+    position: screen.position.clone().addScaledVector(normal, 0.012),
+    normal,
+    quaternion: new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(right, up, normal)
+    )
   };
 }
 
