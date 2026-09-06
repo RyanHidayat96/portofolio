@@ -43,7 +43,7 @@ interface AutomationSignal {
   readonly tone: AutomationSignalTone;
 }
 
-export function AutomationLab(): React.ReactElement {
+export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
   const engine = useMemo(() => new AutomationSimulationEngine(), []);
   const [failureType, setFailureType] = useState<FailureType>("none");
   const [events, setEvents] = useState<readonly TimedSimulationEvent[]>([]);
@@ -103,15 +103,19 @@ export function AutomationLab(): React.ReactElement {
   const statusLabel = getStatusLabel({ finalStatus, gateImpact, isRunning });
   const automationSignals = getAutomationSignals(selectedStrategy, statusLabel.text);
 
+  const isScreen = variant === "screen";
+
   return (
-    <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-      <Panel className="p-5">
-        <p className="mono text-sm text-[#55d7ff]">quality.engineering.demo</p>
-        <h1 className="mt-3 text-2xl font-semibold">Quality Automation Lab</h1>
-        <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
-          Deterministic workflow demo. Browser, API, failure inspection, and quality-gate impact are
-          simulated.
-        </p>
+    <div className={isScreen ? "automation-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
+      <Panel className={isScreen ? "automation-screen-controls p-5" : "p-5"}>
+        {!isScreen ? <>
+          <p className="mono text-sm text-[#55d7ff]">quality.engineering.demo</p>
+          <h1 className="mt-3 text-2xl font-semibold">Quality Automation Lab</h1>
+          <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
+            Deterministic workflow demo. Browser, API, failure inspection, and quality-gate impact are
+            simulated.
+          </p>
+        </> : null}
 
         <label className="mt-6 block text-sm font-semibold text-[#c8d4e6]" htmlFor="failure-type">
           Failure Scenario
@@ -152,12 +156,13 @@ export function AutomationLab(): React.ReactElement {
 
         <AutomationSignalRail signals={automationSignals} />
 
-        <div className="mt-5 grid grid-cols-2 gap-2">
+        <div className="automation-actions mt-5 grid grid-cols-2 gap-2">
           <Button
             variant="primary"
             icon={<Play aria-hidden="true" size={17} />}
             onClick={() => void runSimulation()}
             disabled={isRunning}
+            magnetic={!isScreen}
           >
             Run
           </Button>
@@ -168,23 +173,25 @@ export function AutomationLab(): React.ReactElement {
               setIsRunning(false);
             }}
             disabled={!isRunning}
+            magnetic={!isScreen}
           >
             Stop
           </Button>
-          <Button icon={<RotateCcw aria-hidden="true" size={17} />} onClick={resetSimulation}>
+          <Button icon={<RotateCcw aria-hidden="true" size={17} />} onClick={resetSimulation} magnetic={!isScreen}>
             Reset
           </Button>
           <Button
             icon={<Wrench aria-hidden="true" size={17} />}
             onClick={() => void runSimulation()}
             disabled={isRunning}
+            magnetic={!isScreen}
           >
             Replay
           </Button>
         </div>
       </Panel>
 
-      <div className="grid gap-5">
+      <div className={isScreen ? "automation-screen-results grid gap-5" : "grid gap-5"}>
         <Panel className="p-5 sm:p-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>

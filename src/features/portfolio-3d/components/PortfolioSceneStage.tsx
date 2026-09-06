@@ -5,7 +5,13 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import * as THREE from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls.js';
 import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion';
-import { getArcadeCameraPosition, resolveArcadeScreen, type ArcadeScreenPlacement } from '../arcade-screen';
+import {
+  getArcadeCameraPosition,
+  resolveArcadeScreen,
+  resolveAutomationScreen,
+  type ArcadeScreenPlacement,
+  type EmbeddedScreenId
+} from '../arcade-screen';
 import {
   constrainPortfolio3dCameraPosition,
   createLookAtQuaternion,
@@ -43,11 +49,11 @@ const isSingleRoomPreview = anchoredSceneAssets.length === 0;
 export function PortfolioSceneStage({
   qualityTier = 'high',
   onCriticalProgressChange,
-  onArcadeScreenReady
+  onEmbeddedScreenReady
 }: Readonly<{
   qualityTier?: Portfolio3dQualityTier;
   onCriticalProgressChange?: (progress: Portfolio3dLoadingProgress) => void;
-  onArcadeScreenReady?: (element: HTMLElement | null) => void;
+  onEmbeddedScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
 }>): React.ReactElement {
   const { state } = usePortfolio3dState();
   const [runtimeNodesByAsset, setRuntimeNodesByAsset] = useState<
@@ -59,6 +65,11 @@ export function PortfolioSceneStage({
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
   const arcadeScreen = useMemo(() => roomNodes ? resolveArcadeScreen(roomNodes.root) : undefined, [roomNodes]);
+  const automationScreen = useMemo(() => roomNodes ? resolveAutomationScreen(roomNodes.root) : undefined, [roomNodes]);
+  const embeddedScreens = useMemo(
+    () => ({ pipeline: arcadeScreen, automation: automationScreen }),
+    [arcadeScreen, automationScreen]
+  );
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
   const failedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => failedAssetIds.includes(assetId));
@@ -180,7 +191,10 @@ export function PortfolioSceneStage({
         qualityTier={qualityTier}
         runtimeNodesByAsset={runtimeNodesByAsset}
       />
-      <CameraNavigationRig runtimeNodesByAsset={runtimeNodesByAsset} arcadeScreen={arcadeScreen} />
+      <CameraNavigationRig
+        runtimeNodesByAsset={runtimeNodesByAsset}
+        embeddedScreens={embeddedScreens}
+      />
       <CameraDebugOverlay />
       {isSingleRoomPreview ? (
         <SingleRoomPreviewLighting />
@@ -221,7 +235,12 @@ export function PortfolioSceneStage({
           ))
         : null}
 
-      {arcadeScreen ? <ArcadeScreenSurface screen={arcadeScreen} onScreenReady={onArcadeScreenReady} /> : null}
+      {arcadeScreen ? (
+        <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {automationScreen ? (
+        <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
 
       {!isSingleRoomPreview ? (
         <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
@@ -418,10 +437,10 @@ interface CameraTransitionState {
 
 function CameraNavigationRig({
   runtimeNodesByAsset,
-  arcadeScreen
+  embeddedScreens
 }: Readonly<{
   runtimeNodesByAsset: Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>;
-  arcadeScreen?: ArcadeScreenPlacement;
+  embeddedScreens: Readonly<Partial<Record<EmbeddedScreenId, ArcadeScreenPlacement>>>;
 }>): null {
   const { camera, invalidate, size } = useThree();
   const { state, setNavigationState } = usePortfolio3dState();
@@ -433,11 +452,12 @@ function CameraNavigationRig({
 
   useEffect(() => {
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
-    const isArcadeFocus = state.activeSectionId === 'pipeline' && arcadeScreen;
-    if (state.activeSectionId === 'pipeline' && !runtimeNodesByAsset['room-shell']) return;
-    const target = isArcadeFocus ? arcadeScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
-    const targetPosition = isArcadeFocus
-      ? getArcadeCameraPosition(arcadeScreen, size.width / Math.max(size.height, 1), preset.fov)
+    const embeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
+    const embeddedScreen = embeddedScreenId ? embeddedScreens[embeddedScreenId] : undefined;
+    if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
+    const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
+    const targetPosition = embeddedScreen
+      ? getArcadeCameraPosition(embeddedScreen, size.width / Math.max(size.height, 1), preset.fov)
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     if (preset.id === 'overview' && size.width < 768) {
       const direction = targetPosition.clone().sub(target);
@@ -474,7 +494,7 @@ function CameraNavigationRig({
       return;
     }
 
-    if (isArcadeFocus && state.navigationState === 'section-open') {
+    if (embeddedScreen && state.navigationState === 'section-open') {
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
       invalidate();
       return;
@@ -508,7 +528,7 @@ function CameraNavigationRig({
       camera.updateProjectionMatrix();
     }
     invalidate();
-  }, [arcadeScreen, camera, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
+  }, [camera, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
 
   useFrame((rootState) => {
     const transition = transitionRef.current;
@@ -546,6 +566,10 @@ function CameraNavigationRig({
   }, -1);
 
   return null;
+}
+
+function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
+  return sectionId === 'pipeline' || sectionId === 'automation' ? sectionId : undefined;
 }
 
 function applyCameraState(

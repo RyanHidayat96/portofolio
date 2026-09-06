@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+export type EmbeddedScreenId = 'pipeline' | 'automation';
+
 export interface ArcadeScreenPlacement {
   readonly position: THREE.Vector3;
   readonly quaternion: THREE.Quaternion;
@@ -9,11 +11,26 @@ export interface ArcadeScreenPlacement {
 }
 
 export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveScreenByMaterial(root, ['gaming_mashine', 'gaming mashine'], 'Material.013');
+}
+
+export function resolveAutomationScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveScreenByMaterial(root, ['Plane_013', 'Plane.013'], 'screen.002');
+}
+
+function resolveScreenByMaterial(
+  root: THREE.Object3D,
+  nodeNames: readonly string[],
+  materialName: string
+): ArcadeScreenPlacement | undefined {
   // GLTFLoader sanitizes spaces in Blender node names.
-  const cabinet = root.getObjectByName('gaming_mashine') ?? root.getObjectByName('gaming mashine');
+  const cabinet = nodeNames.map((nodeName) => root.getObjectByName(nodeName)).find(Boolean);
   let screen: THREE.Mesh | undefined;
   cabinet?.traverse((object) => {
-    if (object instanceof THREE.Mesh && !Array.isArray(object.material) && object.material.name === 'Material.013') {
+    const materials = object instanceof THREE.Mesh
+      ? Array.isArray(object.material) ? object.material : [object.material]
+      : [];
+    if (object instanceof THREE.Mesh && materials.some((material) => material.name === materialName)) {
       screen = object;
     }
   });

@@ -2,9 +2,10 @@
 
 import { Canvas, useThree } from '@react-three/fiber';
 import { Activity, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
-import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { withPortfolio3dBasePath } from '../asset-url';
+import type { EmbeddedScreenId } from '../arcade-screen';
 import type {
   Portfolio3dHotspotDefinition,
   Portfolio3dHotspotId,
@@ -33,6 +34,7 @@ import {
   type Portfolio3dPanelBlock
 } from '../screen-content';
 import { ArcadePipelineControls, ArcadePipelineScreen } from './ArcadePipelineScreen';
+import { AutomationMonitorControls, AutomationMonitorScreen } from './AutomationMonitorScreen';
 import { ExperienceShell } from './ExperienceShell';
 import { Portfolio3dHtmlFallback } from './Portfolio3dHtmlFallback';
 import { useDocumentVisibility } from '../hooks/useDocumentVisibility';
@@ -94,10 +96,32 @@ function PortfolioExperienceContent({
   const webglStatus = useWebGLSupport();
   const { state } = usePortfolio3dState();
   const [assetProgress, setAssetProgress] = useState<Portfolio3dLoadingProgress>();
-  const [arcadeScreenElement, setArcadeScreenElement] = useState<HTMLElement | null>(null);
+  const [embeddedScreenElements, setEmbeddedScreenElements] = useState<Partial<Record<EmbeddedScreenId, HTMLElement>>>({});
   const isPipelineActive = state.activeSectionId === 'pipeline';
+  const isAutomationActive = state.activeSectionId === 'automation';
   const isSettledAtSection = state.navigationState === 'section-open';
-  const isArcadeView = isPipelineActive && isSettledAtSection;
+  const activeEmbeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
+  const isScreenFocusView = Boolean(
+    activeEmbeddedScreenId &&
+    embeddedScreenElements[activeEmbeddedScreenId] &&
+    isSettledAtSection
+  );
+  const handleEmbeddedScreenReady = useCallback(
+    (screenId: EmbeddedScreenId, element: HTMLElement | null): void => {
+      setEmbeddedScreenElements((current) => {
+        if (current[screenId] === element) return current;
+
+        const next = { ...current };
+        if (element) {
+          next[screenId] = element;
+        } else {
+          delete next[screenId];
+        }
+        return next;
+      });
+    },
+    []
+  );
 
   return (
     <>
@@ -110,7 +134,7 @@ function PortfolioExperienceContent({
             <FoundationCanvas
               qualityTier={state.qualityTier}
               onCriticalProgressChange={setAssetProgress}
-              onArcadeScreenReady={setArcadeScreenElement}
+              onEmbeddedScreenReady={handleEmbeddedScreenReady}
             />
           ) : null
         }
@@ -118,16 +142,29 @@ function PortfolioExperienceContent({
         sectionPanelSlot={
           state.activeSectionId === 'overview'
             ? null
-            : isPipelineActive
+            : isScreenFocusView
               ? null
               : <Portfolio3dSectionPanel />
         }
-        focusControlsSlot={isArcadeView ? <ArcadePipelineControls /> : null}
+        focusControlsSlot={
+          isScreenFocusView
+            ? isPipelineActive
+              ? <ArcadePipelineControls />
+              : isAutomationActive
+                ? <AutomationMonitorControls />
+                : null
+            : null
+        }
         instructionHintSlot={<Portfolio3dInstructionHint />}
         assetProgress={assetProgress}
-        isArcadeView={isArcadeView}
+        isScreenFocusView={isScreenFocusView}
       />
-      {arcadeScreenElement ? createPortal(<ArcadePipelineScreen interactive={isArcadeView} />, arcadeScreenElement) : null}
+      {embeddedScreenElements.pipeline
+        ? createPortal(<ArcadePipelineScreen interactive={isScreenFocusView && isPipelineActive} />, embeddedScreenElements.pipeline)
+        : null}
+      {embeddedScreenElements.automation
+        ? createPortal(<AutomationMonitorScreen interactive={isScreenFocusView && isAutomationActive} />, embeddedScreenElements.automation)
+        : null}
     </>
   );
 }
@@ -214,11 +251,11 @@ function Portfolio3dRouteController(): null {
 function FoundationCanvas({
   qualityTier,
   onCriticalProgressChange,
-  onArcadeScreenReady
+  onEmbeddedScreenReady
 }: Readonly<{
   qualityTier: Portfolio3dQualityTier;
   onCriticalProgressChange?: (progress: Portfolio3dLoadingProgress) => void;
-  onArcadeScreenReady?: (element: HTMLElement | null) => void;
+  onEmbeddedScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
 }>): React.ReactElement {
   const isDocumentVisible = useDocumentVisibility();
   const dpr = useMemo(() => getInitialPortfolio3dDpr(qualityTier), [qualityTier]);
@@ -243,7 +280,7 @@ function FoundationCanvas({
         <FoundationScene
           qualityTier={qualityTier}
           onCriticalProgressChange={onCriticalProgressChange}
-          onArcadeScreenReady={onArcadeScreenReady}
+          onEmbeddedScreenReady={onEmbeddedScreenReady}
         />
       </Suspense>
     </Canvas>
@@ -271,24 +308,28 @@ function CanvasVisibilityInvalidator({
 function FoundationScene({
   qualityTier,
   onCriticalProgressChange,
-  onArcadeScreenReady
+  onEmbeddedScreenReady
 }: Readonly<{
   qualityTier: Portfolio3dQualityTier;
   onCriticalProgressChange?: (progress: Portfolio3dLoadingProgress) => void;
-  onArcadeScreenReady?: (element: HTMLElement | null) => void;
+  onEmbeddedScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
 }>): React.ReactElement {
   return (
     <RoomShellStage
       qualityTier={qualityTier}
       onCriticalProgressChange={onCriticalProgressChange}
-      onArcadeScreenReady={onArcadeScreenReady}
+      onEmbeddedScreenReady={onEmbeddedScreenReady}
     />
   );
 }
 
+function getEmbeddedScreenId(sectionId: Portfolio3dSectionId): EmbeddedScreenId | undefined {
+  return sectionId === 'pipeline' || sectionId === 'automation' ? sectionId : undefined;
+}
+
 function Portfolio3dNavigation(): React.ReactElement {
   const navigationRef = useRef<HTMLElement | null>(null);
-  const restorePipelineFocusRef = useRef(false);
+  const restoreEmbeddedScreenFocusRef = useRef<EmbeddedScreenId | undefined>(undefined);
   const {
     state,
     setActiveSection,
@@ -298,10 +339,12 @@ function Portfolio3dNavigation(): React.ReactElement {
   const isTransitioning = state.navigationState === 'focusing' || state.navigationState === 'returning';
 
   useEffect(() => {
-    if (state.activeSectionId === 'pipeline') restorePipelineFocusRef.current = true;
-    if (restorePipelineFocusRef.current && state.navigationState === 'overview') {
-      restorePipelineFocusRef.current = false;
-      navigationRef.current?.querySelector<HTMLButtonElement>('[data-portfolio-section="pipeline"]')?.focus({ preventScroll: true });
+    const embeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
+    if (embeddedScreenId) restoreEmbeddedScreenFocusRef.current = embeddedScreenId;
+    if (restoreEmbeddedScreenFocusRef.current && state.navigationState === 'overview') {
+      const sectionId = restoreEmbeddedScreenFocusRef.current;
+      restoreEmbeddedScreenFocusRef.current = undefined;
+      navigationRef.current?.querySelector<HTMLButtonElement>(`[data-portfolio-section="${sectionId}"]`)?.focus({ preventScroll: true });
     }
   }, [state.activeSectionId, state.navigationState]);
 

@@ -6188,6 +6188,123 @@ textarea:focus-visible,
   touch-action: pan-y;
 }
 
+.monitor-automation-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  letter-spacing: 0;
+}
+
+.monitor-automation-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 16px 22px;
+  border-bottom: 1px solid #293442;
+  background: #141d26;
+  color: #55d7ff;
+}
+
+.monitor-automation-heading h2 {
+  min-width: 0;
+  margin: 0;
+  color: #eef5ff;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.monitor-automation-label {
+  margin-left: auto;
+  color: #b5c5d4;
+  font-size: 13px;
+}
+
+.monitor-automation-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: #63798b #090e14;
+  touch-action: pan-y;
+}
+
+.automation-lab-screen {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+  gap: 0;
+  padding: 18px 22px;
+}
+
+.automation-lab-screen > .panel-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.automation-lab-screen .automation-screen-controls {
+  padding-right: 20px;
+  border-right: 1px solid #293442;
+}
+
+.automation-lab-screen .automation-screen-controls > label {
+  margin-top: 0;
+}
+
+.automation-lab-screen .automation-screen-controls > .mt-4,
+.automation-lab-screen .automation-signal-rail {
+  display: none;
+}
+
+.automation-lab-screen .automation-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.automation-lab-screen .automation-actions button {
+  min-height: 44px;
+  padding: 8px 10px;
+  transform: none;
+}
+
+.automation-lab-screen .automation-screen-results {
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.automation-lab-screen .automation-screen-results > .panel-surface,
+.automation-lab-screen .automation-screen-results > div > .panel-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.automation-lab-screen .automation-screen-results > .panel-surface {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #293442;
+}
+
+.automation-lab-screen .automation-screen-results h2 {
+  margin-top: 4px;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.automation-lab-screen .automation-screen-results [role="log"] {
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.automation-lab-screen .automation-screen-results [role="log"] > * {
+  padding: 10px 12px;
+}
+
 .arcade-focus-controls {
   position: absolute;
   inset: 18px 16px auto;
@@ -6203,6 +6320,7 @@ textarea:focus-visible,
 }
 
 .arcade-pipeline-screen :focus-visible,
+.monitor-automation-screen :focus-visible,
 .arcade-focus-controls :focus-visible {
   outline: 2px solid #55d7ff;
   outline-offset: -3px;
@@ -6325,6 +6443,39 @@ textarea:focus-visible,
   }
 
   .pipeline-simulator-screen .pipeline-reports {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .monitor-automation-heading {
+    padding: 12px 16px;
+  }
+
+  .monitor-automation-heading h2 {
+    font-size: 20px;
+  }
+
+  .automation-lab-screen {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 16px;
+  }
+
+  .automation-lab-screen .automation-screen-controls {
+    padding: 0 0 16px;
+    border-right: 0;
+    border-bottom: 1px solid #293442;
+  }
+
+  .automation-lab-screen .automation-screen-results {
+    padding: 16px 0 0;
+  }
+
+  .automation-lab-screen .automation-actions button,
+  .automation-lab-screen .automation-screen-controls select {
+    min-height: 52px;
+    font-size: 16px;
+  }
+
+  .automation-lab-screen .automation-screen-results > div:last-child {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -13,7 +13,7 @@ export function ExperienceShell({
   focusControlsSlot,
   instructionHintSlot,
   assetProgress,
-  isArcadeView = false
+  isScreenFocusView = false
 }: Readonly<{
   webglStatus: WebGLSupportStatus;
   canvasSlot: React.ReactNode;
@@ -23,7 +23,7 @@ export function ExperienceShell({
   focusControlsSlot?: React.ReactNode;
   instructionHintSlot?: React.ReactNode;
   assetProgress?: Portfolio3dLoadingProgress;
-  isArcadeView?: boolean;
+  isScreenFocusView?: boolean;
 }>): React.ReactElement {
   const isLoadingCritical =
     webglStatus === 'supported' ? (!assetProgress || !assetProgress.isCriticalComplete) : false;
@@ -102,12 +102,12 @@ export function ExperienceShell({
                 </a>
               </div>
             </div>
-          ) : isArcadeView ? null : (
+          ) : isScreenFocusView ? null : (
             instructionHintSlot
           )}
         </div>
 
-        <header inert={isArcadeView} aria-hidden={isArcadeView} className={`pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isArcadeView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <header inert={isScreenFocusView} aria-hidden={isScreenFocusView} className={`pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="max-w-[390px]">
               <p
@@ -140,9 +140,9 @@ export function ExperienceShell({
 
         <aside
           id="portfolio-3d-panel"
-          inert={isArcadeView}
-          aria-hidden={isArcadeView}
-          className={`portfolio-3d-glass-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-y-auto p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-all duration-500 ${isArcadeView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
+          inert={isScreenFocusView}
+          aria-hidden={isScreenFocusView}
+          className={`portfolio-3d-glass-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-y-auto p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-all duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
           aria-label="3D portfolio controls and section content"
         >
           {navigationSlot}

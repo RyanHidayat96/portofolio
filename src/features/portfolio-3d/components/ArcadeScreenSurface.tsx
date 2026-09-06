@@ -4,7 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useLayoutEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
-import type { ArcadeScreenPlacement } from '../arcade-screen';
+import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 interface ScreenRuntime {
@@ -18,14 +18,15 @@ interface ScreenRuntime {
 // Keep CSS coordinates in pixel-sized units while the GLB remains in meters.
 const cssWorldScale = 1000;
 
-export function ArcadeScreenSurface({ screen, onScreenReady }: Readonly<{
+export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonly<{
   screen: ArcadeScreenPlacement;
-  onScreenReady?: (element: HTMLElement | null) => void;
+  screenId: EmbeddedScreenId;
+  onScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
 }>): React.ReactElement {
   const { camera, gl, size, invalidate, setEvents, get } = useThree();
   const { state, setActiveSection } = usePortfolio3dState();
   const runtimeRef = useRef<ScreenRuntime | null>(null);
-  const isInteractive = state.activeSectionId === 'pipeline' && state.navigationState === 'section-open';
+  const isInteractive = state.activeSectionId === screenId && state.navigationState === 'section-open';
   const pixelWidth = size.width < 768 ? 480 : 1000;
   const pixelHeight = pixelWidth * screen.height / screen.width;
 
@@ -34,7 +35,7 @@ export function ArcadeScreenSurface({ screen, onScreenReady }: Readonly<{
     const parent = canvas.parentElement;
     if (!parent) return;
     const element = document.createElement('div');
-    element.className = 'arcade-screen-document';
+    element.className = `arcade-screen-document arcade-screen-document--${screenId}`;
     const object = new CSS3DObject(element);
     const scene = new THREE.Scene();
     scene.add(object);
@@ -46,7 +47,7 @@ export function ArcadeScreenSurface({ screen, onScreenReady }: Readonly<{
     canvas.style.zIndex = '1';
     parent.insertBefore(renderer.domElement, canvas);
     runtimeRef.current = { renderer, scene, object, camera: camera.clone() };
-    onScreenReady?.(element);
+    onScreenReady?.(screenId, element);
     invalidate();
 
     return () => {
@@ -55,9 +56,9 @@ export function ArcadeScreenSurface({ screen, onScreenReady }: Readonly<{
       canvas.style.position = previousPosition;
       canvas.style.zIndex = previousZIndex;
       runtimeRef.current = null;
-      onScreenReady?.(null);
+      onScreenReady?.(screenId, null);
     };
-  }, [camera, gl, invalidate, onScreenReady]);
+  }, [camera, gl, invalidate, onScreenReady, screenId]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -103,12 +104,12 @@ export function ArcadeScreenSurface({ screen, onScreenReady }: Readonly<{
   return (
     <>
       <mesh
-        name="Arcade_Pipeline_Surface"
+        name={`Embedded_${screenId}_Surface`}
         position={screen.position}
         quaternion={screen.quaternion}
         onClick={(event) => {
           event.stopPropagation();
-          if (event.delta <= 5 && state.navigationState === 'overview') setActiveSection('pipeline');
+          if (event.delta <= 5 && state.navigationState === 'overview') setActiveSection(screenId);
         }}
       >
         <planeGeometry args={[screen.width, screen.height]} />
