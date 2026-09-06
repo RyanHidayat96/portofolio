@@ -485,7 +485,7 @@ function CameraNavigationRig({
   const initializedRef = useRef(false);
   const overviewBoundsAppliedRef = useRef(false);
   const overviewViewportRef = useRef('');
-  const experienceJourneyRef = useRef(false);
+  const screenJourneyRef = useRef(false);
 
   useEffect(() => {
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
@@ -558,21 +558,21 @@ function CameraNavigationRig({
       return;
     }
 
-    const isExperienceJourney = state.activeSectionId === 'experience' ||
-      (state.activeSectionId === 'overview' && experienceJourneyRef.current);
-    experienceJourneyRef.current = isExperienceJourney;
+    const isScreenJourney = Boolean(embeddedScreenId) ||
+      (state.activeSectionId === 'overview' && screenJourneyRef.current);
+    screenJourneyRef.current = isScreenJourney;
 
     transitionRef.current = {
       activeSectionId: state.activeSectionId,
       finalNavigationState: state.activeSectionId === 'overview' ? 'overview' : 'section-open',
       startedAt: performance.now(),
-      durationMs: prefersReducedMotion ? preset.reducedMotionMs : isExperienceJourney ? 1400 : preset.transitionMs,
+      durationMs: prefersReducedMotion ? preset.reducedMotionMs : isScreenJourney ? Math.max(900, preset.transitionMs) : preset.transitionMs,
       startPosition: camera.position.clone(),
       targetPosition,
       targetLookAt: target.clone(),
       startQuaternion: camera.quaternion.clone(),
       targetQuaternion,
-      smoothLens: isExperienceJourney,
+      smoothLens: isScreenJourney,
       startFov: camera instanceof THREE.PerspectiveCamera ? camera.fov : preset.fov,
       targetFov: preset.fov
     };
@@ -585,7 +585,7 @@ function CameraNavigationRig({
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.near = preset.near;
       camera.far = preset.far;
-      if (!isExperienceJourney) camera.fov = preset.fov;
+      if (!isScreenJourney) camera.fov = preset.fov;
       camera.updateProjectionMatrix();
     }
     invalidate();
@@ -626,10 +626,10 @@ function CameraNavigationRig({
       sharedOrbitControlsRef.current.target.copy(transition.targetLookAt);
       sharedOrbitControlsRef.current.enabled = transition.finalNavigationState === 'overview';
       // OrbitControls.lookAt uses world-up and would undo the artwork's camera roll.
-      if (transition.activeSectionId !== 'experience') sharedOrbitControlsRef.current.update();
+      if (transition.finalNavigationState === 'overview') sharedOrbitControlsRef.current.update();
     }
 
-    if (transition.finalNavigationState === 'overview') experienceJourneyRef.current = false;
+    if (transition.finalNavigationState === 'overview') screenJourneyRef.current = false;
     setNavigationState(transition.finalNavigationState);
     rootState.invalidate();
   }, -1);
