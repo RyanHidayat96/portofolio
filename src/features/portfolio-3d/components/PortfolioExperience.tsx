@@ -116,6 +116,9 @@ function PortfolioExperienceContent({
     embeddedScreenElements[activeEmbeddedScreenId] &&
     isSettledAtSection
   );
+  const isExperienceApproach = Boolean(
+    isExperienceActive && embeddedScreenElements.experience && state.navigationState === 'focusing'
+  );
   const handleEmbeddedScreenReady = useCallback(
     (screenId: EmbeddedScreenId, element: HTMLElement | null): void => {
       setEmbeddedScreenElements((current) => {
@@ -152,7 +155,7 @@ function PortfolioExperienceContent({
         sectionPanelSlot={
           state.activeSectionId === 'overview'
             ? null
-            : isScreenFocusView
+            : isScreenFocusView || isExperienceApproach
               ? null
               : <Portfolio3dSectionPanel />
         }
@@ -177,7 +180,7 @@ function PortfolioExperienceContent({
         }
         instructionHintSlot={<Portfolio3dInstructionHint />}
         assetProgress={assetProgress}
-        isScreenFocusView={isScreenFocusView}
+        isScreenFocusView={isScreenFocusView || isExperienceApproach}
       />
       {embeddedScreenElements.pipeline
         ? createPortal(<ArcadePipelineScreen interactive={isScreenFocusView && isPipelineActive} />, embeddedScreenElements.pipeline)

@@ -466,6 +466,9 @@ interface CameraTransitionState {
   readonly targetLookAt: THREE.Vector3;
   readonly startQuaternion: THREE.Quaternion;
   readonly targetQuaternion: THREE.Quaternion;
+  readonly smoothLens: boolean;
+  readonly startFov: number;
+  readonly targetFov: number;
 }
 
 function CameraNavigationRig({
@@ -482,6 +485,7 @@ function CameraNavigationRig({
   const initializedRef = useRef(false);
   const overviewBoundsAppliedRef = useRef(false);
   const overviewViewportRef = useRef('');
+  const experienceJourneyRef = useRef(false);
 
   useEffect(() => {
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
@@ -554,16 +558,23 @@ function CameraNavigationRig({
       return;
     }
 
+    const isExperienceJourney = state.activeSectionId === 'experience' ||
+      (state.activeSectionId === 'overview' && experienceJourneyRef.current);
+    experienceJourneyRef.current = isExperienceJourney;
+
     transitionRef.current = {
       activeSectionId: state.activeSectionId,
       finalNavigationState: state.activeSectionId === 'overview' ? 'overview' : 'section-open',
       startedAt: performance.now(),
-      durationMs: prefersReducedMotion ? preset.reducedMotionMs : preset.transitionMs,
+      durationMs: prefersReducedMotion ? preset.reducedMotionMs : isExperienceJourney ? 1400 : preset.transitionMs,
       startPosition: camera.position.clone(),
       targetPosition,
       targetLookAt: target.clone(),
       startQuaternion: camera.quaternion.clone(),
-      targetQuaternion
+      targetQuaternion,
+      smoothLens: isExperienceJourney,
+      startFov: camera instanceof THREE.PerspectiveCamera ? camera.fov : preset.fov,
+      targetFov: preset.fov
     };
 
     // Disable OrbitControls immediately so it doesn't fight the transition.
@@ -574,7 +585,7 @@ function CameraNavigationRig({
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.near = preset.near;
       camera.far = preset.far;
-      camera.fov = preset.fov;
+      if (!isExperienceJourney) camera.fov = preset.fov;
       camera.updateProjectionMatrix();
     }
     invalidate();
@@ -589,10 +600,16 @@ function CameraNavigationRig({
     const progress = transition.durationMs <= 0
       ? 1
       : (performance.now() - transition.startedAt) / transition.durationMs;
-    const easedProgress = easePortfolio3dCameraTransition(progress);
+    const easedProgress = transition.smoothLens
+      ? THREE.MathUtils.smootherstep(progress, 0, 1)
+      : easePortfolio3dCameraTransition(progress);
 
     camera.position.lerpVectors(transition.startPosition, transition.targetPosition, easedProgress);
     camera.quaternion.slerpQuaternions(transition.startQuaternion, transition.targetQuaternion, easedProgress);
+    if (transition.smoothLens && camera instanceof THREE.PerspectiveCamera) {
+      camera.fov = THREE.MathUtils.lerp(transition.startFov, transition.targetFov, easedProgress);
+      camera.updateProjectionMatrix();
+    }
 
     if (progress < 1) {
       rootState.invalidate();
@@ -608,9 +625,11 @@ function CameraNavigationRig({
     if (sharedOrbitControlsRef.current) {
       sharedOrbitControlsRef.current.target.copy(transition.targetLookAt);
       sharedOrbitControlsRef.current.enabled = transition.finalNavigationState === 'overview';
-      sharedOrbitControlsRef.current.update();
+      // OrbitControls.lookAt uses world-up and would undo the artwork's camera roll.
+      if (transition.activeSectionId !== 'experience') sharedOrbitControlsRef.current.update();
     }
 
+    if (transition.finalNavigationState === 'overview') experienceJourneyRef.current = false;
     setNavigationState(transition.finalNavigationState);
     rootState.invalidate();
   }, -1);

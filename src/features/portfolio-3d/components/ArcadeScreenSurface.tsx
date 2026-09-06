@@ -27,6 +27,8 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
   const { state, setActiveSection } = usePortfolio3dState();
   const runtimeRef = useRef<ScreenRuntime | null>(null);
   const isInteractive = state.activeSectionId === screenId && state.navigationState === 'section-open';
+  // Experience keeps its world-space surface even when native interaction is enabled.
+  const flattenForInteraction = isInteractive && screenId !== 'experience';
   const pixelWidth = size.width < 768 ? 480 : 1000;
   const pixelHeight = pixelWidth * screen.height / screen.width;
 
@@ -70,9 +72,10 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
     object.quaternion.copy(screen.quaternion);
     object.scale.setScalar(screen.width * cssWorldScale / pixelWidth);
     renderer.setSize(size.width, size.height);
-    renderScreen(runtime, camera, screen, pixelWidth, isInteractive);
+    renderScreen(runtime, camera, screen, pixelWidth, flattenForInteraction);
+    runtime.renderer.domElement.style.zIndex = isInteractive ? '2' : '0';
     invalidate();
-  }, [camera, invalidate, isInteractive, pixelHeight, pixelWidth, screen, size.width, size.height]);
+  }, [camera, flattenForInteraction, invalidate, pixelHeight, pixelWidth, screen, size.width, size.height]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -84,12 +87,21 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
     const canvas = gl.domElement;
     const previousPointerEvents = canvas.style.pointerEvents;
     const previousEventsEnabled = get().events.enabled;
+    const previousLayerPointerEvents = runtime.renderer.domElement.style.pointerEvents;
+    runtime.renderer.domElement.style.pointerEvents = isInteractive ? 'auto' : 'none';
+    const layerChildren = Array.from(runtime.renderer.domElement.querySelectorAll<HTMLElement>('*'));
+    const previousChildPointerEvents = layerChildren.map((child) => child.style.pointerEvents);
+    if (isInteractive) {
+      layerChildren.forEach((child) => { child.style.pointerEvents = 'auto'; });
+    }
     if (isInteractive) {
       // Let native DOM inputs handle clicks and scrolling without scene raycasts.
       canvas.style.pointerEvents = 'none';
       setEvents({ enabled: false });
     }
     return () => {
+      runtime.renderer.domElement.style.pointerEvents = previousLayerPointerEvents;
+      layerChildren.forEach((child, index) => { child.style.pointerEvents = previousChildPointerEvents[index] ?? ''; });
       canvas.style.pointerEvents = previousPointerEvents;
       setEvents({ enabled: previousEventsEnabled });
     };
@@ -98,7 +110,10 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
   // The existing demand loop drives projection only while the camera/scene changes.
   useFrame(() => {
     const runtime = runtimeRef.current;
-    if (runtime) renderScreen(runtime, camera, screen, pixelWidth, isInteractive);
+    if (runtime) {
+      renderScreen(runtime, camera, screen, pixelWidth, flattenForInteraction);
+      runtime.renderer.domElement.style.zIndex = isInteractive ? '2' : '0';
+    }
   });
 
   return (

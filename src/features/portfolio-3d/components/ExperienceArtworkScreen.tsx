@@ -22,12 +22,10 @@ const operatingPrinciples = [
 ] as const;
 
 export function ExperienceArtworkScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
-  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    contentRef.current?.scrollTo({ top: 0 });
-    if (interactive) headingRef.current?.focus({ preventScroll: true });
+    if (interactive) contentRef.current?.focus({ preventScroll: true });
   }, [interactive]);
 
   return (
@@ -40,7 +38,7 @@ export function ExperienceArtworkScreen({ interactive }: Readonly<{ interactive:
           </header>
           <div ref={contentRef} className="experience-artwork-content" tabIndex={0} onWheel={(event) => event.stopPropagation()}>
             <p className="experience-artwork-kicker">{publicCareerEvolution.kicker}</p>
-            <h2 ref={headingRef} tabIndex={-1}>{publicCareerEvolution.title}</h2>
+            <h2>{publicCareerEvolution.title}</h2>
             <p className="experience-artwork-summary">{publicCareerEvolution.summary}</p>
 
             <div className="experience-artwork-thesis" aria-label="Career thesis">
