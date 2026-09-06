@@ -53,7 +53,7 @@ interface Portfolio3dErrorBoundaryState {
 
 const portfolio3dAreaLabels = {
   overview: 'Overview',
-  profile: 'About Me',
+  profile: 'Profile',
   experience: 'Experience',
   projects: 'Projects',
   fullstack: 'Full Stack',

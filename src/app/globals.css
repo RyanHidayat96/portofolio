@@ -6367,7 +6367,7 @@ textarea:focus-visible,
 }
 
 .arcade-screen-document--profile {
-  background: transparent;
+  background: #0a111a;
 }
 
 .profile-artwork-screen {
@@ -6376,15 +6376,15 @@ textarea:focus-visible,
   height: 100%;
   min-height: 100%;
   flex-direction: column;
-  padding: 30px;
+  border: 8px solid #55d7ff;
   color: #edf5ff;
-  background: rgba(7, 12, 18, 0.16);
+  background: #0a111a;
   letter-spacing: 0;
 }
 
 .profile-artwork-screen--ambient {
   padding: 0;
-  background: #080f17;
+  background: #0a111a;
 }
 
 .profile-artwork-ambient {
@@ -6463,10 +6463,9 @@ textarea:focus-visible,
   gap: 12px;
   flex: 0 0 auto;
   padding: 16px 18px;
-  border: 1px solid rgba(242, 197, 94, 0.58);
-  border-bottom: 0;
-  background: rgba(7, 12, 18, 0.82);
-  color: #f2c55e;
+  border-bottom: 1px solid rgba(85, 215, 255, 0.5);
+  background: #101b26;
+  color: #55d7ff;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -6482,19 +6481,55 @@ textarea:focus-visible,
 }
 
 .profile-artwork-content {
-  display: flex;
   min-height: 0;
   flex: 1;
-  flex-direction: column;
-  padding: 28px 24px 22px;
-  border: 1px solid rgba(242, 197, 94, 0.58);
-  border-top: 0;
-  background: rgba(7, 12, 18, 0.82);
+  padding: 18px;
+  background: #0a111a;
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  scrollbar-color: #f2c55e #090e14;
+  scrollbar-color: #55d7ff #090e14;
   touch-action: pan-y;
+}
+
+.profile-artwork-content > .grid {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 14px;
+}
+
+.profile-artwork-content .panel-surface {
+  border-color: #293442;
+  background: #111722;
+}
+
+.profile-artwork-content .panel-surface > .grid {
+  gap: 10px;
+}
+
+.profile-artwork-content .panel-surface h1,
+.profile-artwork-content .panel-surface h2 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.profile-artwork-content .panel-surface h3 {
+  font-size: 16px;
+}
+
+.profile-artwork-content .panel-surface p,
+.profile-artwork-content .panel-surface dd {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.profile-artwork-content .panel-surface .badge-base {
+  font-size: 10px;
+}
+
+@container (max-width: 760px) {
+  .profile-artwork-content > .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .profile-artwork-kicker {

@@ -1,8 +1,8 @@
 'use client';
 
-import { ArrowLeft, Download, ExternalLink, Mail, UserRound } from 'lucide-react';
+import { ArrowLeft, ExternalLink, UserRound } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { profile } from '@/data/profile';
+import { ProfilePanel } from '@/features/workspace/components/ProfilePanel';
 import { withPortfolio3dBasePath } from '../asset-url';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
 
@@ -14,47 +14,20 @@ export function ProfileArtworkScreen({ interactive }: Readonly<{ interactive: bo
   }, [interactive]);
 
   return (
-    <section className={`profile-artwork-screen ${interactive ? 'profile-artwork-screen--focused' : 'profile-artwork-screen--ambient'}`} aria-label="About Ryan Hidayat">
-      {interactive ? (
-        <>
-          <header className="profile-artwork-heading">
-            <UserRound size={22} aria-hidden="true" />
-            <span>About Me</span>
-            <span className="profile-artwork-heading-label">Profile</span>
-          </header>
-          <div className="profile-artwork-content" tabIndex={0}>
-            <p className="profile-artwork-kicker">Full Stack x SDET</p>
-            <h2 ref={headingRef} tabIndex={-1}>{profile.name}</h2>
-            <p className="profile-artwork-role">{profile.role} with SDET depth.</p>
-            <p className="profile-artwork-summary">{profile.summary}</p>
-            <div className="profile-artwork-tags" aria-label="Focus areas">
-              {profile.focusAreas.slice(0, 4).map((focusArea) => <span key={focusArea}>{focusArea}</span>)}
-            </div>
-            <p className="profile-artwork-note">
-              Career detail stays in the CV. This space keeps the engineering profile clear.
-            </p>
-            <div className="profile-artwork-actions">
-              <a href={withPortfolio3dBasePath(profile.contact.cv.href)} target="_blank" rel="noopener noreferrer">
-                <Download size={17} aria-hidden="true" />
-                CV
-              </a>
-              <a href={profile.contact.email.href}>
-                <Mail size={17} aria-hidden="true" />
-                Contact
-              </a>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="profile-artwork-ambient" aria-hidden="true">
-          <UserRound className="profile-artwork-ambient-icon" aria-hidden="true" />
-          <p>About Me</p>
-          <h2><span>Ryan</span><span>Hidayat</span></h2>
-          <strong>Full Stack x SDET</strong>
-          <span className="profile-artwork-ambient-line" />
-          <small>Profile online</small>
-        </div>
-      )}
+    <section className="profile-artwork-screen" aria-label="Profile">
+      <header className="profile-artwork-heading">
+        <UserRound size={22} aria-hidden="true" />
+        <span>Profile</span>
+        <span className="profile-artwork-heading-label">Full Stack x SDET</span>
+      </header>
+      <div
+        className="profile-artwork-content"
+        tabIndex={interactive ? 0 : -1}
+        onWheel={(event) => event.stopPropagation()}
+      >
+        <h2 ref={headingRef} className="sr-only" tabIndex={-1}>Profile</h2>
+        <ProfilePanel />
+      </div>
     </section>
   );
 }
@@ -63,7 +36,7 @@ export function ProfileArtworkControls(): React.ReactElement {
   const { setActiveSection } = usePortfolio3dState();
 
   return (
-    <nav className="arcade-focus-controls" aria-label="About Me view controls">
+    <nav className="arcade-focus-controls" aria-label="Profile view controls">
       <button type="button" className="button-base button-secondary" onClick={() => setActiveSection('overview')}>
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
