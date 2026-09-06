@@ -119,9 +119,6 @@ export function ExperienceShell({
               <p className="mt-3 text-base uppercase tracking-[0.12em] text-[rgba(168,213,238,0.94)] sm:text-xl">
                 3D Workspace Concept
               </p>
-              <p className="mt-6 max-w-[320px] text-sm leading-6 text-[rgba(232,238,247,0.82)] sm:text-base">
-                Futuristic engineering workspace for a Full-Stack Developer portfolio with SDET depth.
-              </p>
             </div>
 
             <div className="portfolio-3d-top-actions pointer-events-auto hidden flex-wrap justify-end gap-2 sm:flex">

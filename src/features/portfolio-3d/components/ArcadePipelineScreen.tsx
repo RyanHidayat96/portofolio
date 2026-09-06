@@ -10,11 +10,6 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   useEffect(() => {
     if (interactive) headingRef.current?.focus({ preventScroll: true });
-    return () => {
-      if (interactive) {
-        document.querySelector<HTMLButtonElement>('[data-portfolio-section="pipeline"]')?.focus({ preventScroll: true });
-      }
-    };
   }, [interactive]);
 
   return (

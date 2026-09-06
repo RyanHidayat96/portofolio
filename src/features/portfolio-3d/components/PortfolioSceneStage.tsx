@@ -429,6 +429,7 @@ function CameraNavigationRig({
   const transitionRef = useRef<CameraTransitionState | null>(null);
   const initializedRef = useRef(false);
   const overviewBoundsAppliedRef = useRef(false);
+  const overviewViewportRef = useRef('');
 
   useEffect(() => {
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
@@ -438,13 +439,21 @@ function CameraNavigationRig({
     const targetPosition = isArcadeFocus
       ? getArcadeCameraPosition(arcadeScreen, size.width / Math.max(size.height, 1), preset.fov)
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
+    if (preset.id === 'overview' && size.width < 768) {
+      const direction = targetPosition.clone().sub(target);
+      const framingScale = Math.max(1, 1.1 * size.height / Math.max(size.width, 1));
+      targetPosition.copy(target).addScaledVector(direction, framingScale);
+    }
     const targetQuaternion = createLookAtQuaternion(targetPosition, target);
     const hasRoomBounds = Boolean(runtimeNodesByAsset['room-shell']?.bounds);
+    const viewportKey = `${size.width}:${size.height}`;
 
     if (!initializedRef.current && state.activeSectionId === 'overview') {
       initializedRef.current = true;
       overviewBoundsAppliedRef.current = hasRoomBounds;
+      overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      sharedOrbitControlsRef.current?.target.copy(target);
       invalidate();
       return;
     }
@@ -455,10 +464,12 @@ function CameraNavigationRig({
       state.activeSectionId === 'overview' &&
       state.navigationState === 'overview' &&
       hasRoomBounds &&
-      !overviewBoundsAppliedRef.current
+      (!overviewBoundsAppliedRef.current || overviewViewportRef.current !== viewportKey)
     ) {
       overviewBoundsAppliedRef.current = true;
+      overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
+      sharedOrbitControlsRef.current?.target.copy(target);
       invalidate();
       return;
     }

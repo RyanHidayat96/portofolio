@@ -6135,6 +6135,8 @@ textarea:focus-visible,
 }
 
 .arcade-screen-document {
+  top: 0;
+  left: 0;
   overflow: hidden;
   backface-visibility: hidden;
   container-type: inline-size;

@@ -287,6 +287,8 @@ function FoundationScene({
 }
 
 function Portfolio3dNavigation(): React.ReactElement {
+  const navigationRef = useRef<HTMLElement | null>(null);
+  const restorePipelineFocusRef = useRef(false);
   const {
     state,
     setActiveSection,
@@ -295,8 +297,16 @@ function Portfolio3dNavigation(): React.ReactElement {
   } = usePortfolio3dState();
   const isTransitioning = state.navigationState === 'focusing' || state.navigationState === 'returning';
 
+  useEffect(() => {
+    if (state.activeSectionId === 'pipeline') restorePipelineFocusRef.current = true;
+    if (restorePipelineFocusRef.current && state.navigationState === 'overview') {
+      restorePipelineFocusRef.current = false;
+      navigationRef.current?.querySelector<HTMLButtonElement>('[data-portfolio-section="pipeline"]')?.focus({ preventScroll: true });
+    }
+  }, [state.activeSectionId, state.navigationState]);
+
   return (
-    <nav className="space-y-3" aria-label="3D portfolio areas">
+    <nav ref={navigationRef} className="space-y-3" aria-label="3D portfolio areas">
       <div>
         <p className="mono mb-2 text-[10px] uppercase tracking-[0.24em] text-[rgba(219,235,247,0.72)]">
           Areas
