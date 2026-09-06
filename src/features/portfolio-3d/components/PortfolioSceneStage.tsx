@@ -663,6 +663,19 @@ function syncOverviewOrbitControls(camera: THREE.Camera, target: THREE.Vector3):
     return;
   }
 
+  // OrbitControls keeps drag and wheel momentum in private runtime fields.
+  // Clear them before syncing so the next frame cannot re-apply the old view.
+  const internals = controls as unknown as {
+    _sphericalDelta?: THREE.Spherical;
+    _panOffset?: THREE.Vector3;
+    _scale?: number;
+    _zoomChanged?: boolean;
+  };
+  internals._sphericalDelta?.set(0, 0, 0);
+  internals._panOffset?.set(0, 0, 0);
+  if (internals._scale !== undefined) internals._scale = 1;
+  if (internals._zoomChanged !== undefined) internals._zoomChanged = false;
+
   controls.target.copy(target);
   const offset = camera.position.clone().sub(target);
   const overviewAzimuth = Math.atan2(offset.x, offset.z);
@@ -671,11 +684,7 @@ function syncOverviewOrbitControls(camera: THREE.Camera, target: THREE.Vector3):
   controls.minAzimuthAngle = overviewAzimuth - azimuthRange;
   controls.maxAzimuthAngle = overviewAzimuth + azimuthRange;
 
-  // Clear residual drag deltas before OrbitControls resumes damping.
-  const dampingEnabled = controls.enableDamping;
-  controls.enableDamping = false;
   controls.update();
-  controls.enableDamping = dampingEnabled;
 }
 
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
