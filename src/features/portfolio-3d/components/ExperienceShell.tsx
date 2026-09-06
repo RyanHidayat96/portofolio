@@ -11,7 +11,6 @@ export function ExperienceShell({
   navigationSlot,
   sectionPanelSlot,
   focusControlsSlot,
-  instructionHintSlot,
   assetProgress,
   isScreenFocusView = false
 }: Readonly<{
@@ -21,7 +20,6 @@ export function ExperienceShell({
   navigationSlot: React.ReactNode;
   sectionPanelSlot?: React.ReactNode;
   focusControlsSlot?: React.ReactNode;
-  instructionHintSlot?: React.ReactNode;
   assetProgress?: Portfolio3dLoadingProgress;
   isScreenFocusView?: boolean;
 }>): React.ReactElement {
@@ -96,15 +94,13 @@ export function ExperienceShell({
                 </a>
                 <a
                   className="mono inline-flex text-[10px] uppercase tracking-[0.18em] text-[var(--accent)]"
-                  href={withPortfolio3dBasePath('/workspace')}
+                  href={withPortfolio3dBasePath('/overview')}
                 >
                   HTML portfolio
                 </a>
               </div>
             </div>
-          ) : isScreenFocusView ? null : (
-            instructionHintSlot
-          )}
+          ) : null}
         </div>
 
         <header inert={isScreenFocusView} aria-hidden={isScreenFocusView} className={`pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
@@ -124,15 +120,9 @@ export function ExperienceShell({
             <div className="portfolio-3d-top-actions pointer-events-auto hidden flex-wrap justify-end gap-2 sm:flex">
               <a
                 className="button-base button-secondary bg-[rgba(14,23,35,0.72)] backdrop-blur-md"
-                href={withPortfolio3dBasePath('/workspace')}
+                href={withPortfolio3dBasePath('/overview')}
               >
                 Standard portfolio
-              </a>
-              <a
-                className="button-base button-secondary bg-[rgba(14,23,35,0.72)] backdrop-blur-md"
-                href={withPortfolio3dBasePath('/?section=contact')}
-              >
-                Contact
               </a>
             </div>
           </div>

@@ -142,6 +142,22 @@ export function Portfolio3dProvider({
         return current;
       }
 
+      if (sectionId === 'overview' && current.activeSectionId === 'overview' && current.navigationState === 'overview') {
+        return {
+          ...current,
+          navigationState: 'returning',
+          hoveredHotspotId: undefined,
+          focusedHotspotId: undefined,
+          lastEvent: routeTarget
+            ? {
+                type: 'route.sync',
+                sectionId,
+                path: routeTarget.path
+              }
+            : current.lastEvent
+        };
+      }
+
       return {
         ...current,
         activeSectionId: sectionId,

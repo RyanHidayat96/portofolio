@@ -545,8 +545,7 @@ function CameraNavigationRig({
       overviewBoundsAppliedRef.current = hasRoomBounds;
       overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
-      sharedOrbitControlsRef.current?.target.copy(target);
-      configureOverviewOrbitLimits(camera, target);
+      syncOverviewOrbitControls(camera, target);
       invalidate();
       return;
     }
@@ -562,8 +561,7 @@ function CameraNavigationRig({
       overviewBoundsAppliedRef.current = true;
       overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion);
-      sharedOrbitControlsRef.current?.target.copy(target);
-      configureOverviewOrbitLimits(camera, target);
+      syncOverviewOrbitControls(camera, target);
       invalidate();
       return;
     }
@@ -647,8 +645,7 @@ function CameraNavigationRig({
       sharedOrbitControlsRef.current.enabled = transition.finalNavigationState === 'overview';
       // OrbitControls.lookAt uses world-up and would undo the artwork's camera roll.
       if (transition.finalNavigationState === 'overview') {
-        configureOverviewOrbitLimits(camera, transition.targetLookAt);
-        sharedOrbitControlsRef.current.update();
+        syncOverviewOrbitControls(camera, transition.targetLookAt);
       }
     }
 
@@ -660,18 +657,25 @@ function CameraNavigationRig({
   return null;
 }
 
-function configureOverviewOrbitLimits(camera: THREE.Camera, target: THREE.Vector3): void {
+function syncOverviewOrbitControls(camera: THREE.Camera, target: THREE.Vector3): void {
   const controls = sharedOrbitControlsRef.current;
   if (!controls) {
     return;
   }
 
+  controls.target.copy(target);
   const offset = camera.position.clone().sub(target);
   const overviewAzimuth = Math.atan2(offset.x, offset.z);
   const azimuthRange = 0.32;
 
   controls.minAzimuthAngle = overviewAzimuth - azimuthRange;
   controls.maxAzimuthAngle = overviewAzimuth + azimuthRange;
+
+  // Clear residual drag deltas before OrbitControls resumes damping.
+  const dampingEnabled = controls.enableDamping;
+  controls.enableDamping = false;
+  controls.update();
+  controls.enableDamping = dampingEnabled;
 }
 
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {

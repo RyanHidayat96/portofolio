@@ -83,8 +83,21 @@ const portfolio3dAreaIcons = {
   contact: Activity
 } satisfies Partial<Record<Portfolio3dSectionId, LucideIcon>>;
 
-const portfolio3dNavigationContracts = portfolio3dSectionContracts.filter(
-  (contract) => contract.id !== 'projects' && contract.id !== 'fullstack'
+const portfolio3dNavigationContractIds = [
+  'overview',
+  'profile',
+  'contact',
+  'experience',
+  'backend',
+  'architecture',
+  'automation',
+  'performance',
+  'pipeline',
+  'terminal'
+] as const satisfies readonly Portfolio3dSectionId[];
+
+const portfolio3dNavigationContracts = portfolio3dNavigationContractIds.flatMap((id) =>
+  portfolio3dSectionContracts.filter((contract) => contract.id === id)
 );
 
 export function PortfolioExperience(): React.ReactElement {
@@ -213,7 +226,6 @@ function PortfolioExperienceContent({
                           : null
             : null
         }
-        instructionHintSlot={<Portfolio3dInstructionHint />}
         assetProgress={assetProgress}
         isScreenFocusView={isScreenFocusView || isScreenApproach}
       />
@@ -498,29 +510,6 @@ function Portfolio3dNavigation(): React.ReactElement {
         </div>
       </div>
     </nav>
-  );
-}
-function Portfolio3dInstructionHint(): React.ReactElement | null {
-  const { state, setInstructionHintDismissed } = usePortfolio3dState();
-
-  if (state.isInstructionHintDismissed) {
-    return null;
-  }
-
-  return (
-    <div className="portfolio-3d-instruction-hint absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-3 px-3 py-2 md:flex">
-      <p className="text-xs leading-5 text-[rgba(219,235,247,0.72)]">
-        Use Areas menu. Single 3D room preview active.
-      </p>
-      <button
-        type="button"
-        className="mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--accent)]"
-        aria-label="Dismiss 3D portfolio hint"
-        onClick={() => setInstructionHintDismissed(true)}
-      >
-        Dismiss
-      </button>
-    </div>
   );
 }
 function Portfolio3dSectionPanel(): React.ReactElement {
