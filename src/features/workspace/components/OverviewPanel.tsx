@@ -14,7 +14,6 @@ import {
   BriefcaseBusiness,
   Code2,
   Download,
-  ExternalLink,
   FlaskConical,
   Gauge,
   GitBranch,
@@ -50,14 +49,6 @@ function RecruiterOverviewPanel({
   onNavigate: (section: WorkspaceSection) => void;
 }>): React.ReactElement {
   const cv = profile.contact.cv;
-  const contactLinks = [
-    profile.contact.email,
-    profile.contact.phone,
-    profile.contact.linkedIn
-  ].filter(
-    (link) => isPortfolioValueConfigured(link.href) && isPortfolioValueConfigured(link.value)
-  );
-  const primaryContactLink = contactLinks[0];
   const hiringSignals: readonly {
     readonly label: string;
     readonly value: string;
@@ -189,53 +180,6 @@ function RecruiterOverviewPanel({
             ))}
           </dl>
         </section>
-      </Panel>
-
-      <Panel className="recruiter-scan-conversion p-5 sm:p-6">
-        <div>
-          <p className="mono text-sm text-[var(--accent)]">fast.hiring.path</p>
-          <h2>Everything HR needs is one click away.</h2>
-          <p>Start with the concise snapshot, then use CV or contact when deeper detail is needed.</p>
-        </div>
-        <div className="recruiter-scan-conversion-actions">
-          {isPortfolioValueConfigured(cv.href) ? (
-            <a
-              className="button-base button-primary"
-              href={cv.href}
-              download="cv.pdf"
-              data-cursor-intent="link"
-              data-cursor-label="CV"
-            >
-              <Download aria-hidden="true" size={18} />
-              <span>Download CV</span>
-            </a>
-          ) : null}
-          {primaryContactLink ? (
-            <a
-              className="button-base button-secondary"
-              href={primaryContactLink.href}
-              target={
-                primaryContactLink.id === "phone" || primaryContactLink.id === "email"
-                  ? undefined
-                  : "_blank"
-              }
-              rel={
-                primaryContactLink.id === "phone" || primaryContactLink.id === "email"
-                  ? undefined
-                  : "noreferrer"
-              }
-            >
-              <Mail aria-hidden="true" size={18} />
-              <span>{primaryContactLink.label}</span>
-            </a>
-          ) : null}
-          <Button
-            icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
-            onClick={() => onNavigate("experience")}
-          >
-            Experience
-          </Button>
-        </div>
       </Panel>
 
       <Panel className="recruiter-fast-path p-5 sm:p-6">
@@ -372,33 +316,6 @@ function RecruiterOverviewPanel({
         </div>
       </Panel>
 
-      <Panel className="recruiter-scan-contact p-5 sm:p-7">
-        <div>
-          <p className="mono text-sm text-[var(--accent)]">cv.contact</p>
-          <h2>Need full details?</h2>
-          <p>Download CV for full timeline and responsibility detail, then contact directly.</p>
-        </div>
-        <div className="recruiter-scan-contact-actions">
-          {isPortfolioValueConfigured(cv.href) ? (
-            <a className="button-base button-primary" href={cv.href} download="cv.pdf">
-              <Download aria-hidden="true" size={18} />
-              <span>{cv.value}</span>
-            </a>
-          ) : null}
-          {contactLinks.map((link) => (
-            <a
-              key={link.id}
-              className="button-base button-secondary"
-              href={link.href}
-              target={link.id === "phone" || link.id === "email" ? undefined : "_blank"}
-              rel={link.id === "phone" || link.id === "email" ? undefined : "noreferrer"}
-            >
-              <ExternalLink aria-hidden="true" size={17} />
-              <span>{link.label}</span>
-            </a>
-          ))}
-        </div>
-      </Panel>
     </div>
   );
 }
