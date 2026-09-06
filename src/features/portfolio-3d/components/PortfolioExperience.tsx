@@ -54,7 +54,7 @@ const portfolio3dAreaLabels = {
   fullstack: 'Full Stack',
   backend: 'Backend/API',
   architecture: 'Architecture',
-  automation: 'Engineering Lab',
+  automation: 'Automation',
   performance: 'Performance Lab',
   pipeline: 'CI/CD Pipeline',
   terminal: 'Terminal',

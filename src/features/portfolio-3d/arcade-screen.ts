@@ -15,7 +15,7 @@ export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement
 }
 
 export function resolveAutomationScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveScreenByMaterial(root, ['Plane_013', 'Plane.013'], 'screen.002');
+  return resolveScreenByMaterial(root, [], 'screen.002');
 }
 
 function resolveScreenByMaterial(
@@ -24,7 +24,9 @@ function resolveScreenByMaterial(
   materialName: string
 ): ArcadeScreenPlacement | undefined {
   // GLTFLoader sanitizes spaces in Blender node names.
-  const cabinet = nodeNames.map((nodeName) => root.getObjectByName(nodeName)).find(Boolean);
+  const cabinet = nodeNames.length > 0
+    ? nodeNames.map((nodeName) => root.getObjectByName(nodeName)).find(Boolean)
+    : root;
   let screen: THREE.Mesh | undefined;
   cabinet?.traverse((object) => {
     const materials = object instanceof THREE.Mesh
