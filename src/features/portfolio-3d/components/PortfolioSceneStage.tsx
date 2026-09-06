@@ -42,7 +42,6 @@ import type {
 import { DynamicScreenLayer } from './DynamicScreenLayer';
 import { ArcadeScreenSurface } from './ArcadeScreenSurface';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
-import { PortfolioLightingRig } from './PortfolioLightingRig';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
 import { SceneAssetBoundary } from './SceneAssetBoundary';
 
@@ -55,16 +54,16 @@ const progressiveAssetOrder = [] as const satisfies readonly Portfolio3dAssetId[
 const isSingleRoomPreview = anchoredSceneAssets.length === 0;
 
 const profileScreenCoverage = {
-  horizontalCoverage: 0.918,
-  verticalCoverage: 0.751
+  horizontalCoverage: 0.87,
+  verticalCoverage: 0.9
 } as const satisfies ArcadeScreenCoverage;
 const experienceScreenCoverage = {
   horizontalCoverage: 0.938,
-  verticalCoverage: 0.768
+  verticalCoverage: 0.9
 } as const satisfies ArcadeScreenCoverage;
 const architectureScreenCoverage = {
-  horizontalCoverage: 0.941,
-  verticalCoverage: 0.77
+  horizontalCoverage: 0.85,
+  verticalCoverage: 0.9
 } as const satisfies ArcadeScreenCoverage;
 const pipelineScreenCoverage = {
   horizontalCoverage: 0.855,
@@ -76,19 +75,19 @@ const automationScreenCoverage = {
 } as const satisfies ArcadeScreenCoverage;
 const performanceScreenCoverage = {
   horizontalCoverage: 0.93,
-  verticalCoverage: 0.761
+  verticalCoverage: 1
 } as const satisfies ArcadeScreenCoverage;
 const backendScreenCoverage = {
   horizontalCoverage: 0.898,
-  verticalCoverage: 0.734
+  verticalCoverage: 0.85
 } as const satisfies ArcadeScreenCoverage;
 const terminalScreenCoverage = {
   horizontalCoverage: 0.765,
-  verticalCoverage: 0.626
+  verticalCoverage: 0.60
 } as const satisfies ArcadeScreenCoverage;
 const contactScreenCoverage = {
   horizontalCoverage: 0.906,
-  verticalCoverage: 0.742
+  verticalCoverage: 0.9
 } as const satisfies ArcadeScreenCoverage;
 
 const embeddedScreenCoverageById = {
@@ -270,20 +269,6 @@ export function PortfolioSceneStage({
         embeddedScreens={embeddedScreens}
       />
       <CameraDebugOverlay />
-      {isSingleRoomPreview ? (
-        <SingleRoomPreviewLighting />
-      ) : (
-        <PortfolioLightingRig
-          runtimeNodesByAsset={runtimeNodesByAsset}
-          qualityTier={qualityTier}
-          lightingMode={state.lightingMode}
-          roomLightingLevel={state.roomLightingLevel}
-          ceilingLightingLevel={state.ceilingLightingLevel}
-          ceilingLightAim={state.ceilingLightAim}
-          deskTaskLightingLevel={state.deskTaskLightingLevel}
-        />
-      )}
-
       <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
         <SceneAsset
           asset={roomShellAsset}
@@ -343,47 +328,6 @@ export function PortfolioSceneStage({
       {qualityTier === 'high' && !isSingleRoomPreview ? (
         <HotspotInteractionLayer runtimeNodesByAsset={runtimeNodesByAsset} />
       ) : null}
-    </>
-  );
-}
-
-function SingleRoomPreviewLighting(): React.ReactElement {
-  const { gl } = useThree();
-
-  useEffect(() => {
-    const previousExposure = gl.toneMappingExposure;
-    gl.toneMappingExposure = 1.04;
-
-    return () => {
-      gl.toneMappingExposure = previousExposure;
-    };
-  }, [gl]);
-
-  return (
-    <>
-      <color attach="background" args={['#060a10']} />
-      <fog attach="fog" args={['#060a10', 15, 45]} />
-      <ambientLight intensity={0.92} color="#edf2f5" />
-      <hemisphereLight
-        color="#eef3f7"
-        groundColor="#526474"
-        intensity={0.8}
-      />
-      <directionalLight
-        position={[4.0, 5.0, 5.0]}
-        intensity={0.86}
-        color="#fffaf0"
-      />
-      <directionalLight
-        position={[-4.0, 3.0, 3.0]}
-        intensity={0.32}
-        color="#8fcfff"
-      />
-      <directionalLight
-        position={[-1.8, 2.6, 4.8]}
-        intensity={0.16}
-        color="#dcecff"
-      />
     </>
   );
 }

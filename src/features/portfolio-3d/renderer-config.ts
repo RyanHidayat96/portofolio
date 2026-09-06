@@ -1,8 +1,5 @@
-import * as THREE from 'three';
 import { getPortfolio3dDprLimit } from './runtime-capabilities';
 import type { Portfolio3dQualityTier } from './types';
-
-THREE.ColorManagement.enabled = true;
 
 export const portfolio3dRendererPerformance = {
   min: 0.55,
@@ -24,9 +21,6 @@ export const portfolio3dRendererOptions = {
   powerPreference: 'high-performance'
 } as const;
 
-export const portfolio3dRendererToneMappingExposure = 1.55;
-export const portfolio3dRendererShadowType = THREE.PCFSoftShadowMap;
-
 export function getInitialPortfolio3dDpr(
   qualityTier: Portfolio3dQualityTier = 'high'
 ): [number, number] {
@@ -39,12 +33,4 @@ export function getInitialPortfolio3dDpr(
   const maxDpr = Math.max(minDpr, Math.min(devicePixelRatio, getPortfolio3dDprLimit(qualityTier)));
 
   return [minDpr, maxDpr];
-}
-
-export function configurePortfolio3dRenderer(renderer: THREE.WebGLRenderer): void {
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = portfolio3dRendererToneMappingExposure;
-  renderer.shadowMap.enabled = false;
-  renderer.shadowMap.type = portfolio3dRendererShadowType;
 }

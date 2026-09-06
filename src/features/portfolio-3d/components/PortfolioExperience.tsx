@@ -16,7 +16,6 @@ import type {
   Portfolio3dSectionId
 } from '../types';
 import {
-  configurePortfolio3dRenderer,
   getInitialPortfolio3dDpr,
   portfolio3dDefaultCamera,
   portfolio3dRendererOptions,
@@ -397,6 +396,7 @@ function FoundationCanvas({
   return (
     <Canvas
       className="absolute inset-0 h-full w-full"
+      flat
       dpr={dpr}
       frameloop={isDocumentVisible ? 'demand' : 'never'}
       camera={portfolio3dDefaultCamera}
@@ -404,7 +404,6 @@ function FoundationCanvas({
       performance={portfolio3dRendererPerformance}
       resize={{ scroll: false }}
       onCreated={({ gl }) => {
-        configurePortfolio3dRenderer(gl);
         gl.domElement.setAttribute('aria-hidden', 'true');
         gl.domElement.tabIndex = -1;
       }}

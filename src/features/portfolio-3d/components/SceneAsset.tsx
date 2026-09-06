@@ -85,7 +85,9 @@ export function createSceneAssetRuntime(
 } {
   const shouldPreserveAuthoredRenderState = authoredRenderAssetFileNames.has(asset.fileName);
   const scene = sourceScene.clone(true);
-  const clonedMaterials = shouldPreserveAuthoredRenderState ? [] : cloneSceneMaterials(scene);
+  const clonedMaterials = shouldPreserveAuthoredRenderState
+    ? []
+    : cloneSceneMaterials(scene);
 
   if (!shouldPreserveAuthoredRenderState) {
     configureRuntimeMeshRenderState(scene);
@@ -305,9 +307,6 @@ function mapSceneAssetNodes(
 
     if (object instanceof THREE.Light) {
       lights.set(name || object.uuid, object);
-      object.castShadow = false;
-      // The runtime lighting rig owns punctual lights; preserve authored emissive meshes instead.
-      object.visible = false;
     }
   });
 
