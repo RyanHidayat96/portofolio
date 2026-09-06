@@ -10,6 +10,7 @@ import {
   resolveArcadeScreen,
   resolveApiScreen,
   resolveAutomationScreen,
+  resolveExperienceArtworkScreen,
   resolvePerformanceScreen,
   resolveProfileArtworkScreen,
   resolveTerminalScreen,
@@ -74,16 +75,18 @@ export function PortfolioSceneStage({
   const apiScreen = useMemo(() => roomNodes ? resolveApiScreen(roomNodes.root) : undefined, [roomNodes]);
   const terminalScreen = useMemo(() => roomNodes ? resolveTerminalScreen(roomNodes.root) : undefined, [roomNodes]);
   const profileArtworkScreen = useMemo(() => roomNodes ? resolveProfileArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
+  const experienceArtworkScreen = useMemo(() => roomNodes ? resolveExperienceArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const embeddedScreens = useMemo(
     () => ({
       profile: profileArtworkScreen,
+      experience: experienceArtworkScreen,
       pipeline: arcadeScreen,
       automation: automationScreen,
       performance: performanceScreen,
       backend: apiScreen,
       terminal: terminalScreen
     }),
-    [arcadeScreen, apiScreen, automationScreen, performanceScreen, profileArtworkScreen, terminalScreen]
+    [arcadeScreen, apiScreen, automationScreen, experienceArtworkScreen, performanceScreen, profileArtworkScreen, terminalScreen]
   );
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
@@ -267,6 +270,9 @@ export function PortfolioSceneStage({
       ) : null}
       {profileArtworkScreen ? (
         <ArcadeScreenSurface screen={profileArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {experienceArtworkScreen ? (
+        <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
 
       {!isSingleRoomPreview ? (
@@ -483,15 +489,24 @@ function CameraNavigationRig({
     const embeddedScreen = embeddedScreenId ? embeddedScreens[embeddedScreenId] : undefined;
     if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
     const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
-    const targetPosition = embeddedScreen
+    const artworkFraming = embeddedScreenId === 'profile'
+      ? { horizontalCoverage: 0.94, verticalCoverage: 0.9 }
+      : embeddedScreenId === 'experience'
+        ? { horizontalCoverage: 0.92, verticalCoverage: 0.86 }
+        : undefined;
+    const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience';
+    const embeddedScreenDistanceScale = embeddedScreenId === 'experience' ? 0.42 : 1;
+    const embeddedScreenCameraPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
         size.width / Math.max(size.height, 1),
         preset.fov,
-        embeddedScreenId === 'profile'
-          ? { horizontalCoverage: 0.94, verticalCoverage: 0.9 }
-          : undefined
+        artworkFraming
       )
+      : undefined;
+    const targetPosition = embeddedScreen
+      // The checkerboard frame is intentionally compact in the authored room.
+      ? target.clone().lerp(embeddedScreenCameraPosition!, embeddedScreenDistanceScale)
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     if (preset.id === 'overview' && size.width < 768) {
       const direction = targetPosition.clone().sub(target);
@@ -501,7 +516,7 @@ function CameraNavigationRig({
     const targetQuaternion = createLookAtQuaternion(
       targetPosition,
       target,
-      embeddedScreenId === 'profile' && embeddedScreen
+      isArtworkScreen && embeddedScreen
         ? new THREE.Vector3(0, 1, 0).applyQuaternion(embeddedScreen.quaternion)
         : undefined
     );

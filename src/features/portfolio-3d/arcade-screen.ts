@@ -50,7 +50,9 @@ function resolveArtworkScreen(
     ?? resolveWholeMeshScreenPlacement(artwork);
 
   return placement
-    ? orientScreenTowardPoint(placement, new THREE.Vector3(0, placement.position.y, 0))
+    ? orientScreenUpright(
+      orientScreenTowardPoint(placement, new THREE.Vector3(0, placement.position.y, 0))
+    )
     : undefined;
 }
 
@@ -335,6 +337,23 @@ function orientScreenTowardPoint(
     normal,
     quaternion: new THREE.Quaternion().setFromRotationMatrix(
       new THREE.Matrix4().makeBasis(right, up, normal)
+    )
+  };
+}
+
+function orientScreenUpright(screen: ArcadeScreenPlacement): ArcadeScreenPlacement {
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(screen.quaternion);
+  if (up.y >= 0) {
+    return screen;
+  }
+
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(screen.quaternion).negate();
+  const upright = up.negate();
+
+  return {
+    ...screen,
+    quaternion: new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(right, upright, screen.normal)
     )
   };
 }
