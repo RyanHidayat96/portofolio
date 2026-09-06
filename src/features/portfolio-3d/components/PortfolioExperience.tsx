@@ -1,9 +1,10 @@
 'use client';
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { Activity, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { ArchitectureExplorer } from '@/features/architecture/components/ArchitectureExplorer';
 import { withPortfolio3dBasePath } from '../asset-url';
 import type { EmbeddedScreenId } from '../arcade-screen';
 import type {
@@ -99,7 +100,7 @@ function PortfolioExperienceContent({
   fallback: React.ReactNode;
 }>): React.ReactElement {
   const webglStatus = useWebGLSupport();
-  const { state } = usePortfolio3dState();
+  const { state, setActiveSection } = usePortfolio3dState();
   const [assetProgress, setAssetProgress] = useState<Portfolio3dLoadingProgress>();
   const [embeddedScreenElements, setEmbeddedScreenElements] = useState<Partial<Record<EmbeddedScreenId, HTMLElement>>>({});
   const isPipelineActive = state.activeSectionId === 'pipeline';
@@ -109,6 +110,7 @@ function PortfolioExperienceContent({
   const isTerminalActive = state.activeSectionId === 'terminal';
   const isProfileActive = state.activeSectionId === 'profile';
   const isExperienceActive = state.activeSectionId === 'experience';
+  const isArchitectureActive = state.activeSectionId === 'architecture';
   const isSettledAtSection = state.navigationState === 'section-open';
   const activeEmbeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
   const isScreenFocusView = Boolean(
@@ -162,10 +164,23 @@ function PortfolioExperienceContent({
         }
         focusControlsSlot={
           isScreenFocusView
-            ? isProfileActive
+              ? isProfileActive
               ? <ProfileArtworkControls />
               : isExperienceActive
                 ? <ExperienceArtworkControls />
+                : isArchitectureActive
+                  ? (
+                    <nav className="arcade-focus-controls" aria-label="Architecture view controls">
+                      <button type="button" className="button-base button-secondary" onClick={() => setActiveSection('overview')}>
+                        <ArrowLeft size={18} aria-hidden="true" />
+                        Back to Room
+                      </button>
+                      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/labs/architecture')}>
+                        <ExternalLink size={18} aria-hidden="true" />
+                        Full Page
+                      </a>
+                    </nav>
+                  )
                 : isPipelineActive
                   ? <ArcadePipelineControls />
                   : isAutomationActive
@@ -203,6 +218,20 @@ function PortfolioExperienceContent({
         : null}
       {embeddedScreenElements.experience
         ? createPortal(<ExperienceArtworkScreen interactive={isScreenFocusView && isExperienceActive} />, embeddedScreenElements.experience)
+        : null}
+      {embeddedScreenElements.architecture
+        ? createPortal(
+          <section className="architecture-embedded-screen" aria-label="Architecture">
+            <div
+              className="architecture-embedded-content"
+              tabIndex={isScreenFocusView && isArchitectureActive ? 0 : -1}
+              onWheel={(event) => event.stopPropagation()}
+            >
+              <ArchitectureExplorer />
+            </div>
+          </section>,
+          embeddedScreenElements.architecture
+        )
         : null}
     </>
   );
@@ -363,7 +392,7 @@ function FoundationScene({
 }
 
 function getEmbeddedScreenId(sectionId: Portfolio3dSectionId): EmbeddedScreenId | undefined {
-  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
+  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
     ? sectionId
     : undefined;
 }

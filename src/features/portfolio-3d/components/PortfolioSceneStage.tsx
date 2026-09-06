@@ -8,6 +8,7 @@ import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion'
 import {
   getArcadeCameraPosition,
   resolveArcadeScreen,
+  resolveArchitectureArtworkScreen,
   resolveApiScreen,
   resolveAutomationScreen,
   resolveExperienceArtworkScreen,
@@ -76,17 +77,19 @@ export function PortfolioSceneStage({
   const terminalScreen = useMemo(() => roomNodes ? resolveTerminalScreen(roomNodes.root) : undefined, [roomNodes]);
   const profileArtworkScreen = useMemo(() => roomNodes ? resolveProfileArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const experienceArtworkScreen = useMemo(() => roomNodes ? resolveExperienceArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
+  const architectureArtworkScreen = useMemo(() => roomNodes ? resolveArchitectureArtworkScreen(roomNodes.root) : undefined, [roomNodes]);
   const embeddedScreens = useMemo(
     () => ({
       profile: profileArtworkScreen,
       experience: experienceArtworkScreen,
+      architecture: architectureArtworkScreen,
       pipeline: arcadeScreen,
       automation: automationScreen,
       performance: performanceScreen,
       backend: apiScreen,
       terminal: terminalScreen
     }),
-    [arcadeScreen, apiScreen, automationScreen, experienceArtworkScreen, performanceScreen, profileArtworkScreen, terminalScreen]
+    [arcadeScreen, apiScreen, architectureArtworkScreen, automationScreen, experienceArtworkScreen, performanceScreen, profileArtworkScreen, terminalScreen]
   );
   const canRenderAnchoredAssets = Boolean(roomNodes);
   const loadedCriticalAssetIds = criticalPortfolio3dAssetIds.filter((assetId) => loadedAssetIds.includes(assetId));
@@ -273,6 +276,9 @@ export function PortfolioSceneStage({
       ) : null}
       {experienceArtworkScreen ? (
         <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} />
+      ) : null}
+      {architectureArtworkScreen ? (
+        <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} />
       ) : null}
 
       {!isSingleRoomPreview ? (
@@ -494,11 +500,13 @@ function CameraNavigationRig({
     if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
     const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
     const artworkFraming = embeddedScreenId === 'profile'
-      ? { horizontalCoverage: 0.94, verticalCoverage: 0.9 }
+      ? { horizontalCoverage: 0.84, verticalCoverage: 0.8 }
       : embeddedScreenId === 'experience'
-        ? { horizontalCoverage: 0.92, verticalCoverage: 0.86 }
+        ? { horizontalCoverage: 0.84, verticalCoverage: 0.8 }
+        : embeddedScreenId === 'architecture'
+          ? { horizontalCoverage: 0.86, verticalCoverage: 0.8 }
         : undefined;
-    const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience';
+    const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture';
     const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
@@ -638,7 +646,7 @@ function CameraNavigationRig({
 }
 
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
-  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
+  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
     ? sectionId
     : undefined;
 }

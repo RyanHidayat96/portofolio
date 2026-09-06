@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type EmbeddedScreenId = 'profile' | 'experience' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal';
+export type EmbeddedScreenId = 'profile' | 'experience' | 'architecture' | 'pipeline' | 'automation' | 'performance' | 'backend' | 'terminal';
 
 export interface ArcadeScreenPlacement {
   readonly position: THREE.Vector3;
@@ -9,6 +9,11 @@ export interface ArcadeScreenPlacement {
   readonly width: number;
   readonly height: number;
 }
+
+// Artwork screens sit inside the GLB's physical picture frames, not over their outer edge.
+const profileArtworkContentInset = 0.965;
+const experienceArtworkContentInset = 0.96;
+const architectureArtworkContentInset = 0.9;
 
 export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
   return resolveScreenByMaterial(root, ['gaming_mashine', 'gaming mashine'], 'Material.013');
@@ -31,22 +36,27 @@ export function resolveTerminalScreen(root: THREE.Object3D): ArcadeScreenPlaceme
 }
 
 export function resolveProfileArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'poster 3');
+  return resolveArtworkScreen(root, 'poster 3', profileArtworkContentInset);
 }
 
 export function resolveExperienceArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'poster 2', 1);
+  return resolveArtworkScreen(root, 'poster 2', experienceArtworkContentInset);
+}
+
+export function resolveArchitectureArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  return resolveArtworkScreen(root, 'poster', architectureArtworkContentInset);
 }
 
 function resolveArtworkScreen(
   root: THREE.Object3D,
   materialName: string,
-  contentInset = 0.98
+  contentInset = 0.98,
+  surfaceOffset = 0.006
 ): ArcadeScreenPlacement | undefined {
   const artwork = findScreenMesh(root, [], materialName);
   if (!artwork) return undefined;
 
-  const placement = resolveArtworkScreenPlacement(artwork, materialName, contentInset)
+  const placement = resolveArtworkScreenPlacement(artwork, materialName, contentInset, surfaceOffset)
     ?? resolveMaterialScreenPlacement(artwork, materialName)
     ?? resolveWholeMeshScreenPlacement(artwork);
 
@@ -96,7 +106,8 @@ function findScreenMesh(
 function resolveArtworkScreenPlacement(
   screen: THREE.Mesh,
   materialName: string,
-  contentInset: number
+  contentInset: number,
+  surfaceOffset: number
 ): ArcadeScreenPlacement | undefined {
   const fallback = resolveMaterialScreenPlacement(screen, materialName);
   const geometry = screen.geometry;
@@ -132,7 +143,7 @@ function resolveArtworkScreenPlacement(
 
   const position = right.clone().multiplyScalar((ranges.right.min + ranges.right.max) / 2)
     .add(up.clone().multiplyScalar((ranges.up.min + ranges.up.max) / 2))
-    .add(fallback.normal.clone().multiplyScalar(ranges.normal.max + 0.006));
+    .add(fallback.normal.clone().multiplyScalar(ranges.normal.max + surfaceOffset));
 
   return {
     position,
