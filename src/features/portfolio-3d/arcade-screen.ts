@@ -35,17 +35,18 @@ export function resolveProfileArtworkScreen(root: THREE.Object3D): ArcadeScreenP
 }
 
 export function resolveExperienceArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'poster 2');
+  return resolveArtworkScreen(root, 'poster 2', 1);
 }
 
 function resolveArtworkScreen(
   root: THREE.Object3D,
-  materialName: string
+  materialName: string,
+  contentInset = 0.98
 ): ArcadeScreenPlacement | undefined {
   const artwork = findScreenMesh(root, [], materialName);
   if (!artwork) return undefined;
 
-  const placement = resolveArtworkScreenPlacement(artwork, materialName)
+  const placement = resolveArtworkScreenPlacement(artwork, materialName, contentInset)
     ?? resolveMaterialScreenPlacement(artwork, materialName)
     ?? resolveWholeMeshScreenPlacement(artwork);
 
@@ -94,7 +95,8 @@ function findScreenMesh(
 
 function resolveArtworkScreenPlacement(
   screen: THREE.Mesh,
-  materialName: string
+  materialName: string,
+  contentInset: number
 ): ArcadeScreenPlacement | undefined {
   const fallback = resolveMaterialScreenPlacement(screen, materialName);
   const geometry = screen.geometry;
@@ -138,8 +140,8 @@ function resolveArtworkScreenPlacement(
       new THREE.Matrix4().makeBasis(right, up, fallback.normal)
     ),
     normal: fallback.normal,
-    width: width * 0.98,
-    height: height * 0.98
+    width: width * contentInset,
+    height: height * contentInset
   };
 }
 

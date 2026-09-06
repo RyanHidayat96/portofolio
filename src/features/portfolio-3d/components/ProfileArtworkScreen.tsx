@@ -68,7 +68,7 @@ export function ProfileArtworkControls(): React.ReactElement {
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
       </button>
-      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/workspace?section=profile')} target="_blank" rel="noopener noreferrer">
+      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/profile')}>
         <ExternalLink size={18} aria-hidden="true" />
         Full Page
       </a>

@@ -495,18 +495,13 @@ function CameraNavigationRig({
         ? { horizontalCoverage: 0.92, verticalCoverage: 0.86 }
         : undefined;
     const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience';
-    const embeddedScreenDistanceScale = embeddedScreenId === 'experience' ? 0.42 : 1;
-    const embeddedScreenCameraPosition = embeddedScreen
+    const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
         size.width / Math.max(size.height, 1),
         preset.fov,
         artworkFraming
       )
-      : undefined;
-    const targetPosition = embeddedScreen
-      // The checkerboard frame is intentionally compact in the authored room.
-      ? target.clone().lerp(embeddedScreenCameraPosition!, embeddedScreenDistanceScale)
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
     if (preset.id === 'overview' && size.width < 768) {
       const direction = targetPosition.clone().sub(target);
@@ -624,7 +619,7 @@ function CameraNavigationRig({
 }
 
 function getEmbeddedScreenId(sectionId: string): EmbeddedScreenId | undefined {
-  return sectionId === 'profile' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
+  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal'
     ? sectionId
     : undefined;
 }

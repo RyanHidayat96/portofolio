@@ -57,7 +57,7 @@ export function TerminalMonitorControls(): React.ReactElement {
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
       </button>
-      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/workspace?section=terminal')} target="_blank" rel="noopener noreferrer">
+      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/terminal')}>
         <ExternalLink size={18} aria-hidden="true" />
         Full Page
       </a>

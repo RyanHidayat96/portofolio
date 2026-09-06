@@ -36,7 +36,7 @@ export function AutomationMonitorControls(): React.ReactElement {
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
       </button>
-      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/labs/automation')} target="_blank" rel="noopener noreferrer">
+      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/labs/automation')}>
         <ExternalLink size={18} aria-hidden="true" />
         Full Page
       </a>

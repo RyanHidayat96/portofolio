@@ -34,7 +34,7 @@ export function ArcadePipelineControls(): React.ReactElement {
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
       </button>
-      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/labs/pipeline')} target="_blank" rel="noopener noreferrer">
+      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/labs/pipeline')}>
         <ExternalLink size={18} aria-hidden="true" />
         Full Page
       </a>
