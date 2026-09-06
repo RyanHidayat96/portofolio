@@ -114,7 +114,7 @@ export function ExperienceShell({
               </p>
             </div>
 
-            <div className="portfolio-3d-top-actions pointer-events-auto hidden flex-wrap justify-end gap-2 sm:flex">
+            <div className="portfolio-3d-top-actions pointer-events-auto flex flex-wrap justify-end gap-2">
               <a
                 className="button-base button-secondary bg-[rgba(14,23,35,0.72)] backdrop-blur-md"
                 href={withPortfolio3dBasePath('/overview')}
