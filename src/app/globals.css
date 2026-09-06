@@ -9191,42 +9191,109 @@ textarea:focus-visible,
 
 /* CSS3D documents are portfolio pages, not part of the retro room chrome. */
 .arcade-screen-document {
-  --background: #05070a;
-  --background-soft: #080b12;
-  --surface: #10141d;
-  --surface-elevated: #151c28;
-  --surface-raised: #0b1018;
-  --surface-deep: #080a0f;
-  --surface-deep-96: rgba(8, 10, 15, 0.96);
-  --surface-deep-92: rgba(8, 10, 15, 0.92);
-  --surface-deeper: #05070b;
-  --surface-translucent: rgba(16, 20, 29, 0.7);
-  --surface-glass: rgba(13, 18, 27, 0.78);
-  --text-primary: #eef5ff;
-  --text-secondary: #c8d4e6;
-  --text-muted: #8a96a8;
-  --text-subtle: #556174;
-  --accent: #55d7ff;
-  --accent-secondary: #9bbcff;
-  --accent-soft: rgba(85, 215, 255, 0.12);
-  --accent-strong: rgba(85, 215, 255, 0.6);
+  --background: #0a1520;
+  --background-soft: #101c2a;
+  --surface: #162536;
+  --surface-elevated: #1c2d40;
+  --surface-raised: #101d2b;
+  --surface-deep: #09121d;
+  --surface-deep-96: rgba(9, 18, 29, 0.96);
+  --surface-deep-92: rgba(9, 18, 29, 0.92);
+  --surface-deeper: #06101a;
+  --surface-translucent: rgba(20, 34, 49, 0.78);
+  --surface-glass: rgba(17, 30, 45, 0.84);
+  --text-primary: #f5f9ff;
+  --text-secondary: #d6e4f4;
+  --text-muted: #aabbd0;
+  --text-subtle: #72849b;
+  --accent: #67e2ff;
+  --accent-secondary: #b4cfff;
+  --accent-soft: rgba(103, 226, 255, 0.16);
+  --accent-strong: rgba(103, 226, 255, 0.68);
   --accent-contrast: #061018;
-  --accent-hover: #8be5ff;
-  --success: #6ee7a8;
-  --warning: #ffd36e;
-  --danger: #ff6f7d;
-  --danger-soft: rgba(255, 111, 125, 0.12);
-  --danger-strong: rgba(255, 111, 125, 0.6);
-  --danger-text: #ff9aa4;
-  --danger-hover: rgba(255, 111, 125, 0.2);
-  --border: rgba(145, 164, 191, 0.18);
-  --border-strong: rgba(145, 164, 191, 0.28);
-  --panel: rgba(16, 20, 29, 0.92);
+  --accent-hover: #a6edff;
+  --success: #82f0ba;
+  --warning: #ffe09a;
+  --danger: #ff8f9a;
+  --danger-soft: rgba(255, 143, 154, 0.15);
+  --danger-strong: rgba(255, 143, 154, 0.66);
+  --danger-text: #ffb4bc;
+  --danger-hover: rgba(255, 143, 154, 0.24);
+  --border: rgba(157, 195, 225, 0.3);
+  --border-strong: rgba(157, 195, 225, 0.46);
+  --panel: rgba(20, 34, 49, 0.95);
   --panel-strong: var(--surface);
-  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.22);
-  --shadow-focus: 0 0 0 4px rgba(85, 215, 255, 0.14);
+  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.18);
+  --shadow-focus: 0 0 0 4px rgba(103, 226, 255, 0.18);
   --radius-panel: 8px;
   --radius-control: 6px;
+}
+
+/* Keep embedded portfolio pages legible from the room without changing their blue visual language. */
+.arcade-pipeline-screen,
+.monitor-automation-screen,
+.monitor-performance-screen,
+.monitor-api-screen,
+.monitor-terminal-screen,
+.profile-artwork-screen,
+.experience-artwork-screen,
+.architecture-embedded-screen,
+.contact-book-screen {
+  background: #0f1b29;
+}
+
+.arcade-pipeline-heading,
+.monitor-automation-heading,
+.monitor-performance-heading,
+.monitor-api-heading,
+.monitor-terminal-heading {
+  border-color: #3c627c;
+  background: #1a2c3d;
+  color: var(--accent);
+}
+
+.arcade-pipeline-heading h2,
+.monitor-automation-heading h2,
+.monitor-performance-heading h2,
+.monitor-api-heading h2,
+.monitor-terminal-heading h2 {
+  color: var(--text-primary);
+}
+
+.arcade-simulation-label,
+.monitor-automation-label,
+.monitor-performance-label,
+.monitor-api-label,
+.monitor-terminal-label {
+  color: var(--text-secondary);
+}
+
+.profile-artwork-heading,
+.experience-artwork-heading {
+  border-color: #3c627c;
+  background: #1a2c3d;
+  color: var(--accent);
+}
+
+.profile-artwork-heading-label,
+.experience-artwork-heading-label {
+  color: var(--text-secondary);
+}
+
+.profile-artwork-content {
+  background: #0f1b29;
+  scrollbar-color: var(--accent) var(--surface-deep);
+}
+
+.profile-artwork-content .panel-surface {
+  border-color: #3c627c;
+  background: #162536;
+}
+
+.contact-book-content {
+  border-color: rgba(103, 226, 255, 0.82);
+  background: linear-gradient(135deg, rgba(103, 226, 255, 0.12), transparent 34%), #0f1b29;
+  box-shadow: inset 0 0 0 8px rgba(103, 226, 255, 0.06);
 }
 
 .portfolio-3d-shell .portfolio-3d-cinematic-vignette {
@@ -9375,4 +9442,70 @@ textarea:focus-visible,
 .portfolio-3d-shell .arcade-focus-controls :focus-visible {
   outline: 2px solid var(--accent-secondary) !important;
   outline-offset: 2px;
+}
+
+/* Compact room controls on portrait touch screens while preserving a clear view of the scene. */
+@media (max-width: 767px) {
+  .portfolio-3d-scene-header {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-inline: 1rem;
+  }
+
+  .portfolio-3d-shell #portfolio-3d-scene-title {
+    font-size: 2.1rem;
+    line-height: 0.95;
+  }
+
+  .portfolio-3d-shell #portfolio-3d-scene-title + p {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+  }
+
+  .portfolio-3d-navigation-panel {
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    left: 0.75rem;
+    width: calc(100vw - 1.5rem);
+    max-height: min(35dvh, 22rem);
+    padding: 0.65rem;
+  }
+
+  .portfolio-3d-shell .portfolio-3d-area-button {
+    min-height: 40px;
+    gap: 0.6rem;
+    padding: 0.5rem 0.62rem;
+    font-size: 0.94rem;
+  }
+
+  .portfolio-3d-shell .portfolio-3d-area-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .arcade-focus-controls {
+    inset: max(0.75rem, env(safe-area-inset-top)) 0.75rem auto;
+    gap: 0.5rem;
+  }
+
+  .arcade-focus-controls .button-base {
+    min-height: 40px;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .portfolio-3d-section-popover {
+    margin-inline: 0.75rem;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .portfolio-3d-shell #portfolio-3d-scene-title {
+    font-size: 1.9rem;
+  }
+
+  .portfolio-3d-navigation-panel {
+    max-height: min(37dvh, 21rem);
+  }
 }

@@ -103,7 +103,7 @@ export function ExperienceShell({
           ) : null}
         </div>
 
-        <header inert={isScreenFocusView} aria-hidden={isScreenFocusView} className={`pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <header inert={isScreenFocusView} aria-hidden={isScreenFocusView} className={`portfolio-3d-scene-header pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="max-w-[390px]">
               <p
@@ -132,7 +132,7 @@ export function ExperienceShell({
           id="portfolio-3d-panel"
           inert={isScreenFocusView}
           aria-hidden={isScreenFocusView}
-          className={`portfolio-3d-glass-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-y-auto p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-all duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
+          className={`portfolio-3d-glass-panel portfolio-3d-navigation-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-y-auto p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-all duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
           aria-label="3D portfolio controls and section content"
         >
           {navigationSlot}

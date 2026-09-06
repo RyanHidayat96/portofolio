@@ -16,6 +16,7 @@ import {
   resolvePerformanceScreen,
   resolveProfileArtworkScreen,
   resolveTerminalScreen,
+  type ArcadeScreenCoverage,
   type ArcadeScreenPlacement,
   type EmbeddedScreenId
 } from '../arcade-screen';
@@ -53,44 +54,53 @@ const initiallyEnabledAnchoredAssetIds = [] as const satisfies readonly Portfoli
 const progressiveAssetOrder = [] as const satisfies readonly Portfolio3dAssetId[];
 const isSingleRoomPreview = anchoredSceneAssets.length === 0;
 
-const profileCameraDistanceScale = {
-  cameraDistanceScale: 0.85
-} as const;
-const experienceCameraDistanceScale = {
-  cameraDistanceScale: 0.80
-} as const;
-const architectureCameraDistanceScale = {
-  cameraDistanceScale: 0.78
-} as const;
-const pipelineCameraDistanceScale = {
-  cameraDistanceScale: 1
-} as const;
-const automationCameraDistanceScale = {
-  cameraDistanceScale: 1
-} as const;
-const performanceCameraDistanceScale = {
-  cameraDistanceScale: 0.80
-} as const;
-const backendCameraDistanceScale = {
-  cameraDistanceScale: 0.89
-} as const;
-const terminalCameraDistanceScale = {
-  cameraDistanceScale: 1.15
-} as const;
-const contactCameraDistanceScale = {
-  cameraDistanceScale: 0.80
-} as const;
+const profileScreenCoverage = {
+  horizontalCoverage: 0.918,
+  verticalCoverage: 0.751
+} as const satisfies ArcadeScreenCoverage;
+const experienceScreenCoverage = {
+  horizontalCoverage: 0.938,
+  verticalCoverage: 0.768
+} as const satisfies ArcadeScreenCoverage;
+const architectureScreenCoverage = {
+  horizontalCoverage: 0.941,
+  verticalCoverage: 0.77
+} as const satisfies ArcadeScreenCoverage;
+const pipelineScreenCoverage = {
+  horizontalCoverage: 0.855,
+  verticalCoverage: 0.699
+} as const satisfies ArcadeScreenCoverage;
+const automationScreenCoverage = {
+  horizontalCoverage: 0.855,
+  verticalCoverage: 0.699
+} as const satisfies ArcadeScreenCoverage;
+const performanceScreenCoverage = {
+  horizontalCoverage: 0.93,
+  verticalCoverage: 0.761
+} as const satisfies ArcadeScreenCoverage;
+const backendScreenCoverage = {
+  horizontalCoverage: 0.898,
+  verticalCoverage: 0.734
+} as const satisfies ArcadeScreenCoverage;
+const terminalScreenCoverage = {
+  horizontalCoverage: 0.765,
+  verticalCoverage: 0.626
+} as const satisfies ArcadeScreenCoverage;
+const contactScreenCoverage = {
+  horizontalCoverage: 0.906,
+  verticalCoverage: 0.742
+} as const satisfies ArcadeScreenCoverage;
 
-const embeddedScreenDistanceScaleById = {
-  profile: profileCameraDistanceScale.cameraDistanceScale,
-  experience: experienceCameraDistanceScale.cameraDistanceScale,
-  architecture: architectureCameraDistanceScale.cameraDistanceScale,
-  pipeline: pipelineCameraDistanceScale.cameraDistanceScale,
-  automation: automationCameraDistanceScale.cameraDistanceScale,
-  performance: performanceCameraDistanceScale.cameraDistanceScale,
-  backend: backendCameraDistanceScale.cameraDistanceScale,
-  terminal: terminalCameraDistanceScale.cameraDistanceScale,
-  contact: contactCameraDistanceScale.cameraDistanceScale
+const embeddedScreenCoverageById = {
+  profile: profileScreenCoverage,
+  experience: experienceScreenCoverage,
+  architecture: architectureScreenCoverage,
+  pipeline: pipelineScreenCoverage,
+  automation: automationScreenCoverage,
+  performance: performanceScreenCoverage,
+  backend: backendScreenCoverage,
+  terminal: terminalScreenCoverage,
+  contact: contactScreenCoverage
 } as const;
 
 export function PortfolioSceneStage({
@@ -342,7 +352,7 @@ function SingleRoomPreviewLighting(): React.ReactElement {
 
   useEffect(() => {
     const previousExposure = gl.toneMappingExposure;
-    gl.toneMappingExposure = 1.15;
+    gl.toneMappingExposure = 1.04;
 
     return () => {
       gl.toneMappingExposure = previousExposure;
@@ -353,21 +363,26 @@ function SingleRoomPreviewLighting(): React.ReactElement {
     <>
       <color attach="background" args={['#060a10']} />
       <fog attach="fog" args={['#060a10', 15, 45]} />
-      <ambientLight intensity={0.65} color="#dbe8f5" />
+      <ambientLight intensity={0.92} color="#edf2f5" />
       <hemisphereLight
-        color="#eaf4ff"
-        groundColor="#1a2634"
-        intensity={0.6}
+        color="#eef3f7"
+        groundColor="#526474"
+        intensity={0.8}
       />
       <directionalLight
         position={[4.0, 5.0, 5.0]}
-        intensity={1.1}
-        color="#ffffff"
+        intensity={0.86}
+        color="#fffaf0"
       />
       <directionalLight
         position={[-4.0, 3.0, 3.0]}
-        intensity={0.45}
-        color="#70d6ff"
+        intensity={0.32}
+        color="#8fcfff"
+      />
+      <directionalLight
+        position={[-1.8, 2.6, 4.8]}
+        intensity={0.16}
+        color="#dcecff"
       />
     </>
   );
@@ -547,21 +562,22 @@ function CameraNavigationRig({
     const embeddedScreen = embeddedScreenId ? embeddedScreens[embeddedScreenId] : undefined;
     if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
     const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
-    const cameraDistanceScale = embeddedScreenId
-      ? embeddedScreenDistanceScaleById[embeddedScreenId]
+    const screenCoverageConfig = embeddedScreenId
+      ? embeddedScreenCoverageById[embeddedScreenId]
       : undefined;
+    const screenCoverage = screenCoverageConfig;
     const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture' || embeddedScreenId === 'contact';
     const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
         size.width / Math.max(size.height, 1),
         preset.fov,
-        cameraDistanceScale
+        screenCoverage
       )
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
-    if (preset.id === 'overview' && size.width < 768) {
+    if (preset.id === 'overview' && size.width < 768 && size.height > size.width) {
       const direction = targetPosition.clone().sub(target);
-      const framingScale = Math.max(1, 1.1 * size.height / Math.max(size.width, 1));
+      const framingScale = Math.min(3.2, Math.max(1, 1.35 * size.height / Math.max(size.width, 1)));
       targetPosition.copy(target).addScaledVector(direction, framingScale);
     }
     const targetQuaternion = createLookAtQuaternion(
@@ -712,9 +728,12 @@ function syncOverviewOrbitControls(camera: THREE.Camera, target: THREE.Vector3):
 
   controls.target.copy(target);
   const offset = camera.position.clone().sub(target);
+  const overviewDistance = offset.length();
   const overviewAzimuth = Math.atan2(offset.x, offset.z);
   const azimuthRange = 0.32;
 
+  controls.minDistance = Math.max(3.7, overviewDistance * 0.7);
+  controls.maxDistance = Math.max(6.2, overviewDistance * 1.06);
   controls.minAzimuthAngle = overviewAzimuth - azimuthRange;
   controls.maxAzimuthAngle = overviewAzimuth + azimuthRange;
 

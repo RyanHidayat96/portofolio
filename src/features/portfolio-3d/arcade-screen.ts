@@ -435,20 +435,28 @@ function resolveWholeMeshScreenPlacement(screen: THREE.Mesh): ArcadeScreenPlacem
   };
 }
 
+export type ArcadeScreenCoverage = Readonly<{
+  horizontalCoverage: number;
+  verticalCoverage: number;
+}>;
+
+const defaultArcadeScreenCoverage: ArcadeScreenCoverage = {
+  horizontalCoverage: 0.88,
+  verticalCoverage: 0.72
+};
+
 export function getArcadeCameraPosition(
   screen: ArcadeScreenPlacement,
   aspect: number,
   fov: number,
-  cameraDistanceScale = 1
+  coverage: ArcadeScreenCoverage = defaultArcadeScreenCoverage
 ): THREE.Vector3 {
-  // Fit the fixed screen surface first, then let each menu tune the camera distance.
-  const horizontalCoverage = 0.88;
-  const verticalCoverage = 0.72;
+  const horizontalCoverage = Math.max(coverage.horizontalCoverage, 0.1);
+  const verticalCoverage = Math.max(coverage.verticalCoverage, 0.1);
   const tangent = Math.tan(THREE.MathUtils.degToRad(fov / 2));
-  const fittedDistance = Math.max(
+  const distance = Math.max(
     screen.height / (2 * tangent * verticalCoverage),
     screen.width / (2 * tangent * Math.max(aspect, 0.1) * horizontalCoverage)
   );
-  const distance = fittedDistance * Math.max(cameraDistanceScale, 0.1);
   return screen.position.clone().addScaledVector(screen.normal, distance);
 }

@@ -94,9 +94,7 @@ export function createSceneAssetRuntime(
   applySceneAssetPlacement(scene, asset, roomAnchors);
 
   scene.updateMatrixWorld(true);
-  const nodes = mapSceneAssetNodes(asset, scene, {
-    preserveImportedLights: shouldPreserveAuthoredRenderState
-  });
+  const nodes = mapSceneAssetNodes(asset, scene);
 
   return { scene, nodes, clonedMaterials };
 }
@@ -265,8 +263,7 @@ function applyLocalAnchorTransform(scene: THREE.Object3D, transform: Transform3d
 
 function mapSceneAssetNodes(
   asset: SceneAssetDefinition,
-  scene: THREE.Group,
-  options: Readonly<{ preserveImportedLights?: boolean }> = {}
+  scene: THREE.Group
 ): AssetRuntimeNodeMap {
   const anchors = new Map<string, THREE.Object3D>();
   const hotspots = new Map<string, THREE.Object3D>();
@@ -309,10 +306,8 @@ function mapSceneAssetNodes(
     if (object instanceof THREE.Light) {
       lights.set(name || object.uuid, object);
       object.castShadow = false;
-
-      if (!options.preserveImportedLights) {
-        object.visible = false;
-      }
+      // The runtime lighting rig owns punctual lights; preserve authored emissive meshes instead.
+      object.visible = false;
     }
   });
 
