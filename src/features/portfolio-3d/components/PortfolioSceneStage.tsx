@@ -382,6 +382,14 @@ function CameraDebugOverlay(): null {
 
 // Shared ref so CameraNavigationRig can disable/update OrbitControls during transitions.
 const sharedOrbitControlsRef: { current: OrbitControlsImpl | null } = { current: null };
+const overviewOrbitZoomBounds = {
+  minDistance: 2.8,
+  maxDistance: 8,
+  minDistanceScale: 0.55,
+  maxDistanceScale: 1.25,
+  mobileMinDistanceScale: 0.42,
+  mobileMaxDistanceScale: 1.02
+} as const;
 
 function InteractiveOrbitControls(): null {
   const { camera, gl, invalidate } = useThree();
@@ -393,11 +401,11 @@ function InteractiveOrbitControls(): null {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.rotateSpeed = 0.8;
-    controls.zoomSpeed = 1.0;
+    controls.zoomSpeed = 1.5;
     controls.panSpeed = 0.8;
     controls.enablePan = false;
-    controls.minDistance = 3.7;
-    controls.maxDistance = 6.2;
+    controls.minDistance = overviewOrbitZoomBounds.minDistance;
+    controls.maxDistance = overviewOrbitZoomBounds.maxDistance;
     controls.minPolarAngle = 1.04;
     controls.maxPolarAngle = 1.4;
 
@@ -534,6 +542,8 @@ function CameraNavigationRig({
   const screenJourneyRef = useRef(false);
 
   useEffect(() => {
+    const isMobileViewport = size.width < 768;
+    const isPortraitMobile = isMobileViewport && size.height > size.width;
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
     const embeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
     const embeddedScreen = embeddedScreenId ? embeddedScreens[embeddedScreenId] : undefined;
@@ -574,7 +584,7 @@ function CameraNavigationRig({
         .normalize();
       targetPosition.addScaledVector(screenRight, mobileScreenCamera.lateralOffset);
     }
-    if (preset.id === 'overview' && size.width < 768 && size.height > size.width) {
+    if (preset.id === 'overview' && isPortraitMobile) {
       const direction = targetPosition.clone().sub(target);
       const framingScale = Math.min(3.2, Math.max(1, 1.35 * size.height / Math.max(size.width, 1)));
       targetPosition.copy(target).addScaledVector(direction, framingScale);
@@ -594,7 +604,7 @@ function CameraNavigationRig({
       overviewBoundsAppliedRef.current = hasRoomBounds;
       overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion, targetFov);
-      syncOverviewOrbitControls(camera, target);
+      syncOverviewOrbitControls(camera, target, isMobileViewport);
       invalidate();
       return;
     }
@@ -610,7 +620,7 @@ function CameraNavigationRig({
       overviewBoundsAppliedRef.current = true;
       overviewViewportRef.current = viewportKey;
       applyCameraState(camera, preset, targetPosition, targetQuaternion, targetFov);
-      syncOverviewOrbitControls(camera, target);
+      syncOverviewOrbitControls(camera, target, isMobileViewport);
       invalidate();
       return;
     }
@@ -694,7 +704,11 @@ function CameraNavigationRig({
       sharedOrbitControlsRef.current.enabled = transition.finalNavigationState === 'overview';
       // OrbitControls.lookAt uses world-up and would undo the artwork's camera roll.
       if (transition.finalNavigationState === 'overview') {
-        syncOverviewOrbitControls(camera, transition.targetLookAt);
+        syncOverviewOrbitControls(
+          camera,
+          transition.targetLookAt,
+          size.width < 768
+        );
       }
     }
 
@@ -706,7 +720,11 @@ function CameraNavigationRig({
   return null;
 }
 
-function syncOverviewOrbitControls(camera: THREE.Camera, target: THREE.Vector3): void {
+function syncOverviewOrbitControls(
+  camera: THREE.Camera,
+  target: THREE.Vector3,
+  isMobileViewport = false
+): void {
   const controls = sharedOrbitControlsRef.current;
   if (!controls) {
     return;
@@ -730,9 +748,21 @@ function syncOverviewOrbitControls(camera: THREE.Camera, target: THREE.Vector3):
   const overviewDistance = offset.length();
   const overviewAzimuth = Math.atan2(offset.x, offset.z);
   const azimuthRange = 0.32;
+  const minDistanceScale = isMobileViewport
+    ? overviewOrbitZoomBounds.mobileMinDistanceScale
+    : overviewOrbitZoomBounds.minDistanceScale;
+  const maxDistanceScale = isMobileViewport
+    ? overviewOrbitZoomBounds.mobileMaxDistanceScale
+    : overviewOrbitZoomBounds.maxDistanceScale;
 
-  controls.minDistance = Math.max(3.7, overviewDistance * 0.7);
-  controls.maxDistance = Math.max(6.2, overviewDistance * 1.06);
+  controls.minDistance = Math.max(
+    overviewOrbitZoomBounds.minDistance,
+    overviewDistance * minDistanceScale
+  );
+  controls.maxDistance = Math.max(
+    overviewOrbitZoomBounds.maxDistance,
+    overviewDistance * maxDistanceScale
+  );
   controls.minAzimuthAngle = overviewAzimuth - azimuthRange;
   controls.maxAzimuthAngle = overviewAzimuth + azimuthRange;
 
