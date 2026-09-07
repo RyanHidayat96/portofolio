@@ -105,7 +105,7 @@ export function PortfolioLightingRig({
 
   return (
     <>
-      <color attach="background" args={[profile.background]} />
+      {/* Keep the WebGL clear color transparent so display openings reveal their CSS3D pages. */}
       <fog attach="fog" args={[profile.fogColor, profile.fogNear, profile.fogFar]} />
       <ambientLight
         intensity={getPortfolio3dTierValue(profile.ambientIntensity, qualityTier) * clampedLightingLevel}

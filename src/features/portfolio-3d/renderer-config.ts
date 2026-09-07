@@ -14,7 +14,7 @@ export const portfolio3dDefaultCamera = {
 } as const;
 
 export const portfolio3dRendererOptions = {
-  antialias: false,
+  antialias: true,
   alpha: true,
   depth: true,
   stencil: false,

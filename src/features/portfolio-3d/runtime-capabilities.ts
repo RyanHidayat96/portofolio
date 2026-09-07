@@ -49,7 +49,7 @@ export function getPortfolio3dDprLimit(
   qualityTier: Portfolio3dQualityTier,
   capabilities = getPortfolio3dRuntimeCapabilities()
 ): number {
-  const tierLimit = qualityTier === 'low' ? 0.85 : qualityTier === 'medium' ? 1 : 1.2;
+  const tierLimit = qualityTier === 'low' ? 0.85 : qualityTier === 'medium' ? 1.2 : 1.5;
 
   if (
     capabilities.saveData ||
@@ -60,7 +60,7 @@ export function getPortfolio3dDprLimit(
     (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 6) ||
     (typeof capabilities.hardwareConcurrency === 'number' && capabilities.hardwareConcurrency <= 4)
   ) {
-    return Math.min(tierLimit, 1.25);
+    return Math.min(tierLimit, 1.2);
   }
 
   return tierLimit;

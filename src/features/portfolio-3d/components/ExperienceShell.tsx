@@ -68,8 +68,6 @@ export function ExperienceShell({
             The 3D canvas is visual navigation. Equivalent keyboard controls and readable content are available in the portfolio controls panel.
           </p>
           {canvasSlot}
-          <div className="portfolio-3d-cinematic-vignette pointer-events-none absolute inset-0" />
-          <div className="portfolio-3d-city-glow pointer-events-none absolute inset-y-0 left-0 w-[42vw]" />
 
           {isWaitingForRuntime ? (
             <div className="absolute inset-0 z-30 grid place-items-center bg-[rgba(3,6,10,0.66)] px-6 text-center backdrop-blur-sm">

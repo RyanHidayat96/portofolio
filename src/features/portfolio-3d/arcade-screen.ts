@@ -15,41 +15,107 @@ const profileArtworkContentInset = 0.965;
 const experienceArtworkContentInset = 0.96;
 const architectureArtworkContentInset = 0.9;
 const contactBookContentInset = 0.78;
+const pipelineScreenMaterialName = 'Material.013';
+const automationScreenMaterialName = 'screen.002';
+const performanceScreenMaterialName = 'screen.001';
+const backendScreenMaterialName = 'Material';
+const terminalScreenMaterialName = 'screen';
+const profileArtworkMaterialName = 'poster 3';
+const experienceArtworkMaterialName = 'poster 2';
+const architectureArtworkMaterialName = 'poster';
+const contactBookMaterialName = 'RealisticNotebookAndPaper';
+const arcadeMarqueeNodeName = 'Text';
 
 export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveScreenByMaterial(root, ['gaming_mashine', 'gaming mashine'], 'Material.013');
+  return resolveScreenByMaterial(root, ['gaming_mashine', 'gaming mashine'], pipelineScreenMaterialName);
+}
+
+export function resolveArcadeMarquee(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
+  const marquee = root.getObjectByName(arcadeMarqueeNodeName);
+  if (!(marquee instanceof THREE.Mesh)) return undefined;
+
+  const geometry = marquee.geometry;
+  geometry.computeBoundingBox();
+  const bounds = geometry.boundingBox;
+  if (!bounds) return undefined;
+
+  const localWidth = bounds.max.x - bounds.min.x;
+  const localHeight = bounds.max.z - bounds.min.z;
+  if (localWidth <= 0 || localHeight <= 0) return undefined;
+
+  marquee.updateWorldMatrix(true, false);
+  const localCenter = new THREE.Vector3(
+    (bounds.min.x + bounds.max.x) / 2,
+    (bounds.min.y + bounds.max.y) / 2,
+    (bounds.min.z + bounds.max.z) / 2
+  );
+  const position = localCenter.clone().applyMatrix4(marquee.matrixWorld);
+  const right = localCenter.clone().add(new THREE.Vector3(localWidth, 0, 0))
+    .applyMatrix4(marquee.matrixWorld)
+    .sub(position);
+  const up = localCenter.clone().add(new THREE.Vector3(0, 0, localHeight))
+    .applyMatrix4(marquee.matrixWorld)
+    .sub(position);
+  const width = right.length();
+  const height = up.length();
+  if (width <= 0 || height <= 0) return undefined;
+
+  right.normalize();
+  up.normalize();
+  if (up.y < 0) up.negate();
+
+  let normal = new THREE.Vector3().crossVectors(right, up).normalize();
+  const arcadeScreen = resolveArcadeScreen(root);
+  if (arcadeScreen && normal.dot(arcadeScreen.normal) < 0) {
+    right.negate();
+    normal.negate();
+  }
+
+  position.addScaledVector(normal, 0.006);
+
+  return {
+    position,
+    quaternion: new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(right, up, normal)
+    ),
+    normal,
+    // The original mesh is letter-shaped. A small expansion forms the LED housing
+    // while staying inside the arcade cabinet's marquee recess.
+    width: width * 1.24,
+    height: height * 1.42
+  };
 }
 
 export function resolveAutomationScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveScreenByMaterial(root, [], 'screen.002');
+  return resolveScreenByMaterial(root, [], automationScreenMaterialName);
 }
 
 export function resolvePerformanceScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveScreenByMaterial(root, [], 'screen.001');
+  return resolveScreenByMaterial(root, [], performanceScreenMaterialName);
 }
 
 export function resolveApiScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveScreenByMaterial(root, [], 'Material');
+  return resolveScreenByMaterial(root, [], backendScreenMaterialName);
 }
 
 export function resolveTerminalScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveScreenByMaterial(root, [], 'screen');
+  return resolveScreenByMaterial(root, [], terminalScreenMaterialName);
 }
 
 export function resolveProfileArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'poster 3', profileArtworkContentInset);
+  return resolveArtworkScreen(root, profileArtworkMaterialName, profileArtworkContentInset);
 }
 
 export function resolveExperienceArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'poster 2', experienceArtworkContentInset);
+  return resolveArtworkScreen(root, experienceArtworkMaterialName, experienceArtworkContentInset);
 }
 
 export function resolveArchitectureArtworkScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'poster', architectureArtworkContentInset);
+  return resolveArtworkScreen(root, architectureArtworkMaterialName, architectureArtworkContentInset);
 }
 
 export function resolveContactBookScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  return resolveArtworkScreen(root, 'RealisticNotebookAndPaper', contactBookContentInset);
+  return resolveArtworkScreen(root, contactBookMaterialName, contactBookContentInset);
 }
 
 function resolveArtworkScreen(

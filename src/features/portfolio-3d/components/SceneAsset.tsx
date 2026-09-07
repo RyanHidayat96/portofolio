@@ -85,9 +85,7 @@ export function createSceneAssetRuntime(
 } {
   const shouldPreserveAuthoredRenderState = authoredRenderAssetFileNames.has(asset.fileName);
   const scene = sourceScene.clone(true);
-  const clonedMaterials = shouldPreserveAuthoredRenderState
-    ? []
-    : cloneSceneMaterials(scene);
+  const clonedMaterials = shouldPreserveAuthoredRenderState ? [] : cloneSceneMaterials(scene);
 
   if (!shouldPreserveAuthoredRenderState) {
     configureRuntimeMeshRenderState(scene);

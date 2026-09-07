@@ -4,6 +4,8 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { ArchitectureExplorer } from '@/features/architecture/components/ArchitectureExplorer';
 import { ContactPanel } from '@/features/workspace/components/ContactPanel';
 import { withPortfolio3dBasePath } from '../asset-url';
@@ -396,7 +398,6 @@ function FoundationCanvas({
   return (
     <Canvas
       className="absolute inset-0 h-full w-full"
-      flat
       dpr={dpr}
       frameloop={isDocumentVisible ? 'demand' : 'never'}
       camera={portfolio3dDefaultCamera}
@@ -404,10 +405,12 @@ function FoundationCanvas({
       performance={portfolio3dRendererPerformance}
       resize={{ scroll: false }}
       onCreated={({ gl }) => {
+        configurePortfolio3dRenderer(gl);
         gl.domElement.setAttribute('aria-hidden', 'true');
         gl.domElement.tabIndex = -1;
       }}
     >
+      <ModelViewerRenderCalibration />
       <CanvasVisibilityInvalidator isVisible={isDocumentVisible} qualityTier={qualityTier} />
       <Suspense fallback={null}>
         <FoundationScene
@@ -418,6 +421,55 @@ function FoundationCanvas({
       </Suspense>
     </Canvas>
   );
+}
+
+function ModelViewerRenderCalibration(): null {
+  const { gl, scene, invalidate } = useThree();
+
+  useEffect(() => {
+    configurePortfolio3dRenderer(gl);
+
+    const previousEnvironment = scene.environment;
+    const previousEnvironmentIntensity = scene.environmentIntensity;
+    const pmremGenerator = new THREE.PMREMGenerator(gl);
+    const environmentScene = new RoomEnvironment();
+    const environment = pmremGenerator.fromScene(environmentScene, 0.04).texture;
+
+    pmremGenerator.dispose();
+    disposeEnvironmentScene(environmentScene);
+    scene.environment = environment;
+    scene.environmentIntensity = 0.55;
+    invalidate();
+
+    return () => {
+      if (scene.environment === environment) {
+        scene.environment = previousEnvironment;
+        scene.environmentIntensity = previousEnvironmentIntensity;
+      }
+
+      environment.dispose();
+    };
+  }, [gl, invalidate, scene]);
+
+  return null;
+}
+
+function configurePortfolio3dRenderer(gl: THREE.WebGLRenderer): void {
+  gl.outputColorSpace = THREE.SRGBColorSpace;
+  gl.toneMapping = THREE.NeutralToneMapping;
+  gl.toneMappingExposure = 1;
+}
+
+function disposeEnvironmentScene(environmentScene: THREE.Scene): void {
+  environmentScene.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) {
+      return;
+    }
+
+    object.geometry.dispose();
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => material.dispose());
+  });
 }
 
 function CanvasVisibilityInvalidator({

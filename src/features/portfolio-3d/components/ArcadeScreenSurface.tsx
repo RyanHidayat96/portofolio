@@ -20,6 +20,9 @@ interface ScreenRuntime {
 const cssWorldScale = 1000;
 const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
+// CSS3D pages sit behind the alpha-enabled WebGL canvas. The matching plane
+// below writes a transparent, depth-tested opening for each physical display.
+const screenLayerZIndex = '0';
 export const maximumMobileScreenZoom = 2.5;
 
 interface TouchPoint {
@@ -61,6 +64,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     scene.add(object);
     const renderer = new CSS3DRenderer();
     renderer.domElement.className = 'arcade-css-layer';
+    renderer.domElement.style.zIndex = screenLayerZIndex;
     const previousPosition = canvas.style.position;
     const previousZIndex = canvas.style.zIndex;
     canvas.style.position = 'relative';
@@ -91,7 +95,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     object.scale.setScalar(screen.width * cssWorldScale / pixelWidth);
     renderer.setSize(size.width, size.height);
     renderScreen(runtime, camera, screen, pixelWidth, isInteractive);
-    runtime.renderer.domElement.style.zIndex = isInteractive ? '2' : '0';
+    runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
     invalidate();
   }, [camera, invalidate, isInteractive, pixelHeight, pixelWidth, screen, size.width, size.height]);
 
@@ -235,7 +239,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const runtime = runtimeRef.current;
     if (runtime) {
       renderScreen(runtime, camera, screen, pixelWidth, isInteractive);
-      runtime.renderer.domElement.style.zIndex = isInteractive ? '2' : '0';
+      runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
     }
   });
 
@@ -251,14 +255,17 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
         }}
       >
         <planeGeometry args={[screen.width, screen.height]} />
-        {/* Depth-tested transparent pixels let the GLB bezel and room occlude the HTML. */}
+        {/* This clears the canvas only inside the display while preserving its depth. */}
         <meshBasicMaterial
+          color="#000000"
           blending={THREE.NoBlending}
           opacity={0}
           transparent={false}
           toneMapped={false}
           fog={false}
-          side={THREE.FrontSide}
+          depthTest
+          depthWrite
+          side={THREE.DoubleSide}
         />
       </mesh>
     </>
@@ -281,7 +288,7 @@ function renderScreen(runtime: ScreenRuntime, camera: THREE.Camera, screen: Arca
     const x = (topLeft.x + 1) * size.width / 2;
     const y = (1 - topLeft.y) * size.height / 2;
     const projectedScale = (topRight.x - topLeft.x) * size.width / (2 * pixelWidth);
-    runtime.renderer.domElement.style.zIndex = '2';
+    runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
     if (element.parentElement !== runtime.renderer.domElement) runtime.renderer.domElement.appendChild(element);
     element.style.transformOrigin = '0 0';
     element.style.transform = `translate(${x}px, ${y}px) scale(${projectedScale})`;
@@ -292,7 +299,7 @@ function renderScreen(runtime: ScreenRuntime, camera: THREE.Camera, screen: Arca
     element.style.transformOrigin = '';
     runtime.projectedTransform = undefined;
   }
-  runtime.renderer.domElement.style.zIndex = '0';
+  runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
   runtime.camera.copy(camera, false);
   camera.getWorldPosition(runtime.camera.position).multiplyScalar(cssWorldScale);
   camera.getWorldQuaternion(runtime.camera.quaternion);

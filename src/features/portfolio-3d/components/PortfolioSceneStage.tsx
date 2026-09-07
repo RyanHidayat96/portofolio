@@ -8,6 +8,7 @@ import { useReducedMotion } from '@/features/interaction/hooks/useReducedMotion'
 import {
   getArcadeCameraPosition,
   resolveArcadeScreen,
+  resolveArcadeMarquee,
   resolveArchitectureArtworkScreen,
   resolveApiScreen,
   resolveAutomationScreen,
@@ -40,6 +41,7 @@ import type {
   SceneAssetDefinition
 } from '../types';
 import { DynamicScreenLayer } from './DynamicScreenLayer';
+import { ArcadeMarqueeDisplay } from './ArcadeMarqueeDisplay';
 import { ArcadeScreenSurface, maximumMobileScreenZoom } from './ArcadeScreenSurface';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
@@ -141,6 +143,7 @@ export function PortfolioSceneStage({
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
   const arcadeScreen = useMemo(() => roomNodes ? resolveArcadeScreen(roomNodes.root) : undefined, [roomNodes]);
+  const arcadeMarquee = useMemo(() => roomNodes ? resolveArcadeMarquee(roomNodes.root) : undefined, [roomNodes]);
   const automationScreen = useMemo(() => roomNodes ? resolveAutomationScreen(roomNodes.root) : undefined, [roomNodes]);
   const performanceScreen = useMemo(() => roomNodes ? resolvePerformanceScreen(roomNodes.root) : undefined, [roomNodes]);
   const apiScreen = useMemo(() => roomNodes ? resolveApiScreen(roomNodes.root) : undefined, [roomNodes]);
@@ -328,6 +331,7 @@ export function PortfolioSceneStage({
       {arcadeScreen ? (
         <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
+      {arcadeMarquee ? <ArcadeMarqueeDisplay marquee={arcadeMarquee} /> : null}
       {automationScreen ? (
         <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
