@@ -8,7 +8,7 @@ import type { ArcadeScreenPlacement } from '../arcade-screen';
 const marqueeMessage = 'Ryan Hidayat - 087775009393';
 const marqueeCanvasWidth = 640;
 const marqueeCanvasHeight = 144;
-const marqueeDotPitch = 10;
+const marqueeDotPitch = 17;
 // One animation step equals one physical LED-dot column, keeping the running
 // sign crisp while avoiding an unnecessary full-room redraw every 50 ms.
 const marqueeFrameIntervalMs = 100;
@@ -21,7 +21,7 @@ const marqueeMessageGap = 90;
 // Keep only a slim black reveal around the LED frame. Horizontal inset values
 // are derived from these values to remain physically equal on the marquee.
 const marqueeBorderVerticalInset = 10;
-const marqueeContentVerticalInset = 18;
+const marqueeContentVerticalInset = 15;
 
 const ledGlyphs: Readonly<Record<string, readonly string[]>> = {
   A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],

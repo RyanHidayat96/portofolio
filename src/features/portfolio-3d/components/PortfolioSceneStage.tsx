@@ -42,7 +42,11 @@ import type {
 } from '../types';
 import { DynamicScreenLayer } from './DynamicScreenLayer';
 import { ArcadeMarqueeDisplay } from './ArcadeMarqueeDisplay';
-import { ArcadeScreenSurface, maximumMobileScreenZoom } from './ArcadeScreenSurface';
+import {
+  ArcadeScreenSurface,
+  maximumMobileScreenZoom,
+  type EmbeddedScreenPan
+} from './ArcadeScreenSurface';
 import { EmbeddedScreenLayer } from './EmbeddedScreenLayer';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
@@ -106,6 +110,7 @@ const embeddedScreenCoverageById = {
 } as const;
 
 type EmbeddedScreenZoomById = Readonly<Partial<Record<EmbeddedScreenId, number>>>;
+type EmbeddedScreenPanById = Readonly<Partial<Record<EmbeddedScreenId, EmbeddedScreenPan>>>;
 
 type EmbeddedScreenMobileCameraConfig = Readonly<{
   maxDistance: number;
@@ -141,6 +146,7 @@ export function PortfolioSceneStage({
   const [failedAssetIds, setFailedAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
   const [enabledAnchoredAssetIds, setEnabledAnchoredAssetIds] = useState<readonly Portfolio3dAssetId[]>(initiallyEnabledAnchoredAssetIds);
   const [embeddedScreenZoomById, setEmbeddedScreenZoomById] = useState<EmbeddedScreenZoomById>({});
+  const [embeddedScreenPanById, setEmbeddedScreenPanById] = useState<EmbeddedScreenPanById>({});
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
   const arcadeScreen = useMemo(() => roomNodes ? resolveArcadeScreen(roomNodes.root) : undefined, [roomNodes]);
@@ -291,6 +297,31 @@ export function PortfolioSceneStage({
     });
   }, []);
 
+  const handleEmbeddedScreenPanChange = useCallback((screenId: EmbeddedScreenId, pan: EmbeddedScreenPan): void => {
+    const nextPan = {
+      x: clampEmbeddedScreenPan(pan.x),
+      y: clampEmbeddedScreenPan(pan.y)
+    } as const satisfies EmbeddedScreenPan;
+    setEmbeddedScreenPanById((current) => {
+      const currentPan = current[screenId] ?? { x: 0, y: 0 };
+      if (
+        Math.abs(currentPan.x - nextPan.x) < 0.005 &&
+        Math.abs(currentPan.y - nextPan.y) < 0.005
+      ) {
+        return current;
+      }
+
+      if (Math.abs(nextPan.x) < 0.005 && Math.abs(nextPan.y) < 0.005) {
+        if (!current[screenId]) return current;
+        const next = { ...current };
+        delete next[screenId];
+        return next;
+      }
+
+      return { ...current, [screenId]: nextPan };
+    });
+  }, []);
+
   return (
     <>
       <InteractiveOrbitControls />
@@ -303,6 +334,7 @@ export function PortfolioSceneStage({
         runtimeNodesByAsset={runtimeNodesByAsset}
         embeddedScreens={embeddedScreens}
         embeddedScreenZoomById={embeddedScreenZoomById}
+        embeddedScreenPanById={embeddedScreenPanById}
       />
       <CameraDebugOverlay />
       <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
@@ -332,31 +364,31 @@ export function PortfolioSceneStage({
 
       <EmbeddedScreenLayer>
         {arcadeScreen ? (
-          <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {automationScreen ? (
-          <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {performanceScreen ? (
-          <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {apiScreen ? (
-          <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {terminalScreen ? (
-          <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {architectureArtworkScreen ? (
-          <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {experienceArtworkScreen ? (
-          <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {profileArtworkScreen ? (
-          <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
         {contactBookScreen ? (
-          <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+          <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
       </EmbeddedScreenLayer>
       {arcadeMarquee ? <ArcadeMarqueeDisplay marquee={arcadeMarquee} /> : null}
@@ -576,11 +608,13 @@ interface CameraTransitionState {
 function CameraNavigationRig({
   runtimeNodesByAsset,
   embeddedScreens,
-  embeddedScreenZoomById
+  embeddedScreenZoomById,
+  embeddedScreenPanById
 }: Readonly<{
   runtimeNodesByAsset: Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>;
   embeddedScreens: Readonly<Partial<Record<EmbeddedScreenId, ArcadeScreenPlacement>>>;
   embeddedScreenZoomById: EmbeddedScreenZoomById;
+  embeddedScreenPanById: EmbeddedScreenPanById;
 }>): null {
   const { camera, invalidate, size } = useThree();
   const { state, setNavigationState } = usePortfolio3dState();
@@ -597,8 +631,9 @@ function CameraNavigationRig({
     const preset = getPortfolio3dCameraPresetForSection(state.activeSectionId);
     const embeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
     const embeddedScreen = embeddedScreenId ? embeddedScreens[embeddedScreenId] : undefined;
+    const embeddedScreenPan = embeddedScreenId ? embeddedScreenPanById[embeddedScreenId] : undefined;
     if (embeddedScreenId && !runtimeNodesByAsset['room-shell']) return;
-    const target = embeddedScreen ? embeddedScreen.position : resolveCameraTarget(preset, runtimeNodesByAsset);
+    const target = embeddedScreen ? embeddedScreen.position.clone() : resolveCameraTarget(preset, runtimeNodesByAsset);
     const screenCoverageConfig = embeddedScreenId
       ? embeddedScreenCoverageById[embeddedScreenId]
       : undefined;
@@ -638,6 +673,19 @@ function CameraNavigationRig({
       const direction = targetPosition.clone().sub(target);
       const framingScale = Math.min(3.2, Math.max(1, 1.35 * size.height / Math.max(size.width, 1)));
       targetPosition.copy(target).addScaledVector(direction, framingScale);
+    }
+    if (embeddedScreen && isMobileViewport) {
+      const panOffset = getEmbeddedScreenPanOffset(
+        embeddedScreen,
+        targetPosition,
+        target,
+        baseTargetFov,
+        targetFov,
+        size.width / Math.max(size.height, 1),
+        embeddedScreenPan
+      );
+      target.add(panOffset);
+      targetPosition.add(panOffset);
     }
     const targetQuaternion = createLookAtQuaternion(
       targetPosition,
@@ -716,7 +764,7 @@ function CameraNavigationRig({
       camera.updateProjectionMatrix();
     }
     invalidate();
-  }, [camera, embeddedScreenZoomById, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
+  }, [camera, embeddedScreenPanById, embeddedScreenZoomById, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
 
   useFrame((rootState) => {
     const transition = transitionRef.current;
@@ -876,6 +924,34 @@ function clampEmbeddedScreenZoom(value: number): number {
   return Number.isFinite(value)
     ? Math.min(Math.max(value, 1), maximumMobileScreenZoom)
     : 1;
+}
+
+function getEmbeddedScreenPanOffset(
+  screen: ArcadeScreenPlacement,
+  cameraPosition: THREE.Vector3,
+  target: THREE.Vector3,
+  baseFov: number,
+  zoomedFov: number,
+  aspect: number,
+  pan: EmbeddedScreenPan | undefined
+): THREE.Vector3 {
+  if (!pan || zoomedFov >= baseFov) return new THREE.Vector3();
+
+  const cameraDistance = cameraPosition.distanceTo(target);
+  const baseHalfHeight = cameraDistance * Math.tan(THREE.MathUtils.degToRad(baseFov) / 2);
+  const zoomedHalfHeight = cameraDistance * Math.tan(THREE.MathUtils.degToRad(zoomedFov) / 2);
+  const maxHorizontalOffset = Math.max(0, (baseHalfHeight - zoomedHalfHeight) * aspect);
+  const maxVerticalOffset = Math.max(0, baseHalfHeight - zoomedHalfHeight);
+  const screenRight = new THREE.Vector3(1, 0, 0).applyQuaternion(screen.quaternion).normalize();
+  const screenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(screen.quaternion).normalize();
+
+  return screenRight
+    .multiplyScalar(clampEmbeddedScreenPan(pan.x) * maxHorizontalOffset)
+    .addScaledVector(screenUp, clampEmbeddedScreenPan(pan.y) * maxVerticalOffset);
+}
+
+function clampEmbeddedScreenPan(value: number): number {
+  return Number.isFinite(value) ? Math.min(Math.max(value, -1), 1) : 0;
 }
 
 function applyCameraState(

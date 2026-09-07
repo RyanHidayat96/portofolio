@@ -15,6 +15,11 @@ const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
 
+export interface EmbeddedScreenPan {
+  readonly x: number;
+  readonly y: number;
+}
+
 interface TouchPoint {
   readonly x: number;
   readonly y: number;
@@ -23,13 +28,21 @@ interface TouchPoint {
 interface TouchZoomGesture {
   readonly initialDistance: number;
   readonly initialScale: number;
+  readonly initialCenter: TouchPoint;
+  readonly initialPan: EmbeddedScreenPan;
 }
 
-export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZoomChange }: Readonly<{
+interface TouchPanGesture {
+  readonly initialPoint: TouchPoint;
+  readonly initialPan: EmbeddedScreenPan;
+}
+
+export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZoomChange, onScreenPanChange }: Readonly<{
   screen: ArcadeScreenPlacement;
   screenId: EmbeddedScreenId;
   onScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
   onScreenZoomChange?: (screenId: EmbeddedScreenId, scale: number) => void;
+  onScreenPanChange?: (screenId: EmbeddedScreenId, pan: EmbeddedScreenPan) => void;
 }>): React.ReactElement {
   const { gl, setEvents, get } = useThree();
   const { state, setActiveSection } = usePortfolio3dState();
@@ -110,18 +123,23 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const element = object.element;
     const activePointers = new Map<number, TouchPoint>();
     let gesture: TouchZoomGesture | undefined;
+    let panGesture: TouchPanGesture | undefined;
     let scale = 1;
+    let pan: EmbeddedScreenPan = { x: 0, y: 0 };
 
     const resetZoom = (): void => {
       scale = 1;
+      pan = { x: 0, y: 0 };
       onScreenZoomChange?.(screenId, scale);
+      onScreenPanChange?.(screenId, pan);
       if (isInteractive) screenLayer.render();
     };
 
     const isMobileViewport = (): boolean => window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
 
-    const applyZoom = (): void => {
+    const applyViewport = (): void => {
       onScreenZoomChange?.(screenId, scale);
+      onScreenPanChange?.(screenId, pan);
       screenLayer.render();
     };
 
@@ -133,7 +151,9 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
 
       gesture = {
         initialDistance: getTouchDistance(first, second),
-        initialScale: scale
+        initialScale: scale,
+        initialCenter: getTouchCenter(first, second),
+        initialPan: pan
       };
     };
 
@@ -149,12 +169,41 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
         maximumMobileScreenZoom
       );
       scale = nextScale;
-      applyZoom();
+      pan = getPannedViewportOffset(
+        gesture.initialPan,
+        gesture.initialCenter,
+        getTouchCenter(first, second),
+        scale
+      );
+      applyViewport();
+    };
+
+    const updatePan = (): void => {
+      if (!panGesture || activePointers.size !== 1) return;
+
+      const point = activePointers.values().next().value;
+      if (!point) return;
+
+      pan = getPannedViewportOffset(panGesture.initialPan, panGesture.initialPoint, point, scale);
+      applyViewport();
     };
 
     const onPointerDown = (event: PointerEvent): void => {
       if (event.pointerType !== 'touch' || !isMobileViewport()) return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+      // Once the focused screen is enlarged, a new single-finger drag should
+      // pan its camera viewport too. A touch without movement still reaches
+      // the embedded document as a regular click.
+      if (activePointers.size === 1 && scale > 1) {
+        panGesture = {
+          initialPoint: { x: event.clientX, y: event.clientY },
+          initialPan: pan
+        };
+        if (!element.hasPointerCapture(event.pointerId)) element.setPointerCapture(event.pointerId);
+        return;
+      }
+
       if (activePointers.size === 2) {
         event.preventDefault();
         activePointers.forEach((_, pointerId) => {
@@ -167,20 +216,40 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const onPointerMove = (event: PointerEvent): void => {
       if (!activePointers.has(event.pointerId)) return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      if (!gesture) return;
-      event.preventDefault();
-      updateGesture();
+      if (gesture && activePointers.size === 2) {
+        event.preventDefault();
+        updateGesture();
+        return;
+      }
+
+      if (panGesture && activePointers.size === 1) {
+        event.preventDefault();
+        updatePan();
+      }
     };
 
     const endGesture = (event: PointerEvent): void => {
+      const wasPinching = Boolean(gesture);
       activePointers.delete(event.pointerId);
       if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
+      if (activePointers.size === 1 && wasPinching && scale > 1) {
+        const remainingPoint = activePointers.values().next().value;
+        if (remainingPoint) {
+          panGesture = {
+            initialPoint: remainingPoint,
+            initialPan: pan
+          };
+        }
+      } else if (activePointers.size === 0) {
+        panGesture = undefined;
+      }
       if (activePointers.size < 2) gesture = undefined;
     };
 
     const onViewportChange = (): void => {
       activePointers.clear();
       gesture = undefined;
+      panGesture = undefined;
       resetZoom();
     };
 
@@ -201,7 +270,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       window.removeEventListener('resize', onViewportChange);
       resetZoom();
     };
-  }, [isInteractive, onScreenZoomChange, screenId, screenLayer]);
+  }, [isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
   return (
     <>
@@ -234,6 +303,33 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
 
 function getTouchDistance(first: TouchPoint, second: TouchPoint): number {
   return Math.hypot(second.x - first.x, second.y - first.y);
+}
+
+function getTouchCenter(first: TouchPoint, second: TouchPoint): TouchPoint {
+  return {
+    x: (first.x + second.x) / 2,
+    y: (first.y + second.y) / 2
+  };
+}
+
+function getPannedViewportOffset(
+  initialPan: EmbeddedScreenPan,
+  initialPoint: TouchPoint,
+  currentPoint: TouchPoint,
+  scale: number
+): EmbeddedScreenPan {
+  const zoomOverflow = Math.max(scale - 1, 0);
+  if (zoomOverflow < 0.01) return { x: 0, y: 0 };
+
+  // This maps a full drag across the zoomed-overflow area to the camera's
+  // initial screen bounds. A fresh one-finger touch remains native page scroll.
+  const maxDragX = Math.max(1, window.innerWidth * zoomOverflow / 2);
+  const maxDragY = Math.max(1, window.innerHeight * zoomOverflow / 2);
+
+  return {
+    x: clamp(initialPan.x - (currentPoint.x - initialPoint.x) / maxDragX, -1, 1),
+    y: clamp(initialPan.y + (currentPoint.y - initialPoint.y) / maxDragY, -1, 1)
+  };
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
