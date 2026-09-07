@@ -157,12 +157,12 @@ export function WorkspaceShell({
                 <a
                   className="button-base button-secondary w-full min-w-0 sm:w-auto"
                   href="/"
-                  aria-label="Back to landing page"
+                  aria-label="Back to room"
                   data-cursor-intent="link"
-                  data-cursor-label="HOME"
+                  data-cursor-label="BACK TO ROOM"
                 >
                   <House aria-hidden="true" size={17} />
-                  <span>Home</span>
+                  <span>Back to Room</span>
                 </a>
 
                 <Badge tone="info" className="hidden sm:inline-flex">
