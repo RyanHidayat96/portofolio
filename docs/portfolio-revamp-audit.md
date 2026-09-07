@@ -5,15 +5,15 @@
 - Framework: Next.js 16.3.0 with App Router under `src/app`.
 - Routing: root page plus catch-all workspace routes in `src/app/[...slug]/page.tsx`.
 - API surface: App Router GET route handlers for profile, skills, projects, experience, and contact.
-- UI: feature-oriented React components under `src/features`, with RyanOS workspace shell, landing, panels, and labs.
-- Styling: Tailwind CSS through global tokens in `src/app/globals.css`; dark RyanOS visual identity already present.
+- UI: feature-oriented React components under `src/features`, with a workspace shell, landing, panels, and labs.
+- Styling: Tailwind CSS through global tokens in `src/app/globals.css`; dark portfolio visual identity already present.
 - Fonts: local Geist sans and mono loaded through `next/font/local`.
 - State: local React state for workspace routing, terminal, simulations, selected projects, architecture nodes, and panels.
 - Tests: Vitest unit/component tests cover data, API contracts, terminal, workspace routing, simulations, panels, SEO, and interactions.
 - Data: public portfolio content is centralized in typed TypeScript modules under `src/data`.
 - Environment: `NEXT_PUBLIC_SITE_URL` remains environment-specific. Public static portfolio data is no longer treated as env CMS content.
 
-## RyanOS Feature Inventory
+## Portfolio Feature Inventory
 
 - Hero / Landing: KEEP+EVOLVE. Full Stack x SDET positioning and single `Open Portfolio` CTA exist; later stages should improve system awakening and visual depth.
 - Workspace Shell: KEEP. OS-style shell and unified menu are useful foundations.
@@ -44,7 +44,7 @@ Findings:
 
 - Local `.env` previously held primary identity as SDET / QA Automation. Step 1 no longer reads this data for public static content.
 - `src/data/branding.ts` previously fell back to generic workspace copy and env-driven SDET data. Step 1 now re-exports typed canonical branding.
-- `src/data/profile.ts` previously depended on `NEXT_PUBLIC_RYANOS_PROFILE_JSON`. Step 1 now uses `Full Stack Engineer × SDET` and `Full Stack Developer`.
+- `src/data/profile.ts` previously depended on a public profile JSON variable. Step 1 now uses `Full Stack Engineer × SDET` and `Full Stack Developer`.
 - `src/features/workspace/components/OverviewPanel.tsx` included "Try QA and SDET reasoning scenarios." Step 1 changed this to full-cycle engineering reasoning.
 - Historical SDET references remain valid in the career timeline.
 
@@ -55,7 +55,7 @@ Incorrect current-identity risk after Step 1:
 
 ## Technical Debt Relevant to Redesign
 
-- Some panels still lead with quality/automation interaction priority. Later steps should rebalance hierarchy without deleting RyanOS features.
+- Some panels still lead with quality/automation interaction priority. Later steps should rebalance hierarchy without deleting portfolio features.
 - Routing still keeps internal `recruiter`/`engineer` route state for legacy `/overview` and `/labs`; future UI should treat this as compatibility, not user-facing modes.
 - Architecture Explorer still renders one graph. Step 7 should add presets rather than overloading one topology.
 - Terminal commands are useful and already support the new story; later work should improve interaction polish rather than add noisy commands.

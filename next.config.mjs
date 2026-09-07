@@ -58,7 +58,7 @@ const nextConfig = {
         headers: immutableAssetHeaders
       },
       {
-        source: "/ryanos-mark.svg",
+        source: "/portfolio-mark.svg",
         headers: immutableAssetHeaders
       },
       {

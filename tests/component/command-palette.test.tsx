@@ -1,6 +1,6 @@
 import { CommandPalette } from "@/features/workspace/components/CommandPalette";
 import type { PaletteAction } from "@/features/workspace/navigation";
-import { RyanOSApp } from "@/features/workspace/components/RyanOSApp";
+import { PortfolioApp } from "@/features/workspace/components/PortfolioApp";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -97,13 +97,13 @@ describe("CommandPalette", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("opens from RyanOS with Ctrl+K and follows keyboard selection", async () => {
+  it("opens from the portfolio with Ctrl+K and follows keyboard selection", async () => {
     const user = userEvent.setup();
-    window.sessionStorage.setItem("ryanos.booted", "true");
+    window.sessionStorage.setItem("portfolio.booted", "true");
 
-    render(<RyanOSApp />);
+    render(<PortfolioApp />);
 
-    await user.click(screen.getByRole("button", { name: "Explore RyanOS" }));
+    await user.click(screen.getByRole("button", { name: "Open Portfolio" }));
     await user.keyboard("{Control>}k{/Control}");
 
     expect(screen.getByRole("dialog", { name: "Command palette" })).toBeInTheDocument();

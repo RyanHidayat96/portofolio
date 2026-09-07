@@ -393,7 +393,7 @@ function EngineerOverviewPanel({
               <span />
               <span />
               <span />
-              <p>ryanos.workspace</p>
+              <p>ryan.workspace</p>
             </div>
             <ol>
               <li>

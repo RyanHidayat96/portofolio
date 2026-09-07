@@ -57,7 +57,7 @@ export function Portfolio3dHtmlFallback(): React.ReactElement {
         <header className="grid gap-5 border-b border-[var(--border)] pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="max-w-3xl">
             <p className="mono text-xs uppercase tracking-[0.24em] text-[var(--accent)]">
-              RyanOS portfolio
+              Ryan Hidayat portfolio
             </p>
             <h1 id="portfolio-3d-fallback-title" className="mt-2 text-3xl font-semibold leading-tight sm:text-4xl">
               Full portfolio, available without WebGL.

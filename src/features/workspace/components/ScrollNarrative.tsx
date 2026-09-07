@@ -126,7 +126,7 @@ export function ScrollNarrative(): React.ReactElement {
               })}
               <div className="narrative-core-center" aria-hidden="true">
                 <Database size={22} />
-                <span>RyanOS</span>
+                <span>Ryan</span>
               </div>
             </div>
           </div>

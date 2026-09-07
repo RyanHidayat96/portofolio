@@ -13,7 +13,7 @@ import type {
 } from "./types";
 
 export const branding: Branding = {
-  appName: "RyanOS",
+  appName: "Ryan Hidayat",
   workspaceLabel: "Full-Cycle Engineering Workspace",
   heroStatementLead: "I build systems.",
   heroStatementAccent: "I engineer confidence.",
@@ -396,7 +396,7 @@ export const projects: readonly ProjectCaseStudy[] = [
   },
   {
     slug: "ryanos-portfolio",
-    title: "RyanOS Portfolio",
+    title: "Ryan Portfolio",
     categories: ["build", "devops"],
     role: "Full Stack Engineer",
     engineered:
@@ -640,7 +640,7 @@ export const skillGroups: readonly SkillGroup[] = [
         name: "Frontend Applications",
         purpose:
           "Build user-facing systems with Next.js, React, TypeScript, Tailwind CSS, and data workflows.",
-        relatedProjects: ["Enterprise Audit Monitoring Platform", "RyanOS Portfolio"]
+        relatedProjects: ["Enterprise Audit Monitoring Platform", "Ryan Portfolio"]
       },
       {
         name: "Backend Services",
@@ -734,7 +734,7 @@ export const architectureMap: ArchitectureMap = {
       x: 50,
       y: 8,
       relatedSkills: ["Frontend Applications", "Forms, Tables, and Workflows"],
-      relatedProjects: ["Enterprise Audit Monitoring Platform", "RyanOS Portfolio"]
+      relatedProjects: ["Enterprise Audit Monitoring Platform", "Ryan Portfolio"]
     },
     {
       id: "api",
@@ -838,7 +838,7 @@ export const architecturePresets: readonly ArchitecturePreset[] = [
         x: 50,
         y: 8,
         relatedSkills: ["Frontend Applications", "Forms, Tables, and Workflows"],
-        relatedProjects: ["Enterprise Audit Monitoring Platform", "RyanOS Portfolio"]
+        relatedProjects: ["Enterprise Audit Monitoring Platform", "Ryan Portfolio"]
       },
       {
         id: "nextjs",
@@ -849,7 +849,7 @@ export const architecturePresets: readonly ArchitecturePreset[] = [
         x: 50,
         y: 23,
         relatedSkills: ["Frontend Applications"],
-        relatedProjects: ["Enterprise Audit Monitoring Platform", "RyanOS Portfolio"]
+        relatedProjects: ["Enterprise Audit Monitoring Platform", "Ryan Portfolio"]
       },
       {
         id: "rest-api",
@@ -1069,7 +1069,7 @@ export const architecturePresets: readonly ArchitecturePreset[] = [
         x: 50,
         y: 8,
         relatedSkills: ["CI/CD Quality Gates"],
-        relatedProjects: ["CI/CD Quality Gates", "RyanOS Portfolio"]
+        relatedProjects: ["CI/CD Quality Gates", "Ryan Portfolio"]
       },
       {
         id: "build",

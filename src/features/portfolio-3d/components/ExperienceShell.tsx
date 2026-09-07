@@ -110,7 +110,7 @@ export function ExperienceShell({
                 id="portfolio-3d-scene-title"
                 className="text-4xl font-semibold uppercase leading-none tracking-[0.01em] text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.62)] sm:text-5xl lg:text-6xl"
               >
-                RyanOS
+                Ryan Hidayat
               </p>
             </div>
 

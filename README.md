@@ -6,7 +6,7 @@ The project now has three entry paths:
 
 - `/` - the primary progressive 3D studio portfolio built with Three.js and React Three Fiber.
 - `/portfolio-3d` - the same 3D experience kept as an explicit route.
-- `/workspace` - the standard RyanOS engineering workspace fallback.
+- `/workspace` - the standard engineering workspace fallback.
 
 All experiences use the same verified portfolio data. Detailed personal, employment, and resume information stays in the owner-approved CV.
 
@@ -22,10 +22,10 @@ All experiences use the same verified portfolio data. Detailed personal, employm
 
 - `src/app/page.tsx` - primary 3D portfolio route
 - `src/app/portfolio-3d` - explicit 3D portfolio route
-- `src/app/workspace` - standard RyanOS workspace fallback route
+- `src/app/workspace` - standard workspace fallback route
 - `src/app` - routes, metadata, global styles, API handlers
 - `src/data` - profile, skills, experience, projects, architecture, challenges
-- `src/features/workspace` - standard RyanOS workspace shell and panels
+- `src/features/workspace` - standard workspace shell and panels
 - `src/features/portfolio-3d` - 3D runtime, scene manifest, routing, camera, lighting, interaction, fallback, and panel content adapters
 - `src/features/terminal` - command parser, registry, and terminal UI
 - `src/features/automation-lab` - failure strategies and simulation engine
@@ -90,7 +90,7 @@ npm run dev
 
 Open `http://localhost:3000` for the 3D portfolio.
 
-Open `http://localhost:3000/workspace` for the standard RyanOS workspace fallback.
+Open `http://localhost:3000/workspace` for the standard workspace fallback.
 
 On Windows, `star.bat` can start the local portfolio server. If port `3000` is already in use, stop the existing process or configure another port before running Next.js.
 
@@ -103,7 +103,7 @@ Local development falls back to `http://localhost:3000` when `NEXT_PUBLIC_SITE_U
 
 ## Production Assets
 
-- `public/favicon.svg` and `public/ryanos-mark.svg` provide static brand assets.
+- `public/favicon.svg` and the portfolio mark asset provide static brand assets.
 - `public/cv.pdf` provides the owner-approved CV download when `contact.cv.href` is configured.
 - `public/models/portfolio-3d/*.glb` provides runtime 3D models.
 - Next.js metadata routes generate `/manifest.webmanifest`, `/icon`, `/apple-icon`, `/opengraph-image`, and `/twitter-image`.

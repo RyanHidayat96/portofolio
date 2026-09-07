@@ -52,7 +52,7 @@ export function Landing({
         <div className="landing-hero-grid">
           <div className="landing-copy">
             <div className="landing-eyebrow">
-              <span>{branding.appName}</span>
+              <span>Portfolio</span>
               <span aria-hidden="true" />
               <span>Full Stack x SDET</span>
             </div>

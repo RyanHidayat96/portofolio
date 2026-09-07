@@ -81,8 +81,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-ryanos-sans);
-  --font-mono: var(--font-ryanos-mono);
+  --font-sans: var(--font-portfolio-sans);
+  --font-mono: var(--font-portfolio-mono);
 }
 
 * {
@@ -104,7 +104,7 @@ body {
     linear-gradient(180deg, var(--background-soft), var(--background) 32rem), var(--background);
   color: var(--text-primary);
   font-family:
-    var(--font-ryanos-sans),
+    var(--font-portfolio-sans),
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -156,7 +156,7 @@ textarea:focus-visible,
 
 .mono {
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
 }
 
@@ -190,7 +190,7 @@ textarea:focus-visible,
 .eyebrow {
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.75rem;
   font-weight: 700;
@@ -409,7 +409,7 @@ textarea:focus-visible,
   gap: 0.9rem;
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.75rem;
   font-weight: 800;
@@ -503,7 +503,7 @@ textarea:focus-visible,
 .landing-pillars span {
   color: var(--text-primary);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.8rem;
   font-weight: 800;
@@ -533,7 +533,7 @@ textarea:focus-visible,
   margin-top: 1.25rem;
   color: var(--text-muted);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.78rem;
   font-weight: 700;
@@ -718,7 +718,7 @@ textarea:focus-visible,
   display: block;
   color: var(--text-primary);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.75rem;
   font-weight: 800;
@@ -819,7 +819,7 @@ textarea:focus-visible,
   padding: 0.45rem 0.65rem;
   color: var(--text-muted);
   cursor: pointer;
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -963,7 +963,7 @@ textarea:focus-visible,
 .narrative-phase-index {
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.8rem;
   font-weight: 800;
@@ -1001,7 +1001,7 @@ textarea:focus-visible,
   padding: 0.25rem 0.65rem;
   color: var(--text-muted);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.74rem;
   font-weight: 700;
@@ -1021,7 +1021,7 @@ textarea:focus-visible,
 .narrative-proof-grid span {
   color: var(--text-subtle);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1116,7 +1116,7 @@ textarea:focus-visible,
 .narrative-core-center span {
   color: var(--text-primary);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.75rem;
   font-weight: 800;
@@ -1136,7 +1136,7 @@ textarea:focus-visible,
   padding: 0.65rem 0.75rem;
   color: var(--text-muted);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.74rem;
   font-weight: 800;
@@ -1312,7 +1312,7 @@ textarea:focus-visible,
 .career-timeline-card-top > span,
 .experience-history-card-top > span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 1.45rem;
   font-weight: 700;
   line-height: 1;
@@ -1322,7 +1322,7 @@ textarea:focus-visible,
 .career-timeline-period,
 .role-evolution-period {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.78rem;
 }
 
@@ -1415,7 +1415,7 @@ textarea:focus-visible,
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-control);
   color: var(--warning);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.78rem;
   text-transform: uppercase;
 }
@@ -1468,7 +1468,7 @@ textarea:focus-visible,
 
 .engineering-dna-principles span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-weight: 700;
 }
 
@@ -1853,7 +1853,7 @@ textarea:focus-visible,
 
 .recruiter-scan-career-list span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.75rem;
   text-transform: uppercase;
 }
@@ -1913,7 +1913,7 @@ textarea:focus-visible,
   border-radius: var(--radius-badge);
   padding: 0.28rem 0.55rem;
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.7rem;
 }
 
@@ -2013,7 +2013,7 @@ textarea:focus-visible,
 
 .recruiter-fast-path-grid article > span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -2168,7 +2168,7 @@ textarea:focus-visible,
 .engineer-playground-console-bar p {
   margin: 0 0 0 0.55rem;
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.78rem;
 }
 
@@ -2190,7 +2190,7 @@ textarea:focus-visible,
 
 .engineer-playground-console li span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.84rem;
 }
 
@@ -2258,7 +2258,7 @@ textarea:focus-visible,
 
 .engineer-playground-card-top span {
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.72rem;
   text-align: right;
   text-transform: uppercase;
@@ -2282,7 +2282,7 @@ textarea:focus-visible,
   background: rgba(85, 215, 255, 0.09);
   padding: 0.3rem 0.5rem;
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.78rem;
 }
 
@@ -2497,7 +2497,7 @@ textarea:focus-visible,
 .case-study-architecture-note > span {
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.68rem;
   font-weight: 800;
@@ -2689,7 +2689,7 @@ textarea:focus-visible,
 .case-study-layer-button span {
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.72rem;
   font-weight: 800;
@@ -2794,7 +2794,7 @@ textarea:focus-visible,
   display: block;
   margin-top: 0.5rem;
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -2837,7 +2837,7 @@ textarea:focus-visible,
   margin: 0;
   color: var(--text-muted);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.76rem;
   font-weight: 800;
@@ -2993,7 +2993,7 @@ textarea:focus-visible,
 .architecture-preset-button span {
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.68rem;
   font-weight: 800;
@@ -3052,7 +3052,7 @@ textarea:focus-visible,
 .architecture-details-kicker span {
   color: var(--text-subtle);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.68rem;
   font-weight: 800;
@@ -3172,7 +3172,7 @@ textarea:focus-visible,
 .architecture-edge text {
   fill: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 2.2px;
   font-weight: 800;
@@ -3272,7 +3272,7 @@ textarea:focus-visible,
   margin: 0;
   color: var(--text-muted);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.76rem;
   font-weight: 800;
@@ -3310,7 +3310,7 @@ textarea:focus-visible,
 .architecture-path-row strong {
   color: var(--accent);
   font-family:
-    var(--font-ryanos-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
     monospace;
   font-size: 0.72rem;
   letter-spacing: 0.1em;
@@ -3769,7 +3769,7 @@ textarea:focus-visible,
   background: rgba(5, 7, 10, 0.84);
   padding: 0.12rem 0.45rem;
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -3968,7 +3968,7 @@ textarea:focus-visible,
   background: rgba(8, 12, 18, 0.72);
   padding: 0.35rem 0.65rem;
   color: var(--text-secondary);
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -4059,7 +4059,7 @@ textarea:focus-visible,
 }
 
 .system-awakening-steps li span:first-child {
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -4149,7 +4149,7 @@ textarea:focus-visible,
   border-radius: var(--radius-control);
   background: rgba(5, 7, 10, 0.78);
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -4785,7 +4785,7 @@ textarea:focus-visible,
   background: rgba(8, 12, 18, 0.86);
   padding: 0.22rem 0.38rem;
   color: var(--text-secondary);
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.54rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -4943,7 +4943,7 @@ textarea:focus-visible,
 
 .case-study-world-node span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -4985,7 +4985,7 @@ textarea:focus-visible,
   background: rgba(5, 7, 10, 0.72);
   padding: 0.35rem 0.55rem;
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -5135,7 +5135,7 @@ textarea:focus-visible,
 .automation-signal-rail span,
 .performance-posture-card > span {
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -5211,7 +5211,7 @@ textarea:focus-visible,
 
 .performance-scenario-node > span:first-child {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -5283,7 +5283,7 @@ textarea:focus-visible,
 
 .pipeline-signal-rail span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.68rem;
   font-weight: 800;
 }
@@ -5296,7 +5296,7 @@ textarea:focus-visible,
 
 .pipeline-signal-rail small {
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.64rem;
   text-transform: uppercase;
 }
@@ -5358,7 +5358,7 @@ textarea:focus-visible,
 .terminal-proof-grid span,
 .terminal-autocomplete-hint {
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -5369,7 +5369,7 @@ textarea:focus-visible,
   display: block;
   margin-top: 0.2rem;
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 1.1rem;
 }
 
@@ -5380,7 +5380,7 @@ textarea:focus-visible,
   background: var(--surface);
   padding: 0.55rem 0.75rem;
   color: var(--text-secondary);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -5413,7 +5413,7 @@ textarea:focus-visible,
 
 .terminal-command-rail button span {
   color: var(--accent);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.74rem;
   font-weight: 800;
 }
@@ -5575,7 +5575,7 @@ textarea:focus-visible,
 .challenge-decision-trace span,
 .architecture-signal-grid span {
   color: var(--text-muted);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -9020,7 +9020,7 @@ textarea:focus-visible,
 
 .portfolio-3d-shell #portfolio-3d-scene-title + p {
   color: #83e9ff;
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   text-shadow: 1px 1px 0 rgba(57, 14, 9, 0.8);
 }
 
@@ -9032,7 +9032,7 @@ textarea:focus-visible,
 .portfolio-3d-instruction-hint .action-link {
   border-radius: 3px;
   box-shadow: 2px 2px 0 rgba(12, 3, 2, 0.68);
-  font-family: var(--font-ryanos-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
   letter-spacing: 0.02em;
 }
 

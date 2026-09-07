@@ -79,7 +79,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
         <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
         <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
-          Public RyanOS route handlers for profile, career, projects, architecture, and contact
+          Public portfolio route handlers for profile, career, projects, architecture, and contact
           data.
         </p>
         <div className="space-y-2">

@@ -21,8 +21,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 
 type AppPhase = "landing" | "boot" | "workspace";
 
-const bootStorageKey = "ryanos.booted";
-const bootStateChangeEvent = "ryanos.boot-state-change";
+const bootStorageKey = "portfolio.booted";
+const bootStateChangeEvent = "portfolio.boot-state-change";
 const sceneTransitionExitMs = 110;
 const sceneTransitionEnterMs = 240;
 const idleSceneTransition: WorkspaceSceneTransition = {
@@ -154,7 +154,7 @@ const ChallengePanel = dynamic(
   }
 );
 
-export function RyanOSApp({
+export function PortfolioApp({
   initialRoute = homeWorkspaceRoute
 }: Readonly<{
   initialRoute?: WorkspaceRouteState;

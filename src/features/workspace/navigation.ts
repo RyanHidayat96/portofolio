@@ -180,7 +180,7 @@ export function getPaletteActions(): readonly PaletteAction[] {
       id: "quick-terminal",
       label: "Open Terminal",
       section: "terminal",
-      description: "Run RyanOS commands like whoami, career, build, quality, cv.",
+      description: "Run portfolio commands like whoami, career, build, quality, cv.",
       keywords: ["commands", "cli"]
     },
     {

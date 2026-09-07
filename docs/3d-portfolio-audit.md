@@ -20,9 +20,9 @@ Scope: read-only audit for `CODEX_3D_PORTFOLIO_MASTER_PLAN.md` Stage 0. No UI, r
 - Styling: Tailwind CSS v4 through `@tailwindcss/postcss`, global design tokens in `src/app/globals.css`, shared UI in `src/components/ui`.
 - 3D dependencies already present: `three` `^0.185.1` and `@react-three/fiber` `^9.7.0`.
 - Icon system: `lucide-react`.
-- Root route: `src/app/page.tsx` renders `RyanOSApp` with `homeWorkspaceRoute`.
+- Root route: `src/app/page.tsx` renders the workspace application with `homeWorkspaceRoute`.
 - Deep links: `src/app/[...slug]/page.tsx` uses static params from `getStaticWorkspacePaths()` and metadata from `getWorkspaceRouteMetadata()`.
-- Main app shell: `src/features/workspace/components/RyanOSApp.tsx` is client-side and controls landing, boot, workspace state, dynamic panels, command palette, transitions, routing, and boot storage.
+- Main app shell is client-side and controls landing, boot, workspace state, dynamic panels, command palette, transitions, routing, and boot storage.
 - Workspace shell: `src/features/workspace/components/WorkspaceShell.tsx` renders sidebar navigation, mobile select, Home link, section header, command palette button, and section content slot.
 
 ## Current Feature Map
@@ -43,7 +43,7 @@ Scope: read-only audit for `CODEX_3D_PORTFOLIO_MASTER_PLAN.md` Stage 0. No UI, r
 - Site metadata: `src/config/site.ts` uses `NEXT_PUBLIC_SITE_URL` with localhost fallback.
 - Structured data: `src/config/structured-data.ts` and `src/app/StructuredData.tsx`.
 - SEO routes/assets: `src/app/sitemap.ts`, `robots.ts`, `manifest.ts`, `opengraph-image.tsx`, `twitter-image.tsx`, `icon.tsx`, `apple-icon.tsx`.
-- Public assets: `public/cv.pdf`, `public/favicon.svg`, `public/ryanos-mark.svg`.
+- Public assets: `public/cv.pdf`, `public/favicon.svg`, and the portfolio mark asset.
 - Environment baseline: `.env.example` only documents `NEXT_PUBLIC_SITE_URL`; most personal/portfolio content still lives in typed data files.
 - Known content risk: some files show mojibake for punctuation such as em dash and multiplication sign (`â€”`, `Ã—`). Fix later, not in Stage 0.
 
@@ -53,21 +53,21 @@ All discovered GLB files are under `assets/`. All files read as binary glTF (`ma
 
 | Asset | Bytes | Scene / Root | Key Runtime Nodes |
 | --- | ---: | --- | --- |
-| `architecture-screen.glb` | 1,274,148 | `RyanOS_ArchitectureScreen` / `ArchitectureScreen_Root` | `Screen_Architecture`, `Screen_ProtectiveGlass`, `Hotspot_Architecture`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
+| `architecture-screen.glb` | 1,274,148 | `ArchitectureScreen_Root` | `Screen_Architecture`, `Screen_ProtectiveGlass`, `Hotspot_Architecture`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
 | `ceiling-lights.glb` | 3,294,500 | `Ceiling_Lights_Scene` / `Ceiling_Lights_Root` | `Hotspot_CeilingLights`, `Hotspot_Pendant`, `Hotspot_Spot_01` through `Hotspot_Spot_06`, 10 punctual spot lights |
-| `chair.glb` | 2,765,540 | `RyanOS_Chair` / `Chair_Root` | no anchors, hotspots, screens, lights, or cameras |
-| `desk-accessories.glb` | 2,680,564 | `RyanOS_DeskAccessories` / `DeskAccessories_Root` | `Phone_Display`, `Hotspot_DeskAccessories`, `Anchor_Mug`, `Anchor_Phone`, `Anchor_Notebook` |
-| `desk-lamp.glb` | 2,492,032 | `RyanOS_DeskLamp` / `DeskLamp_Root` | `Hotspot_DeskLamp`, `Anchor_LampBase`, `Anchor_SpotLight`, `Anchor_LightTarget`; no glTF light nodes |
-| `desk.glb` | 1,049,196 | `RyanOS_Desk` / `Desk_Root` | no anchors, hotspots, screens, lights, or cameras |
-| `hologram-projector.glb` | 2,512,136 | `RyanOS_HologramProjector` / `HologramProjector_Root` | `Hologram_Surface`, `Hotspot_Performance`, `Anchor_HologramCenter`, `Anchor_CameraFocus` |
-| `keyboard-mouse.glb` | 5,074,116 | `RyanOS_KeyboardMouse` / `KeyboardMouse_Root` | `Hotspot_Terminal`, `Anchor_KeyboardCenter`, `Anchor_MouseCenter` |
-| `laptop.glb` | 2,727,076 | `RyanOS_Laptop` / `Laptop_Root` | `Screen_Fullstack`, `Screen_DisplayGlass`, `Hotspot_Fullstack`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
-| `main-monitor.glb` | 2,310,888 | `RyanOS_MainMonitor` / `MainMonitor_Root` | `Screen_Projects`, `Screen_AntiGlareGlass`, `Hotspot_Projects`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
-| `pipeline-console.glb` | 3,015,672 | `RyanOS_PipelineConsole` / `PipelineConsole_Root` | `Hotspot_CICDPipeline`, `Anchor_PipelineConsole`, `Anchor_DisplayCenter` |
-| `plants.glb` | 5,341,308 | `RyanOS_Plants` / `Plants_Root` | `Hotspot_Plants`, `Anchor_TallPlant`, `Anchor_DeskPlant`, `Anchor_PothosPlant` |
+| `chair.glb` | 2,765,540 | `Chair_Root` | no anchors, hotspots, screens, lights, or cameras |
+| `desk-accessories.glb` | 2,680,564 | `DeskAccessories_Root` | `Phone_Display`, `Hotspot_DeskAccessories`, `Anchor_Mug`, `Anchor_Phone`, `Anchor_Notebook` |
+| `desk-lamp.glb` | 2,492,032 | `DeskLamp_Root` | `Hotspot_DeskLamp`, `Anchor_LampBase`, `Anchor_SpotLight`, `Anchor_LightTarget`; no glTF light nodes |
+| `desk.glb` | 1,049,196 | `Desk_Root` | no anchors, hotspots, screens, lights, or cameras |
+| `hologram-projector.glb` | 2,512,136 | `HologramProjector_Root` | `Hologram_Surface`, `Hotspot_Performance`, `Anchor_HologramCenter`, `Anchor_CameraFocus` |
+| `keyboard-mouse.glb` | 5,074,116 | `KeyboardMouse_Root` | `Hotspot_Terminal`, `Anchor_KeyboardCenter`, `Anchor_MouseCenter` |
+| `laptop.glb` | 2,727,076 | `Laptop_Root` | `Screen_Fullstack`, `Screen_DisplayGlass`, `Hotspot_Fullstack`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
+| `main-monitor.glb` | 2,310,888 | `MainMonitor_Root` | `Screen_Projects`, `Screen_AntiGlareGlass`, `Hotspot_Projects`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
+| `pipeline-console.glb` | 3,015,672 | `PipelineConsole_Root` | `Hotspot_CICDPipeline`, `Anchor_PipelineConsole`, `Anchor_DisplayCenter` |
+| `plants.glb` | 5,341,308 | `Plants_Root` | `Hotspot_Plants`, `Anchor_TallPlant`, `Anchor_DeskPlant`, `Anchor_PothosPlant` |
 | `room-shell.glb` | 3,910,936 | `Room_Shell_Scene` / `Room_Shell_Root` | room anchors, colliders, navmesh, `Door_Pivot`, `Hotspot_Profile`, `Hotspot_Window`, `Hotspot_Door`, `Hotspot_RoomLighting`, 4 cove spot lights |
-| `server-rack.glb` | 4,920,588 | `RyanOS_ServerRack` / `ServerRack_Root` | `Screen_Backend`, `Screen_BackendGlass`, `Hotspot_Backend`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
-| `storage-shelf.glb` | 4,137,028 | `RyanOS_StorageShelf` / `StorageShelf_Root` | `Hotspot_EngineeringLab`, `Anchor_StorageShelf`, `Anchor_ShelfLighting` |
+| `server-rack.glb` | 4,920,588 | `ServerRack_Root` | `Screen_Backend`, `Screen_BackendGlass`, `Hotspot_Backend`, `Anchor_DisplayCenter`, `Anchor_CameraFocus` |
+| `storage-shelf.glb` | 4,137,028 | `StorageShelf_Root` | `Hotspot_EngineeringLab`, `Anchor_StorageShelf`, `Anchor_ShelfLighting` |
 
 ## Room Shell Anchors And Runtime Nodes
 

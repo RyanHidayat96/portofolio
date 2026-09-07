@@ -25,7 +25,7 @@ Last updated: 2026-09-02
 - Git baseline recorded: `main...origin/main [ahead 1]`; clean before Stage 0 documentation.
 - Stack documented: Next.js App Router, React, TypeScript, Tailwind CSS, npm, Three/R3F dependencies.
 - Entry routes documented: `src/app/page.tsx` and `src/app/[...slug]/page.tsx`.
-- Main workspace architecture documented: `RyanOSApp`, `WorkspaceShell`, navigation, dynamic feature panels.
+- Main workspace architecture documented: the workspace app shell, `WorkspaceShell`, navigation, dynamic feature panels.
 - Portfolio content sources documented: `src/data/portfolio-content.ts`, re-export files, site metadata, structured data, public assets.
 - GLB inventory completed: 15 files in `assets/`, all readable as binary glTF v2, total `47,505,728` bytes.
 - Important nodes, anchors, hotspots, screens, lights, bounding-box-level facts, and node contract differences documented in `docs/3d-portfolio-audit.md`.
@@ -49,7 +49,7 @@ Last updated: 2026-09-02
 - One foundation `Canvas` added inside the new 3D route only; no GLB loader or model import is active yet.
 - Renderer config centralized in `src/features/portfolio-3d/renderer-config.ts` with adaptive DPR, tone mapping, color management, renderer options, and performance settings.
 - `ExperienceShell` DOM created with skip link, canvas container, loading overlay, fallback slot, navigation slot, and section panel slot.
-- WebGL support detection created in `hooks/useWebGLSupport.ts`; unsupported/fatal runtime falls back to the existing `RyanOSApp` portfolio.
+- WebGL support detection created in `hooks/useWebGLSupport.ts`; unsupported/fatal runtime falls back to the existing workspace portfolio.
 - Minimal state/context and event API created in `state/Portfolio3dState.tsx`.
 - Safe integration route added at `/portfolio-3d`; existing routes remain unchanged.
 
@@ -185,7 +185,7 @@ Last updated: 2026-09-02
 
 - User review found localhost:3000 still displayed the standard workspace instead of the 3D experience.
 - src/app/page.tsx now renders PortfolioExperience, so / shows the 3D portfolio.
-- src/app/workspace/page.tsx preserves the old RyanOS workspace entry.
+- src/app/workspace/page.tsx preserves the standard workspace entry.
 - 3D shell, fallback links, section overview route paths, sitemap, README, and handoff docs now point to /workspace for the non-3D view.
 - No tests, linting, type checking, build, server restart, or browser validation were run per user speed instruction.
 

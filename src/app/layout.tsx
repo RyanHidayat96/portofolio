@@ -4,16 +4,16 @@ import { getAbsoluteUrl, siteConfig } from "@/config/site";
 import { StructuredData } from "./StructuredData";
 import "./globals.css";
 
-const ryanosSans = localFont({
+const portfolioSans = localFont({
   src: "./fonts/geist-latin.woff2",
-  variable: "--font-ryanos-sans",
+  variable: "--font-portfolio-sans",
   display: "swap",
   fallback: ["ui-sans-serif", "system-ui", "Arial"]
 });
 
-const ryanosMono = localFont({
+const portfolioMono = localFont({
   src: "./fonts/geist-mono-latin.woff2",
-  variable: "--font-ryanos-mono",
+  variable: "--font-portfolio-mono",
   display: "swap",
   fallback: ["Consolas", "Liberation Mono", "Menlo", "monospace"]
 });
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     other: [
       {
         rel: "mask-icon",
-        url: "/ryanos-mark.svg"
+        url: "/portfolio-mark.svg"
       }
     ]
   },
@@ -95,7 +95,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.ReactElement {
   return (
-    <html lang="en" className={`${ryanosSans.variable} ${ryanosMono.variable}`}>
+    <html lang="en" className={`${portfolioSans.variable} ${portfolioMono.variable}`}>
       <body>
         <StructuredData />
         {children}

@@ -3,7 +3,7 @@ import { PortfolioExperience } from '@/features/portfolio-3d/components/Portfoli
 
 export const metadata: Metadata = {
   title: '3D Portfolio',
-  description: 'Progressive 3D portfolio runtime for RyanOS.'
+  description: 'Progressive 3D portfolio runtime for Ryan Hidayat.'
 };
 
 export default function Portfolio3dPage(): React.ReactElement {

@@ -1,4 +1,4 @@
-import { RyanOSApp } from "@/features/workspace/components/RyanOSApp";
+import { PortfolioApp } from "@/features/workspace/components/PortfolioApp";
 import { resolveWorkspaceRouteFromPathname } from "@/features/workspace/routing";
 import { projects } from "@/data/projects";
 import { render, screen } from "@testing-library/react";
@@ -10,18 +10,18 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-describe("RyanOSApp mode switching", () => {
+describe("PortfolioApp mode switching", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
     window.history.replaceState(null, "", "/");
   });
 
   it("keeps landing SSR CTA stable when browser boot state is persisted", () => {
-    window.sessionStorage.setItem("ryanos.booted", "true");
+    window.sessionStorage.setItem("portfolio.booted", "true");
 
-    const html = renderToString(<RyanOSApp />);
+    const html = renderToString(<PortfolioApp />);
 
-    expect(html).toContain("Explore RyanOS");
+    expect(html).toContain("Open Portfolio");
     expect(html).not.toContain("INITIALIZE PORTFOLIO");
     expect(html).not.toContain("ENTER WORKSPACE");
   });
@@ -29,7 +29,7 @@ describe("RyanOSApp mode switching", () => {
   it("uses recruiter and engineer mode defaults from one mode state", async () => {
     const user = userEvent.setup();
 
-    render(<RyanOSApp />);
+    render(<PortfolioApp />);
 
     await user.click(screen.getByRole("button", { name: "Recruiter Mode" }));
     expect(
@@ -40,7 +40,7 @@ describe("RyanOSApp mode switching", () => {
     await user.click(screen.getByRole("button", { name: /^Engineer\b/i }));
     expect(
       await screen.findByRole("heading", {
-        name: /Explore RyanOS as a full-cycle engineering workspace/i
+        name: /Developer playground for the full portfolio system/i
       })
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/labs");
@@ -56,7 +56,7 @@ describe("RyanOSApp mode switching", () => {
     window.history.replaceState(null, "", "/labs/performance");
 
     render(
-      <RyanOSApp initialRoute={resolveWorkspaceRouteFromPathname(window.location.pathname)} />
+      <PortfolioApp initialRoute={resolveWorkspaceRouteFromPathname(window.location.pathname)} />
     );
 
     expect(await screen.findByText("Performance Lab")).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe("RyanOSApp mode switching", () => {
     window.history.replaceState(null, "", `/projects/${initialProject.slug}`);
 
     render(
-      <RyanOSApp initialRoute={resolveWorkspaceRouteFromPathname(window.location.pathname)} />
+      <PortfolioApp initialRoute={resolveWorkspaceRouteFromPathname(window.location.pathname)} />
     );
 
     expect(await screen.findByRole("heading", { name: initialProject.title })).toBeInTheDocument();

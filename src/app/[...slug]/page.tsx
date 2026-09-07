@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getWorkspaceRouteMetadata } from "@/config/site";
-import { RyanOSApp } from "@/features/workspace/components/RyanOSApp";
+import { PortfolioApp } from "@/features/workspace/components/PortfolioApp";
 import {
   getStaticWorkspacePaths,
   resolveWorkspaceRouteFromSegments
@@ -44,5 +44,5 @@ export default async function DeepLinkPage({
     notFound();
   }
 
-  return <RyanOSApp initialRoute={initialRoute} />;
+  return <PortfolioApp initialRoute={initialRoute} />;
 }
