@@ -18,8 +18,10 @@ const marqueeGlyphHeight = 7;
 const marqueeCharacterAdvance = marqueeDotPitch * 6;
 const marqueeMessageWidth = marqueeMessage.length * marqueeCharacterAdvance;
 const marqueeMessageGap = 90;
-const marqueeBorderVerticalInset = 25;
-const marqueeContentVerticalInset = 37;
+// Keep only a slim black reveal around the LED frame. Horizontal inset values
+// are derived from these values to remain physically equal on the marquee.
+const marqueeBorderVerticalInset = 10;
+const marqueeContentVerticalInset = 18;
 
 const ledGlyphs: Readonly<Record<string, readonly string[]>> = {
   A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
