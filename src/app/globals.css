@@ -9249,11 +9249,18 @@ textarea:focus-visible,
   }
 
   .portfolio-3d-navigation-panel {
+    position: fixed;
     bottom: max(0.75rem, env(safe-area-inset-bottom));
     left: 0.75rem;
     width: calc(100vw - 1.5rem);
-    max-height: min(35dvh, 22rem);
+    max-height: min(35svh, 22rem);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
     padding: 0.65rem;
+    background: #280c09;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    isolation: isolate;
   }
 
   .portfolio-3d-shell .portfolio-3d-area-button {
@@ -9290,6 +9297,6 @@ textarea:focus-visible,
 
 @media (max-width: 390px) {
   .portfolio-3d-navigation-panel {
-    max-height: min(37dvh, 21rem);
+    max-height: min(37svh, 21rem);
   }
 }
