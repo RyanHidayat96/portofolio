@@ -40,7 +40,7 @@ import type {
   SceneAssetDefinition
 } from '../types';
 import { DynamicScreenLayer } from './DynamicScreenLayer';
-import { ArcadeScreenSurface } from './ArcadeScreenSurface';
+import { ArcadeScreenSurface, maximumMobileScreenZoom } from './ArcadeScreenSurface';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
 import { SceneAssetBoundary } from './SceneAssetBoundary';
@@ -102,6 +102,8 @@ const embeddedScreenCoverageById = {
   contact: contactScreenCoverage
 } as const;
 
+type EmbeddedScreenZoomById = Readonly<Partial<Record<EmbeddedScreenId, number>>>;
+
 type EmbeddedScreenMobileCameraConfig = Readonly<{
   maxDistance: number;
   lateralOffset: number;
@@ -135,6 +137,7 @@ export function PortfolioSceneStage({
   const [loadedAssetIds, setLoadedAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
   const [failedAssetIds, setFailedAssetIds] = useState<readonly Portfolio3dAssetId[]>([]);
   const [enabledAnchoredAssetIds, setEnabledAnchoredAssetIds] = useState<readonly Portfolio3dAssetId[]>(initiallyEnabledAnchoredAssetIds);
+  const [embeddedScreenZoomById, setEmbeddedScreenZoomById] = useState<EmbeddedScreenZoomById>({});
 
   const roomNodes = runtimeNodesByAsset['room-shell'];
   const arcadeScreen = useMemo(() => roomNodes ? resolveArcadeScreen(roomNodes.root) : undefined, [roomNodes]);
@@ -274,6 +277,16 @@ export function PortfolioSceneStage({
     setFailedAssetIds((current) => current.includes(assetId) ? current : [...current, assetId]);
   }, []);
 
+  const handleEmbeddedScreenZoomChange = useCallback((screenId: EmbeddedScreenId, scale: number): void => {
+    const nextScale = clampEmbeddedScreenZoom(scale);
+    setEmbeddedScreenZoomById((current) => {
+      const currentScale = current[screenId] ?? 1;
+      return Math.abs(currentScale - nextScale) < 0.005
+        ? current
+        : { ...current, [screenId]: nextScale };
+    });
+  }, []);
+
   return (
     <>
       <InteractiveOrbitControls />
@@ -284,6 +297,7 @@ export function PortfolioSceneStage({
       <CameraNavigationRig
         runtimeNodesByAsset={runtimeNodesByAsset}
         embeddedScreens={embeddedScreens}
+        embeddedScreenZoomById={embeddedScreenZoomById}
       />
       <CameraDebugOverlay />
       <SceneAssetBoundary asset={roomShellAsset} onError={handleAssetError}>
@@ -312,31 +326,31 @@ export function PortfolioSceneStage({
         : null}
 
       {arcadeScreen ? (
-        <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {automationScreen ? (
-        <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {performanceScreen ? (
-        <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {apiScreen ? (
-        <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {terminalScreen ? (
-        <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {architectureArtworkScreen ? (
-        <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {experienceArtworkScreen ? (
-        <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {profileArtworkScreen ? (
-        <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
       {contactBookScreen ? (
-        <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} />
+        <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
       ) : null}
 
       {!isSingleRoomPreview ? (
@@ -503,10 +517,12 @@ interface CameraTransitionState {
 
 function CameraNavigationRig({
   runtimeNodesByAsset,
-  embeddedScreens
+  embeddedScreens,
+  embeddedScreenZoomById
 }: Readonly<{
   runtimeNodesByAsset: Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>;
   embeddedScreens: Readonly<Partial<Record<EmbeddedScreenId, ArcadeScreenPlacement>>>;
+  embeddedScreenZoomById: EmbeddedScreenZoomById;
 }>): null {
   const { camera, invalidate, size } = useThree();
   const { state, setNavigationState } = usePortfolio3dState();
@@ -532,7 +548,7 @@ function CameraNavigationRig({
       size.width,
       size.height
     );
-    const targetFov = getEmbeddedScreenTargetFov(
+    const baseTargetFov = getEmbeddedScreenTargetFov(
       preset.fov,
       embeddedScreen,
       screenCoverage,
@@ -540,12 +556,15 @@ function CameraNavigationRig({
       size.width,
       size.height
     );
+    const targetFov = embeddedScreenId
+      ? getEmbeddedScreenZoomedFov(baseTargetFov, embeddedScreenZoomById[embeddedScreenId] ?? 1)
+      : baseTargetFov;
     const isArtworkScreen = embeddedScreenId === 'profile' || embeddedScreenId === 'experience' || embeddedScreenId === 'architecture' || embeddedScreenId === 'contact';
     const targetPosition = embeddedScreen
       ? getArcadeCameraPosition(
         embeddedScreen,
         size.width / Math.max(size.height, 1),
-        targetFov,
+        baseTargetFov,
         screenCoverage
       )
       : constrainPortfolio3dCameraPosition(new THREE.Vector3(...preset.position));
@@ -637,7 +656,7 @@ function CameraNavigationRig({
       camera.updateProjectionMatrix();
     }
     invalidate();
-  }, [camera, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
+  }, [camera, embeddedScreenZoomById, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
 
   useFrame((rootState) => {
     const transition = transitionRef.current;
@@ -765,6 +784,18 @@ function getEmbeddedScreenTargetFov(
 
   // Keep the result usable on small phones without changing desktop optics.
   return Math.min(82, Math.max(presetFov, fittingFov));
+}
+
+function getEmbeddedScreenZoomedFov(baseFov: number, zoom: number): number {
+  // Camera FOV controls the CSS3D document and the GLB together, so the
+  // physical bezel and nearby room remain locked to the enlarged page.
+  return Math.min(baseFov, Math.max(12, baseFov / clampEmbeddedScreenZoom(zoom)));
+}
+
+function clampEmbeddedScreenZoom(value: number): number {
+  return Number.isFinite(value)
+    ? Math.min(Math.max(value, 1), maximumMobileScreenZoom)
+    : 1;
 }
 
 function applyCameraState(

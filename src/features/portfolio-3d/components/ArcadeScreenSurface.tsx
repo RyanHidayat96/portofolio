@@ -13,7 +13,6 @@ interface ScreenRuntime {
   readonly object: CSS3DObject;
   readonly camera: THREE.Camera;
   readonly content: HTMLDivElement;
-  focusZoom?: FocusZoom;
   projectedTransform?: string;
 }
 
@@ -21,34 +20,23 @@ interface ScreenRuntime {
 const cssWorldScale = 1000;
 const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
-const maximumMobileScreenZoom = 2.5;
+export const maximumMobileScreenZoom = 2.5;
 
 interface TouchPoint {
   readonly x: number;
   readonly y: number;
 }
 
-interface FocusZoom {
-  readonly scale: number;
-  readonly offsetX: number;
-  readonly offsetY: number;
-}
-
 interface TouchZoomGesture {
   readonly initialDistance: number;
   readonly initialScale: number;
-  readonly anchorX: number;
-  readonly anchorY: number;
-  readonly baseLeft: number;
-  readonly baseTop: number;
-  readonly baseWidth: number;
-  readonly baseHeight: number;
 }
 
-export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonly<{
+export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZoomChange }: Readonly<{
   screen: ArcadeScreenPlacement;
   screenId: EmbeddedScreenId;
   onScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
+  onScreenZoomChange?: (screenId: EmbeddedScreenId, scale: number) => void;
 }>): React.ReactElement {
   const { camera, gl, size, invalidate, setEvents, get } = useThree();
   const { state, setActiveSection } = usePortfolio3dState();
@@ -149,22 +137,18 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
     const element = object.element;
     const activePointers = new Map<number, TouchPoint>();
     let gesture: TouchZoomGesture | undefined;
-    let scale = runtime.focusZoom?.scale ?? 1;
-    let offsetX = runtime.focusZoom?.offsetX ?? 0;
-    let offsetY = runtime.focusZoom?.offsetY ?? 0;
+    let scale = 1;
 
     const resetZoom = (): void => {
       scale = 1;
-      offsetX = 0;
-      offsetY = 0;
-      runtime.focusZoom = undefined;
+      onScreenZoomChange?.(screenId, scale);
       if (isInteractive) renderScreen(runtime, camera, screen, pixelWidth, true);
     };
 
     const isMobileViewport = (): boolean => window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
 
     const applyZoom = (): void => {
-      runtime.focusZoom = scale > 1 ? { scale, offsetX, offsetY } : undefined;
+      onScreenZoomChange?.(screenId, scale);
       renderScreen(runtime, camera, screen, pixelWidth, true);
     };
 
@@ -172,23 +156,11 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
       if (!isMobileViewport() || activePointers.size !== 2) return;
 
       const [first, second] = [...activePointers.values()];
-      const bounds = element.getBoundingClientRect();
-      if (!first || !second || bounds.width <= 0 || bounds.height <= 0) return;
+      if (!first || !second) return;
 
-      const midpoint = getTouchMidpoint(first, second);
-      const baseWidth = bounds.width / scale;
-      const baseHeight = bounds.height / scale;
-      const baseLeft = bounds.left - offsetX;
-      const baseTop = bounds.top - offsetY;
       gesture = {
         initialDistance: getTouchDistance(first, second),
-        initialScale: scale,
-        anchorX: (midpoint.x - baseLeft - offsetX) / scale,
-        anchorY: (midpoint.y - baseTop - offsetY) / scale,
-        baseLeft,
-        baseTop,
-        baseWidth,
-        baseHeight
+        initialScale: scale
       };
     };
 
@@ -198,17 +170,12 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
       const [first, second] = [...activePointers.values()];
       if (!first || !second) return;
 
-      const midpoint = getTouchMidpoint(first, second);
       const nextScale = clamp(
         gesture.initialScale * getTouchDistance(first, second) / Math.max(gesture.initialDistance, 1),
         1,
         maximumMobileScreenZoom
       );
-      const nextOffsetX = midpoint.x - gesture.baseLeft - gesture.anchorX * nextScale;
-      const nextOffsetY = midpoint.y - gesture.baseTop - gesture.anchorY * nextScale;
       scale = nextScale;
-      offsetX = clamp(nextOffsetX, gesture.baseWidth * (1 - scale), 0);
-      offsetY = clamp(nextOffsetY, gesture.baseHeight * (1 - scale), 0);
       applyZoom();
     };
 
@@ -217,6 +184,9 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (activePointers.size === 2) {
         event.preventDefault();
+        activePointers.forEach((_, pointerId) => {
+          if (!element.hasPointerCapture(pointerId)) element.setPointerCapture(pointerId);
+        });
         beginGesture();
       }
     };
@@ -231,6 +201,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
 
     const endGesture = (event: PointerEvent): void => {
       activePointers.delete(event.pointerId);
+      if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
       if (activePointers.size < 2) gesture = undefined;
     };
 
@@ -257,7 +228,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady }: Readonl
       window.removeEventListener('resize', onViewportChange);
       resetZoom();
     };
-  }, [camera, isInteractive, pixelWidth, screen]);
+  }, [camera, isInteractive, onScreenZoomChange, pixelWidth, screen, screenId]);
 
   // The existing demand loop drives projection only while the camera/scene changes.
   useFrame(() => {
@@ -310,11 +281,10 @@ function renderScreen(runtime: ScreenRuntime, camera: THREE.Camera, screen: Arca
     const x = (topLeft.x + 1) * size.width / 2;
     const y = (1 - topLeft.y) * size.height / 2;
     const projectedScale = (topRight.x - topLeft.x) * size.width / (2 * pixelWidth);
-    const focusZoom = runtime.focusZoom;
     runtime.renderer.domElement.style.zIndex = '2';
     if (element.parentElement !== runtime.renderer.domElement) runtime.renderer.domElement.appendChild(element);
     element.style.transformOrigin = '0 0';
-    element.style.transform = `translate(${x + (focusZoom?.offsetX ?? 0)}px, ${y + (focusZoom?.offsetY ?? 0)}px) scale(${projectedScale * (focusZoom?.scale ?? 1)})`;
+    element.style.transform = `translate(${x}px, ${y}px) scale(${projectedScale})`;
     return;
   }
   if (runtime.projectedTransform !== undefined) {
@@ -332,13 +302,6 @@ function renderScreen(runtime: ScreenRuntime, camera: THREE.Camera, screen: Arca
 
 function getTouchDistance(first: TouchPoint, second: TouchPoint): number {
   return Math.hypot(second.x - first.x, second.y - first.y);
-}
-
-function getTouchMidpoint(first: TouchPoint, second: TouchPoint): TouchPoint {
-  return {
-    x: (first.x + second.x) / 2,
-    y: (first.y + second.y) / 2
-  };
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
