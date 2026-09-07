@@ -18,9 +18,7 @@ const marqueeGlyphHeight = 7;
 const marqueeCharacterAdvance = marqueeDotPitch * 6;
 const marqueeMessageWidth = marqueeMessage.length * marqueeCharacterAdvance;
 const marqueeMessageGap = 90;
-const marqueeBorderHorizontalInset = 28;
 const marqueeBorderVerticalInset = 25;
-const marqueeContentHorizontalInset = 43;
 const marqueeContentVerticalInset = 37;
 
 const ledGlyphs: Readonly<Record<string, readonly string[]>> = {
@@ -61,10 +59,18 @@ export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
     nextTexture.generateMipmaps = false;
     nextTexture.minFilter = THREE.LinearFilter;
     nextTexture.magFilter = THREE.LinearFilter;
-    const backgroundCanvas = createMarqueeBackground();
+    const layout = createMarqueeCanvasLayout(marquee);
+    const backgroundCanvas = createMarqueeBackground(layout);
     const messageCanvas = createMarqueeMessage();
     const projection = new THREE.Vector3();
-    runtimeRef.current = { context, texture: nextTexture, backgroundCanvas, messageCanvas, projection };
+    runtimeRef.current = {
+      context,
+      texture: nextTexture,
+      backgroundCanvas,
+      messageCanvas,
+      projection,
+      layout
+    };
 
     const paint = (): void => {
       const runtime = runtimeRef.current;
@@ -119,9 +125,33 @@ interface MarqueeRuntime {
   readonly backgroundCanvas: HTMLCanvasElement;
   readonly messageCanvas: HTMLCanvasElement;
   readonly projection: THREE.Vector3;
+  readonly layout: MarqueeCanvasLayout;
 }
 
-function createMarqueeBackground(): HTMLCanvasElement {
+interface MarqueeCanvasLayout {
+  readonly borderHorizontalInset: number;
+  readonly borderVerticalInset: number;
+  readonly contentHorizontalInset: number;
+  readonly contentVerticalInset: number;
+}
+
+function createMarqueeCanvasLayout(marquee: ArcadeScreenPlacement): MarqueeCanvasLayout {
+  // Vertical values are the master controls. Deriving the horizontal values
+  // from the actual 3D plane gives all four margins the same physical size.
+  const toHorizontalInset = (verticalInset: number): number => (
+    marqueeCanvasWidth * marquee.height * verticalInset /
+    (marqueeCanvasHeight * Math.max(marquee.width, Number.EPSILON))
+  );
+
+  return {
+    borderHorizontalInset: toHorizontalInset(marqueeBorderVerticalInset),
+    borderVerticalInset: marqueeBorderVerticalInset,
+    contentHorizontalInset: toHorizontalInset(marqueeContentVerticalInset),
+    contentVerticalInset: marqueeContentVerticalInset
+  };
+}
+
+function createMarqueeBackground(layout: MarqueeCanvasLayout): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = marqueeCanvasWidth;
   canvas.height = marqueeCanvasHeight;
@@ -140,7 +170,7 @@ function createMarqueeBackground(): HTMLCanvasElement {
     context.fillRect(0, y, marqueeCanvasWidth, 1);
   }
 
-  drawLedBorder(context, 0);
+  drawLedBorder(context, layout, 0);
   return canvas;
 }
 
@@ -154,7 +184,7 @@ function createMarqueeMessage(): HTMLCanvasElement {
 }
 
 function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
-  const { backgroundCanvas, context, messageCanvas } = runtime;
+  const { backgroundCanvas, context, layout, messageCanvas } = runtime;
   context.drawImage(backgroundCanvas, 0, 0);
 
   const messageOffset = (timestamp / 1000 * marqueeScrollPixelsPerSecond) % (
@@ -165,10 +195,10 @@ function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
   context.save();
   context.beginPath();
   context.rect(
-    marqueeContentHorizontalInset,
-    marqueeContentVerticalInset,
-    marqueeCanvasWidth - marqueeContentHorizontalInset * 2,
-    marqueeCanvasHeight - marqueeContentVerticalInset * 2
+    layout.contentHorizontalInset,
+    layout.contentVerticalInset,
+    marqueeCanvasWidth - layout.contentHorizontalInset * 2,
+    marqueeCanvasHeight - layout.contentVerticalInset * 2
   );
   context.clip();
   context.drawImage(messageCanvas, startX, baselineY);
@@ -188,11 +218,15 @@ function isMarqueeVisible(
     projection.y >= -1.08 && projection.y <= 1.08;
 }
 
-function drawLedBorder(context: CanvasRenderingContext2D, timestamp: number): void {
-  const left = marqueeBorderHorizontalInset;
-  const right = marqueeCanvasWidth - marqueeBorderHorizontalInset;
-  const top = marqueeBorderVerticalInset;
-  const bottom = marqueeCanvasHeight - marqueeBorderVerticalInset;
+function drawLedBorder(
+  context: CanvasRenderingContext2D,
+  layout: MarqueeCanvasLayout,
+  timestamp: number
+): void {
+  const left = layout.borderHorizontalInset;
+  const right = marqueeCanvasWidth - layout.borderHorizontalInset;
+  const top = layout.borderVerticalInset;
+  const bottom = marqueeCanvasHeight - layout.borderVerticalInset;
   drawLedLine(context, left, top, right, top, timestamp);
   drawLedLine(context, right, top, right, bottom, timestamp);
   drawLedLine(context, right, bottom, left, bottom, timestamp);
@@ -232,7 +266,7 @@ function drawLedMessage(
   message.toUpperCase().split('').forEach((character, characterIndex) => {
     const glyph = ledGlyphs[character] ?? ledGlyphs[' '];
     const glyphX = startX + characterIndex * marqueeCharacterAdvance;
-    if (glyphX > marqueeCanvasWidth || glyphX + marqueeCharacterAdvance < 0) return;
+    if (glyphX > context.canvas.width || glyphX + marqueeCharacterAdvance < 0) return;
 
     glyph.forEach((row, rowIndex) => {
       row.split('').forEach((pixel, columnIndex) => {

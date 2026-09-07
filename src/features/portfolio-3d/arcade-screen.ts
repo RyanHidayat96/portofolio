@@ -25,16 +25,32 @@ const experienceArtworkMaterialName = 'poster 2';
 const architectureArtworkMaterialName = 'poster';
 const contactBookMaterialName = 'RealisticNotebookAndPaper';
 const arcadeMarqueeNodeName = 'Text';
+const arcadeMarqueeHousingMaterialName = 'Material.002';
 
 export function resolveArcadeScreen(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
   return resolveScreenByMaterial(root, ['gaming_mashine', 'gaming mashine'], pipelineScreenMaterialName);
 }
 
 export function resolveArcadeMarquee(root: THREE.Object3D): ArcadeScreenPlacement | undefined {
-  const marquee = root.getObjectByName(arcadeMarqueeNodeName);
-  if (!(marquee instanceof THREE.Mesh)) return undefined;
+  // Material.002 is the physical rectangular marquee face. Using it keeps the
+  // LED plane centered in the cabinet instead of inheriting the old text's
+  // asymmetric bounds.
+  const housing = findScreenMesh(
+    root,
+    ['gaming_mashine', 'gaming mashine'],
+    arcadeMarqueeHousingMaterialName
+  );
+  const housingPlacement = housing
+    ? resolveMaterialScreenPlacement(housing, arcadeMarqueeHousingMaterialName)
+    : undefined;
+  if (housingPlacement) {
+    return housingPlacement;
+  }
 
-  const geometry = marquee.geometry;
+  const marqueeText = root.getObjectByName(arcadeMarqueeNodeName);
+  if (!(marqueeText instanceof THREE.Mesh)) return undefined;
+
+  const geometry = marqueeText.geometry;
   geometry.computeBoundingBox();
   const bounds = geometry.boundingBox;
   if (!bounds) return undefined;
@@ -43,18 +59,18 @@ export function resolveArcadeMarquee(root: THREE.Object3D): ArcadeScreenPlacemen
   const localHeight = bounds.max.z - bounds.min.z;
   if (localWidth <= 0 || localHeight <= 0) return undefined;
 
-  marquee.updateWorldMatrix(true, false);
+  marqueeText.updateWorldMatrix(true, false);
   const localCenter = new THREE.Vector3(
     (bounds.min.x + bounds.max.x) / 2,
     (bounds.min.y + bounds.max.y) / 2,
     (bounds.min.z + bounds.max.z) / 2
   );
-  const position = localCenter.clone().applyMatrix4(marquee.matrixWorld);
+  const position = localCenter.clone().applyMatrix4(marqueeText.matrixWorld);
   const right = localCenter.clone().add(new THREE.Vector3(localWidth, 0, 0))
-    .applyMatrix4(marquee.matrixWorld)
+    .applyMatrix4(marqueeText.matrixWorld)
     .sub(position);
   const up = localCenter.clone().add(new THREE.Vector3(0, 0, localHeight))
-    .applyMatrix4(marquee.matrixWorld)
+    .applyMatrix4(marqueeText.matrixWorld)
     .sub(position);
   const width = right.length();
   const height = up.length();
@@ -79,8 +95,7 @@ export function resolveArcadeMarquee(root: THREE.Object3D): ArcadeScreenPlacemen
       new THREE.Matrix4().makeBasis(right, up, normal)
     ),
     normal,
-    // The original mesh is letter-shaped. A small expansion forms the LED housing
-    // while staying inside the arcade cabinet's marquee recess.
+    // Legacy fallback for GLB versions without the dedicated marquee face.
     width: width * 1.24,
     height: height * 1.42
   };
