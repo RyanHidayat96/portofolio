@@ -3,7 +3,6 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { branding } from "@/data/branding";
-import { profile } from "@/data/profile";
 import {
   getNavigationGroups,
   getNavigationItem,
@@ -139,7 +138,6 @@ export function WorkspaceShell({
                 <p className="mono text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
                   {activeLabel}
                 </p>
-                <h2 className="text-xl font-semibold">{profile.name}</h2>
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">

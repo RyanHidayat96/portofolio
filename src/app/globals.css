@@ -9172,6 +9172,47 @@ textarea:focus-visible,
   outline-offset: 2px;
 }
 
+/* Keep the desktop room controls compact enough to expose every area at once. */
+@media (min-width: 768px) {
+  .portfolio-3d-shell #portfolio-3d-scene-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .portfolio-3d-navigation-panel {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div > p {
+    margin-bottom: 0.35rem;
+    font-size: 0.56rem;
+    letter-spacing: 0.18em;
+  }
+
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div > div {
+    gap: 0.25rem;
+  }
+
+  .portfolio-3d-shell .portfolio-3d-area-button {
+    min-height: 34px;
+    gap: 0.45rem;
+    padding: 0.32rem 0.5rem;
+    font-size: 0.78rem;
+  }
+
+  .portfolio-3d-shell .portfolio-3d-area-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  .portfolio-3d-shell .portfolio-3d-area-icon svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+}
+
 /* Compact room controls on portrait touch screens while preserving a clear view of the scene. */
 @media (max-width: 767px) {
   .portfolio-3d-scene-header {
