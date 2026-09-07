@@ -8177,6 +8177,10 @@ textarea:focus-visible,
   overflow-anchor: none;
 }
 
+.portfolio-3d-navigation-scroll {
+  min-height: 0;
+}
+
 .portfolio-3d-section-popover,
 .portfolio-3d-instruction-hint,
 .portfolio-3d-detail-card {
@@ -9139,7 +9143,11 @@ textarea:focus-visible,
 
   .portfolio-3d-navigation-panel {
     max-height: none;
-    overflow-y: visible;
+    overflow: visible;
+  }
+
+  .portfolio-3d-navigation-scroll {
+    overflow: visible;
   }
 
   .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div > p {
@@ -9200,14 +9208,24 @@ textarea:focus-visible,
     bottom: max(0.75rem, env(safe-area-inset-bottom));
     left: 0.75rem;
     width: calc(100vw - 1.5rem);
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    height: min(35svh, 22rem);
     max-height: min(35svh, 22rem);
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
+    overflow: hidden;
     padding: 0.65rem;
     background: #280c09;
+    isolation: auto;
+  }
+
+  /* Keep the fixed frame static; only this child participates in touch scroll.
+     This avoids Android Chrome dropping the menu raster over the WebGL canvas. */
+  .portfolio-3d-navigation-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
-    isolation: isolate;
   }
 
   .portfolio-3d-shell .portfolio-3d-area-button {
@@ -9244,6 +9262,7 @@ textarea:focus-visible,
 
 @media (max-width: 390px) {
   .portfolio-3d-navigation-panel {
+    height: min(37svh, 21rem);
     max-height: min(37svh, 21rem);
   }
 }

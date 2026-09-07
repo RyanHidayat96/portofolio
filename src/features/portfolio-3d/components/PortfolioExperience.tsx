@@ -540,15 +540,15 @@ function Portfolio3dNavigation(): React.ReactElement {
       return;
     }
 
-    const navigationPanel = navigationRef.current?.closest<HTMLElement>('.portfolio-3d-navigation-panel');
-    if (!navigationPanel) return;
+    const navigationScroller = navigationRef.current?.closest<HTMLElement>('.portfolio-3d-navigation-scroll');
+    if (!navigationScroller) return;
 
-    // Mobile Chrome can scroll an overflow panel to the previously focused
+    // Mobile Chrome can scroll the menu to the previously focused
     // embedded-screen button after a pinch changes the visual viewport.
     let framesRemaining = 3;
     let animationFrame = 0;
     const resetPanelScroll = (): void => {
-      navigationPanel.scrollTop = 0;
+      navigationScroller.scrollTop = 0;
       if (framesRemaining > 0) {
         framesRemaining -= 1;
         animationFrame = window.requestAnimationFrame(resetPanelScroll);

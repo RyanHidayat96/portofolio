@@ -1,28 +1,18 @@
 'use client';
 
-import { useFrame, useThree } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { useLayoutEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
+import {
+  type EmbeddedScreenRegistration,
+  useEmbeddedScreenLayer
+} from './EmbeddedScreenLayer';
 
-interface ScreenRuntime {
-  readonly renderer: CSS3DRenderer;
-  readonly scene: THREE.Scene;
-  readonly object: CSS3DObject;
-  readonly camera: THREE.Camera;
-  readonly content: HTMLDivElement;
-  projectedTransform?: string;
-}
-
-// Keep CSS coordinates in pixel-sized units while the GLB remains in meters.
-const cssWorldScale = 1000;
 const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
-// CSS3D pages sit behind the alpha-enabled WebGL canvas. The matching plane
-// below writes a transparent, depth-tested opening for each physical display.
-const screenLayerZIndex = '0';
 export const maximumMobileScreenZoom = 2.5;
 
 interface TouchPoint {
@@ -41,9 +31,10 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
   onScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
   onScreenZoomChange?: (screenId: EmbeddedScreenId, scale: number) => void;
 }>): React.ReactElement {
-  const { camera, gl, size, invalidate, setEvents, get } = useThree();
+  const { gl, setEvents, get } = useThree();
   const { state, setActiveSection } = usePortfolio3dState();
-  const runtimeRef = useRef<ScreenRuntime | null>(null);
+  const screenLayer = useEmbeddedScreenLayer();
+  const runtimeRef = useRef<EmbeddedScreenRegistration | null>(null);
   const isInteractive = state.activeSectionId === screenId && state.navigationState === 'section-open';
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
@@ -51,87 +42,65 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
   const pixelHeight = pixelWidth * screen.height / screen.width;
 
   useLayoutEffect(() => {
-    const canvas = gl.domElement;
-    const parent = canvas.parentElement;
-    if (!parent) return;
     const element = document.createElement('div');
     element.className = `arcade-screen-document arcade-screen-document--${screenId}`;
     const content = document.createElement('div');
     content.className = 'arcade-screen-content';
     element.appendChild(content);
     const object = new CSS3DObject(element);
-    const scene = new THREE.Scene();
-    scene.add(object);
-    const renderer = new CSS3DRenderer();
-    renderer.domElement.className = 'arcade-css-layer';
-    renderer.domElement.style.zIndex = screenLayerZIndex;
-    const previousPosition = canvas.style.position;
-    const previousZIndex = canvas.style.zIndex;
-    canvas.style.position = 'relative';
-    canvas.style.zIndex = '1';
-    parent.insertBefore(renderer.domElement, canvas);
-    runtimeRef.current = { renderer, scene, object, camera: camera.clone(), content };
+    const runtime: EmbeddedScreenRegistration = {
+      screenId,
+      object,
+      content,
+      screen,
+      pixelWidth,
+      pixelHeight,
+      isInteractive: false
+    };
+    runtimeRef.current = runtime;
+    screenLayer.registerScreen(runtime);
     onScreenReady?.(screenId, content);
-    invalidate();
 
     return () => {
-      scene.remove(object);
-      renderer.domElement.remove();
-      canvas.style.position = previousPosition;
-      canvas.style.zIndex = previousZIndex;
+      screenLayer.unregisterScreen(runtime);
       runtimeRef.current = null;
       onScreenReady?.(screenId, null);
     };
-  }, [camera, gl, invalidate, onScreenReady, screenId]);
+  }, [onScreenReady, screenId, screenLayer]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
     if (!runtime) return;
-    const { renderer, object } = runtime;
-    object.element.style.width = `${pixelWidth}px`;
-    object.element.style.height = `${pixelHeight}px`;
-    object.position.copy(screen.position).multiplyScalar(cssWorldScale);
-    object.quaternion.copy(screen.quaternion);
-    object.scale.setScalar(screen.width * cssWorldScale / pixelWidth);
-    renderer.setSize(size.width, size.height);
-    renderScreen(runtime, camera, screen, pixelWidth, isInteractive);
-    runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
-    invalidate();
-  }, [camera, invalidate, isInteractive, pixelHeight, pixelWidth, screen, size.width, size.height]);
+    screenLayer.configureScreen(runtime, screen, pixelWidth, pixelHeight);
+  }, [pixelHeight, pixelWidth, screen, screenLayer]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
     if (!runtime) return;
     const element = runtime.object.element;
+    const selectionMode = isInteractive ? 'text' : 'none';
     element.style.pointerEvents = isInteractive ? 'auto' : 'none';
+    // CSS3DObject defaults to user-select: none. Let the focused document use
+    // native selection and copy, while the room preview remains non-selectable.
+    element.style.userSelect = selectionMode;
+    element.style.setProperty('-webkit-user-select', selectionMode);
     element.inert = !isInteractive;
     element.setAttribute('aria-hidden', String(!isInteractive));
     const canvas = gl.domElement;
     const previousPointerEvents = canvas.style.pointerEvents;
     const previousEventsEnabled = get().events.enabled;
-    const previousLayerPointerEvents = runtime.renderer.domElement.style.pointerEvents;
-    runtime.renderer.domElement.style.pointerEvents = isInteractive ? 'auto' : 'none';
-    const rendererView = runtime.renderer.domElement.firstElementChild as HTMLElement | null;
-    const rendererCamera = rendererView?.firstElementChild as HTMLElement | null;
-    const pointerPassthroughElements = [rendererView, rendererCamera].filter(
-      (element): element is HTMLElement => element !== null
-    );
-    const previousWrapperPointerEvents = pointerPassthroughElements.map((element) => element.style.pointerEvents);
-    if (isInteractive) pointerPassthroughElements.forEach((element) => { element.style.pointerEvents = 'none'; });
+    screenLayer.setInteractive(runtime, isInteractive);
     if (isInteractive) {
       // Let native DOM inputs handle clicks and scrolling without scene raycasts.
       canvas.style.pointerEvents = 'none';
       setEvents({ enabled: false });
     }
     return () => {
-      runtime.renderer.domElement.style.pointerEvents = previousLayerPointerEvents;
-      pointerPassthroughElements.forEach((element, index) => {
-        element.style.pointerEvents = previousWrapperPointerEvents[index] ?? '';
-      });
+      screenLayer.setInteractive(runtime, false);
       canvas.style.pointerEvents = previousPointerEvents;
       setEvents({ enabled: previousEventsEnabled });
     };
-  }, [get, gl, isInteractive, setEvents]);
+  }, [get, gl, isInteractive, screenLayer, setEvents]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -146,14 +115,14 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const resetZoom = (): void => {
       scale = 1;
       onScreenZoomChange?.(screenId, scale);
-      if (isInteractive) renderScreen(runtime, camera, screen, pixelWidth, true);
+      if (isInteractive) screenLayer.render();
     };
 
     const isMobileViewport = (): boolean => window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
 
     const applyZoom = (): void => {
       onScreenZoomChange?.(screenId, scale);
-      renderScreen(runtime, camera, screen, pixelWidth, true);
+      screenLayer.render();
     };
 
     const beginGesture = (): void => {
@@ -232,16 +201,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       window.removeEventListener('resize', onViewportChange);
       resetZoom();
     };
-  }, [camera, isInteractive, onScreenZoomChange, pixelWidth, screen, screenId]);
-
-  // The existing demand loop drives projection only while the camera/scene changes.
-  useFrame(() => {
-    const runtime = runtimeRef.current;
-    if (runtime) {
-      renderScreen(runtime, camera, screen, pixelWidth, isInteractive);
-      runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
-    }
-  });
+  }, [isInteractive, onScreenZoomChange, screenId, screenLayer]);
 
   return (
     <>
@@ -270,41 +230,6 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       </mesh>
     </>
   );
-}
-
-function renderScreen(runtime: ScreenRuntime, camera: THREE.Camera, screen: ArcadeScreenPlacement, pixelWidth: number, interactive: boolean): void {
-  const element = runtime.object.element;
-  if (interactive) {
-    // Once face-on, flatten the same DOM at its exact projected bounds for native hit testing.
-    if (runtime.projectedTransform === undefined) runtime.projectedTransform = element.style.transform;
-    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(screen.quaternion);
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(screen.quaternion);
-    camera.updateMatrixWorld(true);
-    const topLeft = screen.position.clone().addScaledVector(right, -screen.width / 2)
-      .addScaledVector(up, screen.height / 2).project(camera);
-    const topRight = screen.position.clone().addScaledVector(right, screen.width / 2)
-      .addScaledVector(up, screen.height / 2).project(camera);
-    const size = runtime.renderer.getSize();
-    const x = (topLeft.x + 1) * size.width / 2;
-    const y = (1 - topLeft.y) * size.height / 2;
-    const projectedScale = (topRight.x - topLeft.x) * size.width / (2 * pixelWidth);
-    runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
-    if (element.parentElement !== runtime.renderer.domElement) runtime.renderer.domElement.appendChild(element);
-    element.style.transformOrigin = '0 0';
-    element.style.transform = `translate(${x}px, ${y}px) scale(${projectedScale})`;
-    return;
-  }
-  if (runtime.projectedTransform !== undefined) {
-    element.style.transform = runtime.projectedTransform;
-    element.style.transformOrigin = '';
-    runtime.projectedTransform = undefined;
-  }
-  runtime.renderer.domElement.style.zIndex = screenLayerZIndex;
-  runtime.camera.copy(camera, false);
-  camera.getWorldPosition(runtime.camera.position).multiplyScalar(cssWorldScale);
-  camera.getWorldQuaternion(runtime.camera.quaternion);
-  runtime.camera.updateMatrixWorld(true);
-  runtime.renderer.render(runtime.scene, runtime.camera);
 }
 
 function getTouchDistance(first: TouchPoint, second: TouchPoint): number {

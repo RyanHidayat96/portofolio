@@ -43,6 +43,7 @@ import type {
 import { DynamicScreenLayer } from './DynamicScreenLayer';
 import { ArcadeMarqueeDisplay } from './ArcadeMarqueeDisplay';
 import { ArcadeScreenSurface, maximumMobileScreenZoom } from './ArcadeScreenSurface';
+import { EmbeddedScreenLayer } from './EmbeddedScreenLayer';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
 import { SceneAssetBoundary } from './SceneAssetBoundary';
@@ -297,6 +298,7 @@ export function PortfolioSceneStage({
         qualityTier={qualityTier}
         runtimeNodesByAsset={runtimeNodesByAsset}
       />
+      <SceneShaderWarmup ready={criticalComplete && Boolean(roomNodes)} />
       <CameraNavigationRig
         runtimeNodesByAsset={runtimeNodesByAsset}
         embeddedScreens={embeddedScreens}
@@ -328,34 +330,36 @@ export function PortfolioSceneStage({
           ))
         : null}
 
-      {arcadeScreen ? (
-        <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
+      <EmbeddedScreenLayer>
+        {arcadeScreen ? (
+          <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {automationScreen ? (
+          <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {performanceScreen ? (
+          <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {apiScreen ? (
+          <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {terminalScreen ? (
+          <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {architectureArtworkScreen ? (
+          <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {experienceArtworkScreen ? (
+          <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {profileArtworkScreen ? (
+          <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+        {contactBookScreen ? (
+          <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
+        ) : null}
+      </EmbeddedScreenLayer>
       {arcadeMarquee ? <ArcadeMarqueeDisplay marquee={arcadeMarquee} /> : null}
-      {automationScreen ? (
-        <ArcadeScreenSurface screen={automationScreen} screenId="automation" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {performanceScreen ? (
-        <ArcadeScreenSurface screen={performanceScreen} screenId="performance" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {apiScreen ? (
-        <ArcadeScreenSurface screen={apiScreen} screenId="backend" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {terminalScreen ? (
-        <ArcadeScreenSurface screen={terminalScreen} screenId="terminal" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {architectureArtworkScreen ? (
-        <ArcadeScreenSurface screen={architectureArtworkScreen} screenId="profile" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {experienceArtworkScreen ? (
-        <ArcadeScreenSurface screen={experienceArtworkScreen} screenId="experience" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {profileArtworkScreen ? (
-        <ArcadeScreenSurface screen={profileArtworkScreen} screenId="architecture" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
-      {contactBookScreen ? (
-        <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} />
-      ) : null}
 
       {!isSingleRoomPreview ? (
         <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
@@ -470,6 +474,48 @@ function SceneInvalidationController({
     state.navigationState,
     state.roomLightingLevel
   ]);
+
+  return null;
+}
+
+function SceneShaderWarmup({ ready }: Readonly<{
+  ready: boolean;
+}>): null {
+  const { camera, gl, invalidate, scene } = useThree();
+  const warmedUpRef = useRef(false);
+
+  useEffect(() => {
+    if (!ready || warmedUpRef.current) return;
+
+    let cancelled = false;
+    const warmUp = (): void => {
+      if (cancelled) return;
+      warmedUpRef.current = true;
+      // Prepare materials after the full room and environment are mounted so
+      // the first screen transition is not where shader compilation happens.
+      void gl.compileAsync(scene, camera)
+        .then(() => {
+          if (!cancelled) invalidate();
+        })
+        .catch(() => {
+          // Rendering remains functional when a browser cannot compile early.
+        });
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(warmUp, { timeout: 1200 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(idleId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(warmUp, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [camera, gl, invalidate, ready, scene]);
 
   return null;
 }
