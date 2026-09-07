@@ -476,11 +476,35 @@ function Portfolio3dNavigation(): React.ReactElement {
   useEffect(() => {
     const embeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
     if (embeddedScreenId) restoreEmbeddedScreenFocusRef.current = embeddedScreenId;
-    if (restoreEmbeddedScreenFocusRef.current && state.navigationState === 'overview') {
-      const sectionId = restoreEmbeddedScreenFocusRef.current;
-      restoreEmbeddedScreenFocusRef.current = undefined;
+
+    if (!restoreEmbeddedScreenFocusRef.current || state.navigationState !== 'overview') return;
+
+    const sectionId = restoreEmbeddedScreenFocusRef.current;
+    restoreEmbeddedScreenFocusRef.current = undefined;
+    const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
+
+    if (!isMobileViewport) {
       navigationRef.current?.querySelector<HTMLButtonElement>(`[data-portfolio-section="${sectionId}"]`)?.focus({ preventScroll: true });
+      return;
     }
+
+    const navigationPanel = navigationRef.current?.closest<HTMLElement>('.portfolio-3d-navigation-panel');
+    if (!navigationPanel) return;
+
+    // Mobile Chrome can scroll an overflow panel to the previously focused
+    // embedded-screen button after a pinch changes the visual viewport.
+    let framesRemaining = 3;
+    let animationFrame = 0;
+    const resetPanelScroll = (): void => {
+      navigationPanel.scrollTop = 0;
+      if (framesRemaining > 0) {
+        framesRemaining -= 1;
+        animationFrame = window.requestAnimationFrame(resetPanelScroll);
+      }
+    };
+
+    resetPanelScroll();
+    return () => window.cancelAnimationFrame(animationFrame);
   }, [state.activeSectionId, state.navigationState]);
 
   return (

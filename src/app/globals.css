@@ -8203,6 +8203,10 @@ textarea:focus-visible,
   border-radius: 8px;
 }
 
+.portfolio-3d-navigation-panel {
+  overflow-anchor: none;
+}
+
 .portfolio-3d-section-popover,
 .portfolio-3d-instruction-hint,
 .portfolio-3d-detail-card {
