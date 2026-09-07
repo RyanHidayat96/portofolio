@@ -8,7 +8,7 @@ import type { ArcadeScreenPlacement } from '../arcade-screen';
 const marqueeMessage = 'Ryan Hidayat - 087775009393';
 const marqueeCanvasWidth = 640;
 const marqueeCanvasHeight = 144;
-const marqueeDotPitch = 17;
+const marqueeDotPitch = 15;
 // One animation step equals one physical LED-dot column, keeping the running
 // sign crisp while avoiding an unnecessary full-room redraw every 50 ms.
 const marqueeFrameIntervalMs = 100;
@@ -189,10 +189,11 @@ function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
   const { backgroundCanvas, context, layout, messageCanvas } = runtime;
   context.drawImage(backgroundCanvas, 0, 0);
 
-  const messageOffset = (timestamp / 1000 * marqueeScrollPixelsPerSecond) % (
-    marqueeMessageWidth + marqueeCanvasWidth + marqueeMessageGap
-  );
-  const startX = marqueeCanvasWidth - messageOffset;
+  // Repeat only over the message and its separator. Including the display
+  // width here created a full blank lap before the next copy entered.
+  const messageCycleWidth = marqueeMessageWidth + marqueeMessageGap;
+  const messageOffset = (timestamp / 1000 * marqueeScrollPixelsPerSecond) % messageCycleWidth;
+  const startX = -messageOffset;
   const baselineY = Math.round((marqueeCanvasHeight - marqueeGlyphHeight * marqueeDotPitch) / 2);
   context.save();
   context.beginPath();
@@ -204,7 +205,7 @@ function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
   );
   context.clip();
   context.drawImage(messageCanvas, startX, baselineY);
-  context.drawImage(messageCanvas, startX + marqueeMessageWidth + marqueeMessageGap, baselineY);
+  context.drawImage(messageCanvas, startX + messageCycleWidth, baselineY);
   context.restore();
 }
 
