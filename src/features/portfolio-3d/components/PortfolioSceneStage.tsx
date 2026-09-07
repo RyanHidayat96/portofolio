@@ -62,7 +62,7 @@ const experienceScreenCoverage = {
   verticalCoverage: 0.9
 } as const satisfies ArcadeScreenCoverage;
 const architectureScreenCoverage = {
-  horizontalCoverage: 0.85,
+  horizontalCoverage: 0.94,
   verticalCoverage: 0.9
 } as const satisfies ArcadeScreenCoverage;
 const pipelineScreenCoverage = {
@@ -75,15 +75,15 @@ const automationScreenCoverage = {
 } as const satisfies ArcadeScreenCoverage;
 const performanceScreenCoverage = {
   horizontalCoverage: 0.93,
-  verticalCoverage: 1
+  verticalCoverage: 0.95
 } as const satisfies ArcadeScreenCoverage;
 const backendScreenCoverage = {
   horizontalCoverage: 0.898,
   verticalCoverage: 0.85
 } as const satisfies ArcadeScreenCoverage;
 const terminalScreenCoverage = {
-  horizontalCoverage: 0.765,
-  verticalCoverage: 0.60
+  horizontalCoverage: 0.9,
+  verticalCoverage: 0.6
 } as const satisfies ArcadeScreenCoverage;
 const contactScreenCoverage = {
   horizontalCoverage: 0.906,

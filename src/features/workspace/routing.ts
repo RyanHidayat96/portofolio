@@ -30,7 +30,7 @@ const standaloneSectionBySegment: Readonly<Record<string, WorkspaceSection>> = {
   profile: "profile",
   experience: "experience",
   terminal: "terminal",
-  "test-me": "challenge",
+  challenge: "challenge",
   hire: "overview",
   contact: "contact"
 };
@@ -46,7 +46,7 @@ const pathBySection: Readonly<Record<WorkspaceSection, string>> = {
   api: "/labs/api",
   architecture: "/labs/architecture",
   terminal: "/terminal",
-  challenge: "/test-me",
+  challenge: "/challenge",
   contact: "/contact"
 };
 

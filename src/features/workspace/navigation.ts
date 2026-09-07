@@ -62,9 +62,9 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
   },
   projects: {
     id: "projects",
-    label: "Projects",
+    label: "Archive",
     icon: BadgeCheck,
-    description: "Portfolio-safe engineering work highlights."
+    description: "Portfolio-safe engineering work archive."
   },
   automation: {
     id: "automation",
