@@ -18,6 +18,7 @@ import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
 // CSS3D pages use pixel coordinates while the GLB continues to use meters.
 const cssWorldScale = 1000;
 const screenLayerZIndex = '0';
+const screenOverlayLayerZIndex = '2';
 
 export interface EmbeddedScreenRegistration {
   readonly screenId: EmbeddedScreenId;
@@ -27,8 +28,17 @@ export interface EmbeddedScreenRegistration {
   pixelWidth: number;
   pixelHeight: number;
   isInteractive: boolean;
+  hasPreview: boolean;
+  isPreviewCapturePending: boolean;
   isFlattenedForInteraction?: boolean;
   cssTransform?: string;
+}
+
+export interface EmbeddedScreenOverlayRegistration {
+  readonly object: CSS3DObject;
+  placement: ArcadeScreenPlacement;
+  pixelWidth: number;
+  pixelHeight: number;
 }
 
 interface EmbeddedScreenLayerRuntime {
@@ -36,6 +46,7 @@ interface EmbeddedScreenLayerRuntime {
   readonly scene: THREE.Scene;
   readonly camera: THREE.Camera;
   readonly screens: Set<EmbeddedScreenRegistration>;
+  readonly overlays: Set<EmbeddedScreenOverlayRegistration>;
   readonly screenUp: THREE.Vector3;
   readonly screenRight: THREE.Vector3;
   readonly topLeft: THREE.Vector3;
@@ -55,6 +66,16 @@ interface EmbeddedScreenLayerController {
     pixelHeight: number
   ) => void;
   setInteractive: (screen: EmbeddedScreenRegistration, isInteractive: boolean) => void;
+  setPreviewCapturePending: (screen: EmbeddedScreenRegistration, isPending: boolean) => void;
+  setPreviewAvailable: (screen: EmbeddedScreenRegistration, isAvailable: boolean) => void;
+  registerOverlay: (overlay: EmbeddedScreenOverlayRegistration) => void;
+  unregisterOverlay: (overlay: EmbeddedScreenOverlayRegistration) => void;
+  configureOverlay: (
+    overlay: EmbeddedScreenOverlayRegistration,
+    placement: ArcadeScreenPlacement,
+    pixelWidth: number,
+    pixelHeight: number
+  ) => void;
   forceRepaint: () => void;
   render: () => void;
 }
@@ -89,6 +110,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       scene: new THREE.Scene(),
       camera: camera.clone(),
       screens: new Set(),
+      overlays: new Set(),
       screenUp: new THREE.Vector3(),
       screenRight: new THREE.Vector3(),
       topLeft: new THREE.Vector3(),
@@ -124,7 +146,9 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
 
   useFrame(() => {
     const activeRuntime = runtimeRef.current;
-    if (activeRuntime) renderEmbeddedScreenLayer(activeRuntime, camera);
+    if (activeRuntime && hasVisibleCssScreens(activeRuntime)) {
+      renderEmbeddedScreenLayer(activeRuntime, camera);
+    }
   });
 
   const controller = useMemo<EmbeddedScreenLayerController | null>(() => {
@@ -149,7 +173,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         const offset = step === 1 ? ' translateZ(0.0005px)' : '';
 
         for (const s of runtime.screens) {
-          if (!s.isInteractive) {
+          if (!s.isInteractive && s.object.visible) {
             const baseTransform = s.cssTransform ?? s.object.element.style.transform;
             if (baseTransform) {
               s.object.element.style.transform = baseTransform.replace(/\s*translateZ\([^)]*\)/g, '') + offset;
@@ -201,6 +225,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
 
           screen.isInteractive = true;
           runtime.activeScreen = screen;
+          screen.object.visible = true;
           screen.object.element.style.display = '';
           screen.object.element.style.pointerEvents = 'auto';
 
@@ -219,6 +244,46 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         syncLayerPointerEvents(runtime);
         render();
         triggerForceRepaint();
+      },
+      setPreviewCapturePending: (screen, isPending): void => {
+        if (!runtime.screens.has(screen) || screen.isPreviewCapturePending === isPending) return;
+
+        screen.isPreviewCapturePending = isPending;
+        syncScreenPreviewVisibility(screen);
+        render();
+      },
+      setPreviewAvailable: (screen, isAvailable): void => {
+        if (!runtime.screens.has(screen)) return;
+
+        screen.hasPreview = isAvailable;
+        screen.isPreviewCapturePending = false;
+        syncScreenPreviewVisibility(screen);
+        render();
+      },
+      registerOverlay: (overlay): void => {
+        if (runtime.overlays.has(overlay)) return;
+
+        runtime.overlays.add(overlay);
+        overlay.object.element.style.pointerEvents = 'none';
+        overlay.object.element.setAttribute('aria-hidden', 'true');
+        runtime.scene.add(overlay.object);
+        configureOverlay(overlay, overlay.placement, overlay.pixelWidth, overlay.pixelHeight);
+        syncLayerPointerEvents(runtime);
+        render();
+      },
+      unregisterOverlay: (overlay): void => {
+        if (!runtime.overlays.has(overlay)) return;
+
+        runtime.overlays.delete(overlay);
+        runtime.scene.remove(overlay.object);
+        syncLayerPointerEvents(runtime);
+        render();
+      },
+      configureOverlay: (overlay, placement, pixelWidth, pixelHeight): void => {
+        if (!runtime.overlays.has(overlay)) return;
+
+        configureOverlay(overlay, placement, pixelWidth, pixelHeight);
+        render();
       },
       forceRepaint: triggerForceRepaint,
       render
@@ -258,6 +323,24 @@ function configureScreen(
   screen.object.scale.setScalar(placement.width * cssWorldScale / pixelWidth);
 }
 
+function configureOverlay(
+  overlay: EmbeddedScreenOverlayRegistration,
+  placement: ArcadeScreenPlacement,
+  pixelWidth: number,
+  pixelHeight: number
+): void {
+  overlay.placement = placement;
+  overlay.pixelWidth = pixelWidth;
+  overlay.pixelHeight = pixelHeight;
+  overlay.object.position.copy(placement.position).multiplyScalar(cssWorldScale);
+  overlay.object.quaternion.copy(placement.quaternion);
+  overlay.object.scale.set(
+    placement.width * cssWorldScale / pixelWidth,
+    placement.height * cssWorldScale / pixelHeight,
+    1
+  );
+}
+
 function restoreScreenToLayer(
   runtime: EmbeddedScreenLayerRuntime,
   screen: EmbeddedScreenRegistration
@@ -274,14 +357,30 @@ function restoreScreenToLayer(
   }
   screen.isFlattenedForInteraction = false;
   screen.object.element.style.pointerEvents = 'none';
+  syncScreenPreviewVisibility(screen);
+}
+
+function syncScreenPreviewVisibility(screen: EmbeddedScreenRegistration): void {
+  const shouldRenderCss = screen.isInteractive || screen.isPreviewCapturePending || !screen.hasPreview;
+  screen.object.visible = shouldRenderCss;
+  screen.object.element.style.display = shouldRenderCss ? '' : 'none';
+}
+
+function hasVisibleCssScreens(runtime: EmbeddedScreenLayerRuntime): boolean {
+  return Boolean(runtime.activeScreen) ||
+    [...runtime.screens].some((screen) => screen.object.visible) ||
+    [...runtime.overlays].some((overlay) => overlay.object.visible);
 }
 
 function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
   const activeScreen = runtime.activeScreen;
   const isInteractive = Boolean(activeScreen);
   // Elevate z-index above the canvas container when interactive so mobile touch gestures
-  // and scroll hit the active document directly. Return to 0 when in overview.
-  runtime.renderer.domElement.style.zIndex = isInteractive ? '2' : screenLayerZIndex;
+  // and scroll hit the active document directly. CSS overlays use the same layer while
+  // inactive screens stay hidden below their static WebGL previews.
+  runtime.renderer.domElement.style.zIndex = isInteractive || runtime.overlays.size > 0
+    ? screenOverlayLayerZIndex
+    : screenLayerZIndex;
   runtime.renderer.domElement.style.pointerEvents = 'none';
   const rendererView = runtime.renderer.domElement.firstElementChild as HTMLElement | null;
   const rendererCamera = rendererView?.firstElementChild as HTMLElement | null;

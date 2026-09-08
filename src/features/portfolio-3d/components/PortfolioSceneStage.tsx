@@ -391,8 +391,8 @@ export function PortfolioSceneStage({
         {contactBookScreen ? (
           <ArcadeScreenSurface screen={contactBookScreen} screenId="contact" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
+        {arcadeMarquee ? <ArcadeMarqueeDisplay marquee={arcadeMarquee} /> : null}
       </EmbeddedScreenLayer>
-      {arcadeMarquee ? <ArcadeMarqueeDisplay marquee={arcadeMarquee} /> : null}
 
       {!isSingleRoomPreview ? (
         <DynamicScreenLayer runtimeNodesByAsset={runtimeNodesByAsset} />
