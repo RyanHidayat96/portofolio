@@ -26,7 +26,7 @@ const terminalNavigationTargets = {
 
 export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
-  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
+  const { scrollRef: terminalOutputScrollRef, onScroll: onTerminalOutputScroll } = useEmbeddedScreenScrollSession(interactive);
   const { setActiveSection } = usePortfolio3dState();
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
         <span className="monitor-terminal-label">Command interface</span>
       </header>
       <div
-        ref={scrollRef}
         className="monitor-terminal-scroll"
         tabIndex={interactive ? 0 : -1}
         aria-label="Terminal commands and output"
-        onScroll={onScroll}
       >
         <TerminalPanel
           variant="screen"
+          terminalOutputRef={terminalOutputScrollRef}
+          onTerminalOutputScroll={onTerminalOutputScroll}
           onNavigate={(section) => setActiveSection(terminalNavigationTargets[section] ?? 'overview')}
         />
       </div>

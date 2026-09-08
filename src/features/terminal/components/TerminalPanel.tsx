@@ -11,7 +11,7 @@ import { createPortfolioCommandRegistry } from "@/features/terminal/domain/comma
 import { parseTerminalInput } from "@/features/terminal/domain/parser";
 import type { TerminalCommand, TerminalLine, TerminalLineKind } from "@/features/terminal/domain/types";
 import type { WorkspaceSection } from "@/features/workspace/types";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type Ref, type UIEventHandler } from "react";
 
 let lineCounter = 0;
 
@@ -39,10 +39,14 @@ function createLine(kind: TerminalLineKind, value: string): TerminalLine {
 interface TerminalPanelProps {
   onNavigate: (section: WorkspaceSection) => void;
   readonly variant?: "workspace" | "screen";
+  readonly terminalOutputRef?: Ref<HTMLDivElement>;
+  readonly onTerminalOutputScroll?: UIEventHandler<HTMLDivElement>;
 }
 
 export function TerminalPanel({
   onNavigate,
+  terminalOutputRef,
+  onTerminalOutputScroll,
   variant = "workspace"
 }: Readonly<TerminalPanelProps>): React.ReactElement {
   const registry = useMemo(() => createPortfolioCommandRegistry(), []);
@@ -197,11 +201,13 @@ export function TerminalPanel({
       </div>
 
       <div
+        ref={terminalOutputRef}
         className="terminal-screen mono"
         role="log"
         aria-live="polite"
         aria-label="Terminal output"
         onClick={() => inputRef.current?.focus()}
+        onScroll={onTerminalOutputScroll}
       >
         {lines.map((line) => (
           <div key={line.id} className={`${lineClass(line.kind)} whitespace-pre-wrap break-words`}>

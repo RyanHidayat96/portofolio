@@ -1,7 +1,7 @@
 import { TerminalPanel } from "@/features/terminal/components/TerminalPanel";
 import { profile } from "@/data/profile";
-import { projects } from "@/data/projects";
-import { render, screen, waitFor } from "@testing-library/react";
+import { createRef } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -18,15 +18,15 @@ describe("TerminalPanel", () => {
     expect(screen.getByText(profile.headline)).toBeInTheDocument();
   });
 
-  it("navigates when project command is executed", async () => {
+  it("navigates when a route command is executed", async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
 
     render(<TerminalPanel onNavigate={onNavigate} />);
 
-    await user.type(screen.getByLabelText("Terminal command"), "projects{enter}");
+    await user.type(screen.getByLabelText("Terminal command"), "pipeline{enter}");
 
-    expect(onNavigate).toHaveBeenCalledWith("projects");
+    expect(onNavigate).toHaveBeenCalledWith("pipeline");
   });
 
   it("renders help and unknown command feedback", async () => {
@@ -65,19 +65,36 @@ describe("TerminalPanel", () => {
 
     await user.type(input, "whoami{enter}");
     await screen.findByText(profile.name);
-    await user.type(input, "projects{enter}");
-    await screen.findByText(projects[0]?.title ?? "");
+    await user.type(input, "pipeline{enter}");
+    await screen.findByText("Software delivery pipeline ready.");
 
     await user.keyboard("{ArrowUp}");
-    expect(input).toHaveValue("projects");
+    expect(input).toHaveValue("pipeline");
     await user.keyboard("{ArrowUp}");
     expect(input).toHaveValue("whoami");
     await user.keyboard("{ArrowDown}");
-    expect(input).toHaveValue("projects");
+    expect(input).toHaveValue("pipeline");
     await user.keyboard("{ArrowDown}");
     expect(input).toHaveValue("");
 
     await user.type(input, "per{Tab}");
     expect(input).toHaveValue("performance");
+  });
+
+  it("exposes the terminal output scroll surface for embedded screen sessions", () => {
+    const outputRef = createRef<HTMLDivElement>();
+    const onOutputScroll = vi.fn();
+    render(
+      <TerminalPanel
+        variant="screen"
+        onNavigate={vi.fn()}
+        terminalOutputRef={outputRef}
+        onTerminalOutputScroll={onOutputScroll}
+      />
+    );
+
+    expect(outputRef.current).toHaveClass("terminal-screen");
+    fireEvent.scroll(outputRef.current!);
+    expect(onOutputScroll).toHaveBeenCalledOnce();
   });
 });
