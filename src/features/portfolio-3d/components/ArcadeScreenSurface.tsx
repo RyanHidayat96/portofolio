@@ -13,7 +13,8 @@ const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
-const minimumEmbeddedContentScrollDistance = 4;
+const minimumEmbeddedContentScrollDistance = 1;
+const maximumEmbeddedContentScrollSpeed = 2.2;
 const embeddedContentScrollEdgeTolerance = 1;
 const initialPreviewCaptureIntervalMs = 260;
 const previewCaptureRetryDelayMs = 360;
@@ -53,6 +54,9 @@ interface TouchPanGesture {
   readonly scrollTarget?: HTMLElement;
   readonly initialScrollLeft?: number;
   readonly initialScrollTop?: number;
+  readonly maxScrollLeft?: number;
+  readonly maxScrollTop?: number;
+  readonly contentScrollSpeed?: number;
   readonly hasScrolledContent?: boolean;
 }
 
@@ -239,13 +243,22 @@ export function ArcadeScreenSurface({
       target: EventTarget | null
     ): TouchPanGesture => {
       const scrollTarget = findScrollableGestureTarget(target);
+      const maxScrollLeft = scrollTarget
+        ? Math.max(0, scrollTarget.scrollWidth - scrollTarget.clientWidth)
+        : undefined;
+      const maxScrollTop = scrollTarget
+        ? Math.max(0, scrollTarget.scrollHeight - scrollTarget.clientHeight)
+        : undefined;
       return {
         initialPoint,
         initialPan: pan,
         isPanning: false,
         scrollTarget,
         initialScrollLeft: scrollTarget?.scrollLeft,
-        initialScrollTop: scrollTarget?.scrollTop
+        initialScrollTop: scrollTarget?.scrollTop,
+        maxScrollLeft,
+        maxScrollTop,
+        contentScrollSpeed: Math.min(Math.max(scale, 1), maximumEmbeddedContentScrollSpeed)
       };
     };
 
@@ -253,20 +266,19 @@ export function ArcadeScreenSurface({
       scrollTarget: HTMLElement,
       axis: "x" | "y",
       initialScrollPosition: number,
+      maxScrollPosition: number,
+      contentScrollSpeed: number,
       gestureDelta: number
     ): boolean => {
       if (Math.abs(gestureDelta) < minimumEmbeddedContentScrollDistance) return false;
 
-      const maxScrollPosition =
-        axis === "y"
-          ? Math.max(0, scrollTarget.scrollHeight - scrollTarget.clientHeight)
-          : Math.max(0, scrollTarget.scrollWidth - scrollTarget.clientWidth);
       if (maxScrollPosition <= embeddedContentScrollEdgeTolerance) return false;
 
       const currentScrollPosition =
         axis === "y" ? scrollTarget.scrollTop : scrollTarget.scrollLeft;
+      const zoomAdjustedGestureDelta = gestureDelta * contentScrollSpeed;
       const nextScrollPosition = clamp(
-        initialScrollPosition - gestureDelta,
+        initialScrollPosition - zoomAdjustedGestureDelta,
         0,
         maxScrollPosition
       );
@@ -276,10 +288,10 @@ export function ArcadeScreenSurface({
         return true;
       }
 
-      if (gestureDelta < 0) {
+      if (zoomAdjustedGestureDelta < 0) {
         return currentScrollPosition < maxScrollPosition - embeddedContentScrollEdgeTolerance;
       }
-      if (gestureDelta > 0) {
+      if (zoomAdjustedGestureDelta > 0) {
         return currentScrollPosition > embeddedContentScrollEdgeTolerance;
       }
 
@@ -297,12 +309,18 @@ export function ArcadeScreenSurface({
               panGesture.scrollTarget,
               "y",
               panGesture.initialScrollTop ?? panGesture.scrollTarget.scrollTop,
+              panGesture.maxScrollTop ??
+                Math.max(0, panGesture.scrollTarget.scrollHeight - panGesture.scrollTarget.clientHeight),
+              panGesture.contentScrollSpeed ?? 1,
               deltaY
             )
           : applyContentScrollAxis(
               panGesture.scrollTarget,
               "x",
               panGesture.initialScrollLeft ?? panGesture.scrollTarget.scrollLeft,
+              panGesture.maxScrollLeft ??
+                Math.max(0, panGesture.scrollTarget.scrollWidth - panGesture.scrollTarget.clientWidth),
+              panGesture.contentScrollSpeed ?? 1,
               deltaX
             );
 
@@ -546,7 +564,7 @@ export function ArcadeScreenSurface({
         isTouchEventGestureActive = true;
         isViewportGestureActive = true;
         if (!panGesture) {
-          panGesture = { initialPoint: point, initialPan: pan, isPanning: false };
+          panGesture = beginPanGesture(point, event.target);
           syncGestureTouchAction();
           return;
         }

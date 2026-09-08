@@ -258,7 +258,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
       createTouch(screenTarget, 3, 140, 130)
     ]);
     expect(scrollMove.defaultPrevented).toBe(true);
-    expect(scrollContainer.scrollTop).toBe(50);
+    expect(scrollContainer.scrollTop).toBe(100);
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(onScreenPanChangeMock).not.toHaveBeenCalled();
     dispatchTouchEvent(screenTarget, 'touchend', []);
