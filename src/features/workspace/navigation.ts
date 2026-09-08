@@ -52,13 +52,13 @@ const navigationItems: Record<WorkspaceSection, WorkspaceNavigationItem> = {
     id: "profile",
     label: "Profile",
     icon: UserRound,
-    description: "Identity, education, and engineering capability matrix."
+    description: "Professional background, education, and core skills."
   },
   experience: {
     id: "experience",
     label: "Experience",
     icon: BriefcaseBusiness,
-    description: "Public career summary with full timeline in CV."
+    description: "Roles, companies, dates, and contributions, most recent first."
   },
   projects: {
     id: "projects",

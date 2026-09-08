@@ -1,0 +1,100 @@
+import { capabilities } from "@/data/capabilities";
+import { education } from "@/data/education";
+import { experience } from "@/data/experience";
+import { profile } from "@/data/profile";
+import { ExperiencePanel } from "@/features/workspace/components/ExperiencePanel";
+import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
+import { ProfilePanel } from "@/features/workspace/components/ProfilePanel";
+import { WorkspaceShell } from "@/features/workspace/components/WorkspaceShell";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+
+describe("Standard portfolio hiring flow", () => {
+  it("keeps profile, experience, contact, and CV reachable from the overview", async () => {
+    const user = userEvent.setup();
+    const navigate = vi.fn();
+    render(<OverviewPanel mode="recruiter" onNavigate={navigate} />);
+    expect(screen.getByRole("link", { name: "Download CV" })).toHaveAttribute(
+      "href",
+      profile.contact.cv.href
+    );
+    for (const [label, section] of [
+      ["View Profile", "profile"],
+      ["View Experience", "experience"],
+      ["Contact", "contact"]
+    ]) {
+      await user.click(screen.getByRole("button", { name: label }));
+      expect(navigate).toHaveBeenLastCalledWith(section);
+    }
+  });
+
+  it("shows education and lets readers reveal every technology on the profile", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ProfilePanel />);
+    for (const credential of education) {
+      expect(screen.getByText(credential.institution)).toBeVisible();
+      expect(screen.getByText(credential.degree)).toBeVisible();
+    }
+    expect(screen.getByRole("link", { name: "Download CV" })).toHaveAttribute("download", "cv.pdf");
+    expect(screen.getByRole("link", { name: "Email Ryan" })).toHaveAttribute(
+      "href",
+      profile.contact.email.href
+    );
+    for (const details of container.querySelectorAll("details")) {
+      const summary = details.querySelector("summary")!;
+      await user.click(summary);
+      expect(details).toHaveAttribute("open");
+    }
+    for (const technology of new Set(
+      capabilities.flatMap((capability) => capability.technologies)
+    )) {
+      expect(screen.getAllByText(technology).some((element) => element.closest("li"))).toBe(true);
+    }
+    const firstDetails = container.querySelector("details")!;
+    await user.click(firstDetails.querySelector("summary")!);
+    expect(firstDetails).not.toHaveAttribute("open");
+  });
+
+  it("shows all source roles with company, dates, and contributions in source order", () => {
+    render(<ExperiencePanel />);
+    const roles = within(
+      screen.getByRole("list", { name: /Work experience, most recent first/ })
+    ).getAllByRole("article");
+    expect(roles).toHaveLength(experience.length);
+    roles.forEach((article, index) => {
+      const role = experience[index];
+      expect(within(article).getByRole("heading", { name: role.role })).toBeVisible();
+      expect(within(article).getByText(role.company)).toBeVisible();
+      expect(within(article).getByText(role.period)).toBeVisible();
+      expect(article.querySelectorAll(".professional-contributions > li").length).toBeGreaterThan(
+        0
+      );
+    });
+  });
+
+  it("preserves mobile section selection, room link, and command palette access", async () => {
+    const user = userEvent.setup();
+    const navigate = vi.fn();
+    const openPalette = vi.fn();
+    render(
+      <WorkspaceShell
+        section="overview"
+        onSectionChange={navigate}
+        onOpenCommandPalette={openPalette}
+        sceneKey="overview:recruiter"
+        sceneTransition={{ phase: "idle", targetLabel: "Overview", sequence: 0 }}
+      >
+        <h1>Ryan Hidayat</h1>
+      </WorkspaceShell>
+    );
+    const selector = screen.getByRole("combobox", { name: "Select workspace section" });
+    for (const section of ["profile", "experience", "pipeline", "terminal"]) {
+      await user.selectOptions(selector, section);
+      expect(navigate).toHaveBeenLastCalledWith(section);
+    }
+    await user.click(screen.getByRole("button", { name: "Open command palette" }));
+    expect(openPalette).toHaveBeenCalledOnce();
+    expect(screen.getByRole("link", { name: /Back to room/i })).toHaveAttribute("href", "/");
+  });
+});

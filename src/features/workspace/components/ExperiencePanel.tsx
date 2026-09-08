@@ -1,61 +1,50 @@
-import { Badge } from "@/components/ui/Badge";
-import { Panel } from "@/components/ui/Panel";
-import { profile } from "@/data/profile";
-import { publicExperience } from "@/data/public-experience";
-import { CareerEvolution } from "@/features/workspace/components/CareerEvolution";
-import { EngineeringDNA } from "@/features/workspace/components/EngineeringDNA";
-import { isPortfolioValueConfigured } from "@/lib/portfolio-values";
-import { Download } from "lucide-react";
+import { professionalExperience } from "@/data/professional-summary";
+import { ProfessionalContactActions } from "@/features/workspace/components/ProfessionalContactActions";
+import { TechnologyList } from "@/features/workspace/components/TechnologyList";
 
 export function ExperiencePanel(): React.ReactElement {
-  const cv = profile.contact.cv;
-
   return (
-    <div className="experience-page">
-      <CareerEvolution />
-      <EngineeringDNA />
-
-      <Panel className="experience-history p-5 sm:p-7">
-        <div className="experience-history-header">
-          <div>
-            <p className="mono text-sm text-[var(--accent)]">experience.summary</p>
-            <h2>Experience, public version.</h2>
-            <p>Portfolio shows capability direction. CV carries exact companies, dates, and detail.</p>
-          </div>
-          {isPortfolioValueConfigured(cv.href) ? (
-            <a className="button-base button-primary" href={cv.href} download="cv.pdf">
-              <Download aria-hidden="true" size={18} />
-              <span>Download CV</span>
-            </a>
-          ) : (
-            <Badge tone="success">concise profile</Badge>
-          )}
+    <div className="professional-page">
+      <header className="professional-section-heading professional-experience-intro">
+        <div>
+          <h1>Work Experience</h1>
+          <p className="professional-lead">
+            Software development, test automation, and enterprise delivery.
+          </p>
         </div>
-
-        <div className="experience-history-list">
-          {publicExperience.map((role) => (
-            <article key={role.id} className="experience-history-card">
-              <div className="experience-history-card-top">
-                <div>
-                  <div className="experience-history-title-row">
-                    <h3>{role.role}</h3>
-                  </div>
-                  <p>High-level public summary</p>
-                </div>
-                <span>CV has detail</span>
+        <ProfessionalContactActions />
+      </header>
+      <ol className="professional-history" aria-label="Work experience, most recent first">
+        {professionalExperience.map((role) => (
+          <li key={role.id}>
+            <article className="professional-job" aria-labelledby={`experience-${role.id}`}>
+              <div className="professional-job-meta">
+                <p>{role.period}</p>
+                <p>{role.location}</p>
               </div>
-
-              <p className="experience-history-summary">{role.summary}</p>
-
-              <div className="experience-history-stack">
-                {role.technologies.map((technology) => (
-                  <Badge key={technology}>{technology}</Badge>
-                ))}
+              <div className="professional-job-content">
+                <h2 id={`experience-${role.id}`}>{role.role}</h2>
+                <p className="professional-company">{role.company}</p>
+                <p>{role.summary}</p>
+                <ul className="professional-contributions">
+                  {role.contributions.map((contribution) => (
+                    <li key={contribution}>{contribution}</li>
+                  ))}
+                </ul>
+                {role.outcome ? (
+                  <p className="professional-outcome">
+                    <strong>Contribution:</strong> {role.outcome}
+                  </p>
+                ) : null}
+                <TechnologyList
+                  technologies={role.technologies}
+                  label={`${role.role} technologies`}
+                />
               </div>
             </article>
-          ))}
-        </div>
-      </Panel>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

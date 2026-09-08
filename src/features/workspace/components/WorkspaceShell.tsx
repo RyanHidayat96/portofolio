@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { branding } from "@/data/branding";
 import {
   getNavigationGroups,
@@ -10,7 +9,8 @@ import {
 } from "@/features/workspace/navigation";
 import type { WorkspaceSceneTransition, WorkspaceSection } from "@/features/workspace/types";
 import { cn } from "@/lib/cn";
-import { Command, House } from "lucide-react";
+import { House, Search } from "lucide-react";
+import Link from "next/link";
 
 export function WorkspaceShell({
   section,
@@ -79,7 +79,7 @@ export function WorkspaceShell({
             <p className="mono text-xs uppercase tracking-[0.24em] text-[var(--accent)]">
               {branding.appName}
             </p>
-            <h1 className="mt-2 text-xl font-semibold">{branding.workspaceLabel}</h1>
+            <p className="mt-2 text-xl font-semibold">Professional Portfolio</p>
             <Badge tone="success" className="mt-4">
               Portfolio Online
             </Badge>
@@ -132,54 +132,53 @@ export function WorkspaceShell({
         </aside>
 
         <section className="workspace-main min-w-0">
-          <header className="workspace-header sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface-deep-92)] px-4 py-3 backdrop-blur sm:px-6">
-            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div>
-                <p className="mono text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
-                  {activeLabel}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                <select
-                  className="min-h-[var(--touch-target)] w-full rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-sm text-[var(--text-primary)] sm:w-auto lg:hidden"
-                  value={section}
-                  aria-label="Select workspace section"
-                  onChange={(event) => onSectionChange(event.target.value as WorkspaceSection)}
-                >
-                  {navItems.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-
-                <a
-                  className="button-base button-secondary w-full min-w-0 sm:w-auto"
-                  href="/"
-                  aria-label="Back to room"
-                  data-cursor-intent="link"
-                  data-cursor-label="BACK TO ROOM"
-                >
-                  <House aria-hidden="true" size={17} />
-                  <span>Back to Room</span>
-                </a>
-
-                <Badge tone="info" className="hidden sm:inline-flex">
-                  Full Stack + SDET
-                </Badge>
-
-                <Button
-                  variant="secondary"
-                  icon={<Command aria-hidden="true" size={17} />}
-                  onClick={onOpenCommandPalette}
-                  aria-keyshortcuts="Control+K Meta+K"
-                  aria-label="Open command palette"
-                  className="w-full min-w-0 sm:w-auto"
-                >
-                  Ctrl K
-                </Button>
-              </div>
+          <header className="workspace-header sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface-deep-92)] backdrop-blur">
+            <div className="workspace-header-row">
+              <p className="workspace-section-label">{activeLabel}</p>
+              <select
+                className="workspace-section-select"
+                value={section}
+                aria-label="Select workspace section"
+                onChange={(event) => onSectionChange(event.target.value as WorkspaceSection)}
+              >
+                {navGroups.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.items.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <Link
+                className="button-base button-secondary workspace-header-tool"
+                href="/"
+                prefetch={false}
+                aria-label="Back to room"
+                title="Back to Room"
+                data-cursor-intent="link"
+                data-cursor-label="BACK TO ROOM"
+              >
+                <House aria-hidden="true" size={18} />
+                <span className="workspace-tool-label">Back to Room</span>
+              </Link>
+              <Badge tone="info" className="workspace-header-specialty">
+                Full Stack + SDET
+              </Badge>
+              <button
+                type="button"
+                className="button-base button-secondary workspace-header-tool"
+                onClick={onOpenCommandPalette}
+                aria-keyshortcuts="Control+K Meta+K"
+                aria-label="Open command palette"
+                title="Search pages (Ctrl K)"
+                data-cursor-intent="button"
+                data-cursor-label="SEARCH"
+              >
+                <Search aria-hidden="true" size={18} />
+                <span className="workspace-tool-label">Search</span>
+              </button>
             </div>
           </header>
 

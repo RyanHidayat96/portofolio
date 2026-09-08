@@ -1697,6 +1697,361 @@ textarea:focus-visible,
     width: 100%;
   }
 }
+.professional-page {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  letter-spacing: 0;
+}
+
+.professional-page h1,
+.professional-page h2,
+.professional-page h3 {
+  color: var(--text-primary);
+  font-weight: 650;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.professional-page h1 {
+  font-size: 2rem;
+}
+.professional-page h2 {
+  font-size: 1.375rem;
+}
+.professional-page h3 {
+  font-size: 1.125rem;
+}
+
+.professional-page p,
+.professional-page li {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.professional-section {
+  min-width: 0;
+  padding-block: 1.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.professional-section:first-child {
+  padding-top: 0;
+}
+.professional-section:last-child {
+  border-bottom: 0;
+}
+
+.professional-page .professional-eyebrow {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.professional-page .professional-role-title {
+  margin-top: 0.35rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.professional-lead {
+  max-width: 76ch;
+  margin-top: 0.875rem;
+  line-height: 1.75;
+}
+
+.professional-page .professional-current {
+  margin-top: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.professional-facts {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.professional-facts dt {
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.professional-facts dd {
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.professional-facts > div:last-child dd {
+  color: var(--success);
+}
+
+.professional-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.professional-actions > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.professional-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.professional-highlights,
+.professional-skill-grid,
+.professional-profile-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  align-items: start;
+}
+
+.professional-highlights {
+  align-items: stretch;
+}
+
+.professional-highlights article,
+.professional-skill {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.125rem;
+  background: #101316;
+}
+
+.professional-highlights h3 {
+  margin-block: 0.5rem;
+}
+.professional-highlights article > p:last-child {
+  font-size: 0.9375rem;
+}
+
+.professional-page .professional-context {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.professional-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.professional-section-heading + .professional-tags {
+  margin-top: 1.25rem;
+}
+.professional-tags li {
+  min-width: 0;
+  max-width: 100%;
+}
+.professional-tags .badge-base {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.professional-about p {
+  margin-top: 0.875rem;
+}
+.professional-profile-grid {
+  gap: 1.75rem;
+  margin-top: 1.75rem;
+}
+
+.professional-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--touch-target);
+  margin-top: 0.75rem;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.professional-education {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
+.professional-education h2,
+.professional-skill h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.professional-education h2 svg {
+  color: var(--warning);
+  flex-shrink: 0;
+}
+.professional-education h3 {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+.professional-education p {
+  margin-top: 0.35rem;
+}
+.professional-page .professional-gpa {
+  color: var(--success);
+  font-weight: 600;
+}
+.professional-skill h3 svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.professional-skill[data-domain="quality"] h3 svg {
+  color: var(--success);
+}
+.professional-skill[data-domain="delivery"] h3 svg {
+  color: var(--warning);
+}
+.professional-skill > p {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+}
+.professional-skill > .professional-context {
+  margin-bottom: 1rem;
+}
+
+.professional-more {
+  margin-top: 0.35rem;
+}
+.professional-more summary {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: fit-content;
+  min-height: var(--touch-target);
+  color: var(--accent);
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.875rem;
+}
+.professional-more summary::-webkit-details-marker {
+  display: none;
+}
+.professional-more[open] summary svg {
+  transform: rotate(180deg);
+}
+.professional-more summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.professional-experience-intro {
+  padding-bottom: 1.5rem;
+}
+.professional-history {
+  list-style: none;
+  padding: 0;
+}
+.professional-history > li {
+  border-top: 1px solid var(--border);
+}
+.professional-job {
+  display: grid;
+  gap: 0.875rem;
+  padding-block: 1.5rem;
+}
+.professional-job > div {
+  min-width: 0;
+}
+.professional-job-meta {
+  font-size: 0.875rem;
+}
+.professional-job-meta p:first-child {
+  font-weight: 600;
+  color: var(--accent);
+}
+.professional-job-meta p + p {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+.professional-job-content h2 {
+  font-size: 1.25rem;
+}
+.professional-page .professional-company {
+  margin-top: 0.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.professional-job-content > p:not(.professional-company) {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+}
+.professional-contributions {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin-block: 1rem;
+}
+.professional-contributions li {
+  padding-left: 0.25rem;
+  font-size: 0.9375rem;
+}
+.professional-contributions li + li {
+  margin-top: 0.5rem;
+}
+.professional-outcome {
+  padding-left: 0.875rem;
+  border-left: 2px solid var(--success);
+}
+.professional-outcome strong {
+  color: var(--success);
+}
+.professional-job-content .professional-technologies {
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  .professional-intro h1 {
+    font-size: 2.5rem;
+  }
+  .professional-facts {
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .professional-skill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .professional-job {
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .professional-highlights {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .professional-profile-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+  .professional-education {
+    border-top: 0;
+    border-left: 1px solid var(--border);
+    padding-top: 0;
+    padding-left: 1.75rem;
+  }
+}
+
 .recruiter-scan {
   display: grid;
   gap: 1.25rem;
@@ -4607,7 +4962,75 @@ textarea:focus-visible,
 }
 
 .workspace-header {
+  padding: 0.5rem 1rem;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.workspace-header-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.workspace-section-label,
+.workspace-header-specialty {
+  display: none;
+}
+
+.workspace-section-select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--touch-target);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-elevated);
+  padding-inline: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.workspace-header-tool {
+  width: var(--touch-target);
+  height: var(--touch-target);
+  min-width: var(--touch-target);
+  padding: 0;
+}
+
+.workspace-tool-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .workspace-header {
+    padding-inline: 1.5rem;
+  }
+  .workspace-header-tool {
+    width: auto;
+    padding-inline: 1rem;
+  }
+  .workspace-tool-label {
+    display: inline;
+  }
+}
+
+@media (min-width: 1024px) {
+  .workspace-header-row {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 0.75rem;
+  }
+  .workspace-section-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .workspace-header-specialty {
+    display: inline-flex;
+  }
+  .workspace-section-select {
+    display: none;
+  }
 }
 
 .workspace-content {

@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { apiEndpoints } from "@/data/api-endpoints";
-import { capabilities } from "@/data/capabilities";
+import { professionalExperience, professionalHighlights } from "@/data/professional-summary";
 import { profile } from "@/data/profile";
 import { FullCycleExperience } from "@/features/workspace/components/FullCycleExperience";
 import type { WorkspaceMode, WorkspaceSection } from "@/features/workspace/types";
@@ -16,7 +16,6 @@ import {
   GitBranch,
   Layers3,
   Mail,
-  MapPin,
   Network,
   PlayCircle,
   Route,
@@ -46,225 +45,91 @@ function RecruiterOverviewPanel({
   onNavigate: (section: WorkspaceSection) => void;
 }>): React.ReactElement {
   const cv = profile.contact.cv;
-  const hiringSignals: readonly {
-    readonly label: string;
-    readonly value: string;
-    readonly detail: string;
-  }[] = [
-    {
-      label: "Target",
-      value: profile.availability,
-      detail: "Full Stack development with SDET-level quality ownership."
-    },
-    {
-      label: "Experience",
-      value: profile.yearsOfExperience,
-      detail: "Enterprise apps, backend/API, automation, performance, and CI/CD."
-    },
-    {
-      label: "Location",
-      value: profile.location,
-      detail: "Ready for recruiter follow-up through email, phone, LinkedIn, or CV."
-    }
-  ];
-  const careerSnapshot: readonly {
-    readonly label: string;
-    readonly title: string;
-    readonly meta: string;
-    readonly section: WorkspaceSection;
-  }[] = [
-    {
-      label: "Build",
-      title: "Full Stack Development",
-      meta: "Frontend, backend, API, and data workflows.",
-      section: "experience"
-    },
-    {
-      label: "Quality",
-      title: "SDET Depth",
-      meta: "Automation, API checks, mobile coverage, and release confidence.",
-      section: "experience"
-    },
-    {
-      label: "Ship",
-      title: "Delivery Discipline",
-      meta: "CI/CD, Docker, reporting, gates, and production readiness.",
-      section: "experience"
-    }
-  ];
-  const hiringPath: readonly {
-    readonly label: string;
-    readonly title: string;
-    readonly detail: string;
-    readonly cta: string;
-    readonly section?: WorkspaceSection;
-    readonly isCv?: boolean;
-  }[] = [
-    {
-      label: "01",
-      title: "Scan fit",
-      detail: "Full Stack Developer with SDET depth across build, quality, and delivery.",
-      cta: "View Profile",
-      section: "profile"
-    },
-    {
-      label: "02",
-      title: "Review experience",
-      detail: "Role scope, delivery depth, and career direction stay in the experience section.",
-      cta: "View Experience",
-      section: "experience"
-    },
-    {
-      label: "03",
-      title: "Read details",
-      detail: "CV carries full responsibilities, timeline, and deeper role information.",
-      cta: "Download CV",
-      isCv: true
-    },
-    {
-      label: "04",
-      title: "Start contact",
-      detail: "Email, phone, and LinkedIn are available from the contact workspace.",
-      cta: "Contact",
-      section: "contact"
-    }
-  ];
+  const currentRole = professionalExperience[0];
 
   return (
-    <div className="recruiter-scan">
-      <Panel className="recruiter-scan-hero p-5 sm:p-7">
-        <section>
-          <Badge tone="info">Portfolio Snapshot</Badge>
-          <h1>{profile.name}</h1>
-          <p className="recruiter-scan-headline">{profile.headline}</p>
-          <p className="recruiter-scan-summary">{profile.summary}</p>
-          <div className="recruiter-scan-actions">
-            {isPortfolioValueConfigured(cv.href) ? (
-              <a className="button-base button-primary" href={cv.href} download="cv.pdf">
-                <Download aria-hidden="true" size={18} />
-                <span>Download CV</span>
-              </a>
-            ) : null}
-            <Button
-              icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
-              onClick={() => onNavigate("experience")}
-            >
-              View Experience
-            </Button>
-            <Button
-              icon={<Mail aria-hidden="true" size={18} />}
-              onClick={() => onNavigate("contact")}
-            >
-              Contact
-            </Button>
-          </div>
-        </section>
-
-        <section className="recruiter-scan-fit" aria-label="Recruiter fit summary">
-          <div className="recruiter-scan-fit-header">
-            <p className="mono">30.sec.fit</p>
-            <MapPin aria-hidden="true" size={18} />
-          </div>
-          <dl>
-            {hiringSignals.map((signal) => (
-              <div key={signal.label}>
-                <dt>{signal.label}</dt>
-                <dd>
-                  <strong>{signal.value}</strong>
-                  <span>{signal.detail}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      </Panel>
-
-      <Panel className="recruiter-fast-path p-5 sm:p-6">
-        <div className="recruiter-scan-section-header">
+    <div className="professional-page">
+      <section className="professional-section professional-intro" aria-labelledby="overview-name">
+        <p className="professional-eyebrow">Professional Summary</p>
+        <h1 id="overview-name">{profile.name}</h1>
+        <p className="professional-role-title">{profile.role}</p>
+        <p className="professional-lead">
+          I build enterprise applications, from user interfaces and APIs to databases and delivery.
+          My background as a Software Development Engineer in Test (SDET) brings practical
+          experience in automation and software quality to that work.
+        </p>
+        {currentRole ? (
+          <p className="professional-current">Currently at {currentRole.company}</p>
+        ) : null}
+        <dl className="professional-facts">
           <div>
-            <p className="mono text-sm text-[var(--accent)]">decision.path</p>
-            <h2>Four-step hiring scan.</h2>
+            <dt>Experience</dt>
+            <dd>{profile.yearsOfExperience} in development &amp; quality</dd>
           </div>
-          <Badge tone="success">No WebGL required</Badge>
-        </div>
-        <div className="recruiter-fast-path-grid">
-          {hiringPath.map((item) => {
-            const targetSection = item.section;
-
-            return (
-              <article key={item.title}>
-                <span>{item.label}</span>
-                <h3>{item.title}</h3>
-                <p>{item.detail}</p>
-                {item.isCv && isPortfolioValueConfigured(cv.href) ? (
-                  <a className="action-link" href={cv.href} download="cv.pdf">
-                    <Download aria-hidden="true" size={16} />
-                    {item.cta}
-                  </a>
-                ) : targetSection ? (
-                  <Button variant="secondary" onClick={() => onNavigate(targetSection)}>
-                    {item.cta}
-                  </Button>
-                ) : null}
-              </article>
-            );
-          })}
-        </div>
-      </Panel>
-
-      <div className="recruiter-scan-grid">
-        <Panel className="recruiter-scan-priority p-5 sm:p-6">
-          <p className="mono text-sm text-[var(--accent)]">quick.summary</p>
-          <h2>What hiring teams should remember.</h2>
-          <ul>
-            <li>Current Full Stack Developer building enterprise workflow applications.</li>
-            <li>SDET background across web, mobile, API, performance, and quality gates.</li>
-            <li>Comfortable across frontend, backend, data, automation, and delivery signals.</li>
-          </ul>
-        </Panel>
-
-        <Panel className="recruiter-scan-career p-5 sm:p-6">
-          <p className="mono text-sm text-[var(--accent)]">career.path</p>
-          <div className="recruiter-scan-career-list">
-            {careerSnapshot.map((item) => (
-              <button key={item.label} type="button" onClick={() => onNavigate(item.section)}>
-                <span>{item.label}</span>
-                <strong>{item.title}</strong>
-                <small>{item.meta}</small>
-              </button>
-            ))}
-          </div>
-        </Panel>
-      </div>
-
-      <Panel className="recruiter-scan-skills p-5 sm:p-7">
-        <div className="recruiter-scan-section-header">
           <div>
-            <p className="mono text-sm text-[var(--accent)]">strongest.skills</p>
-            <h2>Build, Quality, Data, Delivery.</h2>
+            <dt>Location</dt>
+            <dd>{profile.location}</dd>
           </div>
+          <div>
+            <dt>Opportunities</dt>
+            <dd>{profile.availability}</dd>
+          </div>
+        </dl>
+        <div className="professional-actions">
+          {isPortfolioValueConfigured(cv.href) ? (
+            <a className="button-base button-primary" href={cv.href} download="cv.pdf">
+              <Download aria-hidden="true" size={18} />
+              <span>Download CV</span>
+            </a>
+          ) : null}
+          <Button
+            icon={<BriefcaseBusiness aria-hidden="true" size={18} />}
+            onClick={() => onNavigate("experience")}
+          >
+            View Experience
+          </Button>
+          <Button
+            icon={<Mail aria-hidden="true" size={18} />}
+            onClick={() => onNavigate("contact")}
+          >
+            Contact
+          </Button>
+        </div>
+      </section>
+
+      <section className="professional-section" aria-labelledby="overview-contributions">
+        <h2 id="overview-contributions">Selected Contributions</h2>
+        <div className="professional-highlights">
+          {professionalHighlights.map((highlight) => (
+            <article key={highlight.id}>
+              <p className="professional-context">{highlight.company}</p>
+              <h3>{highlight.title}</h3>
+              <p>{highlight.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="professional-section" aria-labelledby="overview-technologies">
+        <div className="professional-section-heading">
+          <h2 id="overview-technologies">Key Technologies</h2>
           <Button
             icon={<UserRound aria-hidden="true" size={17} />}
             onClick={() => onNavigate("profile")}
           >
-            Full Profile
+            View Profile
           </Button>
         </div>
-        <div className="recruiter-scan-skill-grid">
-          {capabilities.map((capability) => (
-            <article key={capability.id}>
-              <h3>{capability.title}</h3>
-              <p>{capability.description}</p>
-              <div>
-                {capability.technologies.slice(0, 5).map((technology) => (
-                  <Badge key={technology}>{technology}</Badge>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-      </Panel>
-
+        <ul className="professional-tags">
+          {["Next.js", "React", "Node.js", "Spring Boot", "Playwright", "GitLab CI/CD"].map(
+            (technology) => (
+              <li key={technology}>
+                <Badge>{technology}</Badge>
+              </li>
+            )
+          )}
+        </ul>
+      </section>
     </div>
   );
 }
