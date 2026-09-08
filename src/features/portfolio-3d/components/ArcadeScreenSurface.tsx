@@ -68,6 +68,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
   const [previewTexture, setPreviewTexture] = useState<THREE.CanvasTexture | null>(null);
+  const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
   const isInteractive = state.activeSectionId === screenId && state.navigationState === 'section-open';
   const isMonitor = screenId === 'pipeline' || screenId === 'terminal' ||
     screenId === 'automation' || screenId === 'backend' || screenId === 'performance';
@@ -327,10 +328,9 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     }
 
     const requestId = ++previewCaptureRequestRef.current;
-    // A returning screen has already been restored to its hidden room state by
-    // the layout effect above. Briefly restore only its CSS3D backing so the
-    // capture sees the current scroll position and DOM state, then hide it
-    // again as soon as the WebGL preview texture is ready.
+    // Keep the current CSS3D viewport visible through the depth-tested opening
+    // until its replacement texture has committed. Never reveal the old preview.
+    setIsPreviewCapturePending(true);
     screenLayer.setPreviewCapturePending(runtime, true);
 
     try {
@@ -340,16 +340,15 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       }
 
       const nextTexture = createScreenPreviewTexture(canvas, gl);
-      const previousTexture = previewTextureRef.current;
       previewTextureRef.current = nextTexture;
       setPreviewTexture(nextTexture);
-      previousTexture?.dispose();
-      screenLayer.setPreviewAvailable(runtime, true);
+      setIsPreviewCapturePending(false);
       invalidate();
 
       return true;
     } catch {
       if (previewCaptureRequestRef.current === requestId && runtimeRef.current === runtime) {
+        setIsPreviewCapturePending(false);
         screenLayer.setPreviewCapturePending(runtime, false);
       }
 
@@ -391,7 +390,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     };
   }, [capturePreview, isInteractive, screenId]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isInteractive) {
       wasInteractiveRef.current = true;
       return;
@@ -405,10 +404,21 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     void capturePreview();
   }, [capturePreview, isInteractive]);
 
+  useLayoutEffect(() => {
+    const runtime = runtimeRef.current;
+    if (runtime && previewTexture) {
+      // React has now installed the new map, so hiding the live page cannot
+      // expose the previous snapshot for a frame during the camera return.
+      screenLayer.setPreviewAvailable(runtime, true);
+      invalidate();
+    }
+  }, [invalidate, previewTexture, screenLayer]);
+
+  useEffect(() => () => previewTexture?.dispose(), [previewTexture]);
+
   useEffect(() => {
     return () => {
       previewCaptureRequestRef.current += 1;
-      previewTextureRef.current?.dispose();
       previewTextureRef.current = null;
     };
   }, []);
@@ -425,7 +435,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
         }}
       >
         <planeGeometry args={[screen.width, screen.height]} />
-        {previewTexture ? (
+        {previewTexture && !isPreviewCapturePending ? (
           <meshBasicMaterial
             key={`screen-preview-${previewTexture.uuid}`}
             polygonOffset={isMonitor}

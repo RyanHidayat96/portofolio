@@ -29,7 +29,11 @@ export function useEmbeddedScreenScrollSession(interactive: boolean) {
       }
 
       const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
-      scrollContainer.scrollTop = Math.min(lastScrollTopRef.current, maxScrollTop);
+      // State restoration must not inherit the page's smooth-scroll animation.
+      scrollContainer.scrollTo({
+        top: Math.min(lastScrollTopRef.current, maxScrollTop),
+        behavior: 'instant'
+      });
     };
 
     // CSS3D reparents the screen after each layout switch. Reapply after its

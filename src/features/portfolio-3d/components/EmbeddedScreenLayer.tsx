@@ -217,6 +217,9 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       },
       setInteractive: (screen, isInteractive): void => {
         if (!runtime.screens.has(screen) || screen.isInteractive === isInteractive) return;
+        const scrollPositions = [screen.content, ...screen.content.querySelectorAll<HTMLElement>('*')]
+          .filter((element) => element.scrollTop !== 0 || element.scrollLeft !== 0)
+          .map((element) => ({ element, top: element.scrollTop, left: element.scrollLeft }));
 
         if (isInteractive) {
           if (runtime.activeScreen && runtime.activeScreen !== screen) {
@@ -238,11 +241,18 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           screen.object.element.style.transformOrigin = '0 0';
           runtime.renderer.domElement.appendChild(screen.object.element);
         } else {
+          // The exiting page stays visible until its final screenshot commits.
+          screen.isPreviewCapturePending = true;
           restoreScreenToLayer(runtime, screen);
         }
 
         syncLayerPointerEvents(runtime);
         render();
+        // CSS3D reparents the document synchronously. Restore before the browser
+        // can paint its reset scroll offset, not on a later animation frame.
+        scrollPositions.forEach(({ element, top, left }) => {
+          element.scrollTo({ top, left, behavior: 'instant' });
+        });
         triggerForceRepaint();
       },
       setPreviewCapturePending: (screen, isPending): void => {
