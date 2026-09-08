@@ -1,14 +1,9 @@
 'use client';
 
 import { useThree } from '@react-three/fiber';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import type { ArcadeScreenPlacement } from '../arcade-screen';
-import {
-  type EmbeddedScreenOverlayRegistration,
-  useEmbeddedScreenLayer
-} from './EmbeddedScreenLayer';
 
 const marqueeMessage = 'Ryan Hidayat - 087775009393';
 const marqueeCanvasWidth = 640;
@@ -49,10 +44,10 @@ const ledGlyphs: Readonly<Record<string, readonly string[]>> = {
 
 export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
   marquee: ArcadeScreenPlacement;
-}>): null {
-  const { camera } = useThree();
-  const screenLayer = useEmbeddedScreenLayer();
+}>): React.ReactElement | null {
+  const { camera, invalidate, gl } = useThree();
   const runtimeRef = useRef<MarqueeRuntime | null>(null);
+  const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useLayoutEffect(() => {
     const canvas = document.createElement('canvas');
@@ -62,45 +57,38 @@ export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    const element = document.createElement('div');
-    element.className = 'arcade-marquee-display';
-    element.style.width = `${marqueeCanvasWidth}px`;
-    element.style.height = `${marqueeCanvasHeight}px`;
-    element.appendChild(canvas);
-    const overlay: EmbeddedScreenOverlayRegistration = {
-      object: new CSS3DObject(element),
-      placement: marquee,
-      pixelWidth: marqueeCanvasWidth,
-      pixelHeight: marqueeCanvasHeight
-    };
     const layout = createMarqueeCanvasLayout(marquee);
     const backgroundCanvas = createMarqueeBackground(layout);
     const messageCanvas = createMarqueeMessage();
+    const nextTexture = createMarqueeTexture(canvas, gl);
     const projection = new THREE.Vector3();
-    runtimeRef.current = {
+    const runtime: MarqueeRuntime = {
       context,
       backgroundCanvas,
       messageCanvas,
       projection,
-      layout
+      layout,
+      texture: nextTexture
     };
-    screenLayer.registerOverlay(overlay);
+    runtimeRef.current = runtime;
+    drawMarquee(runtime, performance.now());
+    setTexture(nextTexture);
+    invalidate();
 
     return () => {
-      screenLayer.unregisterOverlay(overlay);
-      runtimeRef.current = null;
+      if (runtimeRef.current === runtime) runtimeRef.current = null;
+      nextTexture.dispose();
     };
-  }, [marquee, screenLayer]);
+  }, [gl, invalidate, marquee]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
     if (!runtime) return;
 
-    // CSS3D has an independent DOM canvas; moving its dot animation no longer
-    // invalidates the costly WebGL room while preserving the same 3D placement.
     const paint = (): void => {
       if (document.hidden || !isMarqueeVisible(camera, marquee, runtime.projection)) return;
       drawMarquee(runtime, performance.now());
+      invalidate();
     };
 
     paint();
@@ -114,9 +102,28 @@ export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
       window.clearInterval(intervalId);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [camera, marquee, screenLayer]);
+  }, [camera, invalidate, marquee, texture]);
 
-  return null;
+  if (!texture) return null;
+
+  return (
+    <mesh
+      name="Arcade_Marquee_Display"
+      position={marquee.position}
+      quaternion={marquee.quaternion}
+    >
+      <planeGeometry args={[marquee.width, marquee.height]} />
+      <meshBasicMaterial
+        map={texture}
+        color="#ffffff"
+        depthTest
+        depthWrite
+        fog={false}
+        toneMapped={false}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
 }
 
 interface MarqueeRuntime {
@@ -125,6 +132,7 @@ interface MarqueeRuntime {
   readonly messageCanvas: HTMLCanvasElement;
   readonly projection: THREE.Vector3;
   readonly layout: MarqueeCanvasLayout;
+  readonly texture: THREE.CanvasTexture;
 }
 
 interface MarqueeCanvasLayout {
@@ -182,6 +190,21 @@ function createMarqueeMessage(): HTMLCanvasElement {
   return canvas;
 }
 
+function createMarqueeTexture(
+  canvas: HTMLCanvasElement,
+  gl: THREE.WebGLRenderer
+): THREE.CanvasTexture {
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = Math.min(4, gl.capabilities.getMaxAnisotropy());
+  texture.generateMipmaps = false;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  return texture;
+}
+
 function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
   const { backgroundCanvas, context, layout, messageCanvas } = runtime;
   context.drawImage(backgroundCanvas, 0, 0);
@@ -204,6 +227,7 @@ function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
   context.drawImage(messageCanvas, startX, baselineY);
   context.drawImage(messageCanvas, startX + messageCycleWidth, baselineY);
   context.restore();
+  runtime.texture.needsUpdate = true;
 }
 
 function isMarqueeVisible(
