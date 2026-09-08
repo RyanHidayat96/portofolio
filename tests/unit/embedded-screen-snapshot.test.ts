@@ -7,6 +7,13 @@ vi.mock('html-to-image', () => ({ toSvg: vi.fn() }));
 const scrollAttribute = 'data-embedded-snapshot-scroll';
 let serializedSnapshot = '';
 const drawImage = vi.fn();
+let canvasContext: {
+  fillRect: ReturnType<typeof vi.fn>;
+  drawImage: ReturnType<typeof vi.fn>;
+  fillStyle: string;
+  imageSmoothingEnabled: boolean;
+  imageSmoothingQuality: ImageSmoothingQuality;
+};
 
 function createSource(): HTMLDivElement {
   const source = document.createElement('div');
@@ -32,9 +39,15 @@ beforeEach(() => {
       serializedSnapshot = decodeURIComponent(this.src.slice(this.src.indexOf(',') + 1));
     }
   });
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
-    fillRect: vi.fn(), drawImage, fillStyle: ''
-  } as unknown as CanvasRenderingContext2D);
+  canvasContext = {
+    fillRect: vi.fn(),
+    drawImage,
+    fillStyle: '',
+    imageSmoothingEnabled: false,
+    imageSmoothingQuality: 'low'
+  };
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext')
+    .mockReturnValue(canvasContext as unknown as CanvasRenderingContext2D);
   vi.mocked(toSvg).mockImplementation(async (source) => {
     await Promise.resolve();
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
@@ -73,8 +86,10 @@ describe('embedded screen snapshot', () => {
     expect(source.querySelector(`[${scrollAttribute}]`)).toBeNull();
     expect([scroll.style.cssText, content.style.cssText]).toEqual(stylesBefore);
     expect(scroll.scrollTop).toBe(600);
-    expect(canvas.width).toBe(960);
-    expect(canvas.height).toBe(768);
+    expect(canvas.width).toBe(1500);
+    expect(canvas.height).toBe(1200);
+    expect(canvasContext.imageSmoothingEnabled).toBe(true);
+    expect(canvasContext.imageSmoothingQuality).toBe('high');
     expect(drawImage).toHaveBeenCalledOnce();
   });
 

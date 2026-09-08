@@ -13,7 +13,7 @@ export function createPreviewCaptureQueue(canCapture: () => boolean) {
 
   const schedule = (): void => {
     if (disposed || running || timer !== undefined || jobs.size === 0) return;
-    timer = setTimeout(pump, 120);
+    timer = setTimeout(pump, 80);
   };
 
   const pump = (): void => {

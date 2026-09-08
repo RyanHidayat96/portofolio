@@ -13,7 +13,7 @@ const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
-const initialPreviewCaptureIntervalMs = 420;
+const initialPreviewCaptureIntervalMs = 260;
 const previewCaptureRetryDelayMs = 360;
 const initialPreviewCaptureOrder: readonly EmbeddedScreenId[] = [
   "pipeline",
@@ -555,7 +555,7 @@ function createScreenPreviewTexture(
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
   texture.generateMipmaps = true;
-  texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   texture.needsUpdate = true;
 
   return texture;

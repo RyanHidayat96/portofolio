@@ -1,6 +1,7 @@
 'use client';
 
-const maximumSnapshotDimension = 960;
+const snapshotTextureScale = 1.5;
+const maximumSnapshotDimension = 1600;
 const snapshotBackgroundColor = '#0f1b29';
 const snapshotScrollAttribute = 'data-embedded-snapshot-scroll';
 
@@ -11,7 +12,10 @@ export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promis
   if (sourceWidth < 1 || sourceHeight < 1) {
     throw new Error('Embedded screen is not measurable for a snapshot.');
   }
-  const snapshotScale = Math.min(1, maximumSnapshotDimension / Math.max(sourceWidth, sourceHeight));
+  const snapshotScale = Math.min(
+    snapshotTextureScale,
+    maximumSnapshotDimension / Math.max(sourceWidth, sourceHeight)
+  );
   const { toSvg } = await import('html-to-image');
   const restoreScrollMarkers = markScrolledContent(source);
   let svg: string;
@@ -57,6 +61,8 @@ export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promis
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Embedded screen snapshot canvas is unavailable.');
   context.fillStyle = snapshotBackgroundColor;
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   return canvas;
