@@ -99,6 +99,18 @@ function createTouchList(touches: readonly Touch[]): TouchList {
   return touchList;
 }
 
+function setScrollMetrics(
+  element: HTMLElement,
+  metrics: Readonly<{ clientHeight: number; scrollHeight: number; clientWidth?: number; scrollWidth?: number }>
+): void {
+  Object.defineProperties(element, {
+    clientHeight: { configurable: true, value: metrics.clientHeight },
+    scrollHeight: { configurable: true, value: metrics.scrollHeight },
+    clientWidth: { configurable: true, value: metrics.clientWidth ?? 100 },
+    scrollWidth: { configurable: true, value: metrics.scrollWidth ?? 100 }
+  });
+}
+
 function dispatchTouchEvent(
   target: HTMLElement,
   type: 'touchstart' | 'touchmove' | 'touchend',
@@ -206,5 +218,73 @@ describe('ArcadeScreenSurface mobile gestures', () => {
       'architecture',
       expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
     );
+  });
+
+  it('scrolls embedded frame content before panning the zoomed viewport', async () => {
+    render(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+    expect(harness.runtime).toBeDefined();
+    host.appendChild(harness.runtime!.object.element);
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.overflowY = 'auto';
+    setScrollMetrics(scrollContainer, { clientHeight: 100, scrollHeight: 300 });
+    screenTarget = document.createElement('button');
+    scrollContainer.appendChild(screenTarget);
+    harness.runtime!.content.appendChild(scrollContainer);
+    onScreenZoomChangeMock.mockClear();
+    onScreenPanChangeMock.mockClear();
+
+    const firstStart = createTouch(screenTarget, 1, 100, 100);
+    const secondStart = createTouch(screenTarget, 2, 120, 100);
+    dispatchTouchEvent(screenTarget, 'touchstart', [firstStart, secondStart]);
+    dispatchTouchEvent(screenTarget, 'touchmove', [
+      createTouch(screenTarget, 1, 90, 100),
+      createTouch(screenTarget, 2, 130, 100)
+    ]);
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(onScreenZoomChangeMock).toHaveBeenLastCalledWith('architecture', 2);
+    dispatchTouchEvent(screenTarget, 'touchend', []);
+    onScreenPanChangeMock.mockClear();
+
+    const scrollStart = createTouch(screenTarget, 3, 140, 180);
+    dispatchTouchEvent(screenTarget, 'touchstart', [scrollStart]);
+    const scrollMove = dispatchTouchEvent(screenTarget, 'touchmove', [
+      createTouch(screenTarget, 3, 140, 130)
+    ]);
+    expect(scrollMove.defaultPrevented).toBe(true);
+    expect(scrollContainer.scrollTop).toBe(50);
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(onScreenPanChangeMock).not.toHaveBeenCalled();
+    dispatchTouchEvent(screenTarget, 'touchend', []);
+
+    scrollContainer.scrollTop = 200;
+    onScreenPanChangeMock.mockClear();
+    const bottomPanStart = createTouch(screenTarget, 4, 140, 180);
+    dispatchTouchEvent(screenTarget, 'touchstart', [bottomPanStart]);
+    const bottomPanMove = dispatchTouchEvent(screenTarget, 'touchmove', [
+      createTouch(screenTarget, 4, 140, 130)
+    ]);
+    expect(bottomPanMove.defaultPrevented).toBe(true);
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(onScreenPanChangeMock).toHaveBeenLastCalledWith(
+      'architecture',
+      expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
+    );
+
+    dispatchTouchEvent(screenTarget, 'touchend', []);
+    scrollContainer.scrollTop = 100;
+    onScreenPanChangeMock.mockClear();
+    dispatchTouchEvent(screenTarget, 'touchstart', [createTouch(screenTarget, 5, 120, 150)]);
+    const horizontalPanMove = dispatchTouchEvent(screenTarget, 'touchmove', [
+      createTouch(screenTarget, 5, 170, 152)
+    ]);
+    expect(horizontalPanMove.defaultPrevented).toBe(true);
+    expect(scrollContainer.scrollTop).toBe(100);
   });
 });

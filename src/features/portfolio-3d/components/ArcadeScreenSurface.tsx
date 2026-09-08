@@ -13,6 +13,8 @@ const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
+const minimumEmbeddedContentScrollDistance = 4;
+const embeddedContentScrollEdgeTolerance = 1;
 const initialPreviewCaptureIntervalMs = 260;
 const previewCaptureRetryDelayMs = 360;
 const initialPreviewCaptureOrder: readonly EmbeddedScreenId[] = [
@@ -48,6 +50,10 @@ interface TouchPanGesture {
   readonly initialPoint: TouchPoint;
   readonly initialPan: EmbeddedScreenPan;
   readonly isPanning: boolean;
+  readonly scrollTarget?: HTMLElement;
+  readonly initialScrollLeft?: number;
+  readonly initialScrollTop?: number;
+  readonly hasScrolledContent?: boolean;
 }
 
 export function ArcadeScreenSurface({
@@ -201,6 +207,109 @@ export function ArcadeScreenSurface({
       return gestureHost ? gestureHost.contains(target) : element.contains(target);
     };
 
+    const isScrollableOverflow = (overflow: string): boolean =>
+      overflow === "auto" || overflow === "scroll" || overflow === "overlay";
+
+    const findScrollableGestureTarget = (target: EventTarget | null): HTMLElement | undefined => {
+      if (!(target instanceof Node) || !element.contains(target)) return undefined;
+
+      const start = target instanceof Element ? target : target.parentElement;
+      for (
+        let current: Element | null = start;
+        current && current !== element;
+        current = current.parentElement
+      ) {
+        if (!(current instanceof HTMLElement) || !runtime.content.contains(current)) continue;
+
+        const style = window.getComputedStyle(current);
+        const hasVerticalScroll =
+          isScrollableOverflow(style.overflowY) &&
+          current.scrollHeight > current.clientHeight + embeddedContentScrollEdgeTolerance;
+        const hasHorizontalScroll =
+          isScrollableOverflow(style.overflowX) &&
+          current.scrollWidth > current.clientWidth + embeddedContentScrollEdgeTolerance;
+        if (hasVerticalScroll || hasHorizontalScroll) return current;
+      }
+
+      return undefined;
+    };
+
+    const beginPanGesture = (
+      initialPoint: TouchPoint,
+      target: EventTarget | null
+    ): TouchPanGesture => {
+      const scrollTarget = findScrollableGestureTarget(target);
+      return {
+        initialPoint,
+        initialPan: pan,
+        isPanning: false,
+        scrollTarget,
+        initialScrollLeft: scrollTarget?.scrollLeft,
+        initialScrollTop: scrollTarget?.scrollTop
+      };
+    };
+
+    const applyContentScrollAxis = (
+      scrollTarget: HTMLElement,
+      axis: "x" | "y",
+      initialScrollPosition: number,
+      gestureDelta: number
+    ): boolean => {
+      if (Math.abs(gestureDelta) < minimumEmbeddedContentScrollDistance) return false;
+
+      const maxScrollPosition =
+        axis === "y"
+          ? Math.max(0, scrollTarget.scrollHeight - scrollTarget.clientHeight)
+          : Math.max(0, scrollTarget.scrollWidth - scrollTarget.clientWidth);
+      if (maxScrollPosition <= embeddedContentScrollEdgeTolerance) return false;
+
+      const currentScrollPosition =
+        axis === "y" ? scrollTarget.scrollTop : scrollTarget.scrollLeft;
+      const nextScrollPosition = clamp(
+        initialScrollPosition - gestureDelta,
+        0,
+        maxScrollPosition
+      );
+      if (Math.abs(nextScrollPosition - currentScrollPosition) > embeddedContentScrollEdgeTolerance) {
+        if (axis === "y") scrollTarget.scrollTop = nextScrollPosition;
+        else scrollTarget.scrollLeft = nextScrollPosition;
+        return true;
+      }
+
+      if (gestureDelta < 0) {
+        return currentScrollPosition < maxScrollPosition - embeddedContentScrollEdgeTolerance;
+      }
+      if (gestureDelta > 0) {
+        return currentScrollPosition > embeddedContentScrollEdgeTolerance;
+      }
+
+      return false;
+    };
+
+    const scrollEmbeddedContentBeforePan = (point: TouchPoint): boolean => {
+      if (!panGesture?.scrollTarget) return false;
+
+      const deltaX = point.x - panGesture.initialPoint.x;
+      const deltaY = point.y - panGesture.initialPoint.y;
+      const didScroll =
+        Math.abs(deltaY) >= Math.abs(deltaX)
+          ? applyContentScrollAxis(
+              panGesture.scrollTarget,
+              "y",
+              panGesture.initialScrollTop ?? panGesture.scrollTarget.scrollTop,
+              deltaY
+            )
+          : applyContentScrollAxis(
+              panGesture.scrollTarget,
+              "x",
+              panGesture.initialScrollLeft ?? panGesture.scrollTarget.scrollLeft,
+              deltaX
+            );
+
+      if (didScroll) panGesture = { ...panGesture, hasScrolledContent: true };
+      return didScroll;
+    };
+
     const resetZoom = (): void => {
       if (viewportFrame !== undefined) {
         window.cancelAnimationFrame(viewportFrame);
@@ -337,11 +446,7 @@ export function ArcadeScreenSurface({
       // pan its camera viewport too. Do not capture on pointerdown: a touch
       // without meaningful movement must remain a click on the live document.
       if (activePointers.size === 1 && scale > 1) {
-        panGesture = {
-          initialPoint: { x: event.clientX, y: event.clientY },
-          initialPan: pan,
-          isPanning: false
-        };
+        panGesture = beginPanGesture({ x: event.clientX, y: event.clientY }, event.target);
         return;
       }
 
@@ -365,11 +470,18 @@ export function ArcadeScreenSurface({
         const point = activePointers.values().next().value;
         if (!point) return;
 
+        if (!panGesture.isPanning && scrollEmbeddedContentBeforePan(point)) {
+          event.preventDefault();
+          return;
+        }
+
         if (!panGesture.isPanning) {
           const dragDistance = getTouchDistance(panGesture.initialPoint, point);
           if (dragDistance < minimumMobileCameraPanDistance) return;
 
-          panGesture = { ...panGesture, isPanning: true };
+          panGesture = panGesture.hasScrolledContent
+            ? { initialPoint: point, initialPan: pan, isPanning: true }
+            : { ...panGesture, isPanning: true, scrollTarget: undefined };
         }
 
         event.preventDefault();
@@ -383,11 +495,7 @@ export function ArcadeScreenSurface({
       if (activePointers.size === 1 && wasPinching && scale > 1) {
         const remainingPoint = activePointers.values().next().value;
         if (remainingPoint) {
-          panGesture = {
-            initialPoint: remainingPoint,
-            initialPan: pan,
-            isPanning: false
-          };
+          panGesture = beginPanGesture(remainingPoint, event.target);
         }
       } else if (activePointers.size === 0) {
         panGesture = undefined;
@@ -411,11 +519,7 @@ export function ArcadeScreenSurface({
         gesture = undefined;
         isTouchEventGestureActive = true;
         isViewportGestureActive = true;
-        panGesture = {
-          initialPoint: point,
-          initialPan: pan,
-          isPanning: false
-        };
+        panGesture = beginPanGesture(point, event.target);
         syncGestureTouchAction();
       }
     };
@@ -447,11 +551,18 @@ export function ArcadeScreenSurface({
           return;
         }
 
+        if (!panGesture.isPanning && scrollEmbeddedContentBeforePan(point)) {
+          event.preventDefault();
+          return;
+        }
+
         if (!panGesture.isPanning) {
           const dragDistance = getTouchDistance(panGesture.initialPoint, point);
           if (dragDistance < minimumMobileCameraPanDistance) return;
 
-          panGesture = { ...panGesture, isPanning: true };
+          panGesture = panGesture.hasScrolledContent
+            ? { initialPoint: point, initialPan: pan, isPanning: true }
+            : { ...panGesture, isPanning: true, scrollTarget: undefined };
         }
 
         event.preventDefault();
@@ -464,9 +575,7 @@ export function ArcadeScreenSurface({
       if (event.touches.length >= 2 && beginTouchZoomGesture(event.touches)) return;
       gesture = undefined;
       const remainingPoint = scale > 1 ? getFirstTouchPoint(event.touches) : undefined;
-      panGesture = remainingPoint
-        ? { initialPoint: remainingPoint, initialPan: pan, isPanning: false }
-        : undefined;
+      panGesture = remainingPoint ? beginPanGesture(remainingPoint, event.target) : undefined;
       isTouchEventGestureActive = Boolean(remainingPoint);
       isViewportGestureActive = scale > 1;
       syncGestureTouchAction();
