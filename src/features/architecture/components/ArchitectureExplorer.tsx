@@ -40,6 +40,16 @@ const presetMeta: Record<
   "cicd-delivery": { label: "Ship", icon: GitBranch }
 };
 
+const topologyNodeBounds = {
+  halfWidth: 10.4,
+  halfHeight: 6.8
+};
+
+interface TopologyPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
 export function ArchitectureExplorer(): React.ReactElement {
   const [presetId, setPresetId] = useState<ArchitecturePresetId>(
     architecturePresets[0]?.id ?? "full-stack-application"
@@ -258,8 +268,8 @@ export function ArchitectureExplorer(): React.ReactElement {
                     viewBox="0 0 10 10"
                     refX="7"
                     refY="5"
-                    markerWidth="4"
-                    markerHeight="4"
+                    markerWidth="5.2"
+                    markerHeight="5.2"
                     orient="auto-start-reverse"
                   >
                     <path d="M 0 0 L 10 5 L 0 10 z" />
@@ -333,6 +343,30 @@ function getNodeStyle(node: ArchitectureNode): NodeStyle {
   };
 }
 
+function getNodeEdgeAnchor(node: ArchitectureNode, toward: ArchitectureNode): TopologyPoint {
+  const deltaX = toward.x - node.x;
+  const deltaY = toward.y - node.y;
+
+  if (deltaX === 0 && deltaY === 0) {
+    return { x: node.x, y: node.y };
+  }
+
+  const scaleX =
+    deltaX === 0 ? Number.POSITIVE_INFINITY : topologyNodeBounds.halfWidth / Math.abs(deltaX);
+  const scaleY =
+    deltaY === 0 ? Number.POSITIVE_INFINITY : topologyNodeBounds.halfHeight / Math.abs(deltaY);
+  const edgeScale = Math.min(scaleX, scaleY);
+
+  return {
+    x: node.x + deltaX * edgeScale,
+    y: node.y + deltaY * edgeScale
+  };
+}
+
+function formatTopologyCoordinate(value: number): string {
+  return Number(value.toFixed(2)).toString();
+}
+
 function TopologyEdge({
   edge,
   nodes,
@@ -349,16 +383,37 @@ function TopologyEdge({
     return null;
   }
 
-  const controlOffset = Math.max(7, Math.abs(source.y - target.y) * 0.22);
-  const path = `M ${source.x} ${source.y} C ${source.x} ${source.y + controlOffset}, ${target.x} ${target.y - controlOffset}, ${target.x} ${target.y}`;
-  const labelX = (source.x + target.x) / 2;
-  const labelY = (source.y + target.y) / 2;
+  const sourceAnchor = getNodeEdgeAnchor(source, target);
+  const targetAnchor = getNodeEdgeAnchor(target, source);
+  const controlOffset = Math.max(4, Math.abs(sourceAnchor.y - targetAnchor.y) * 0.22);
+  const verticalDirection = targetAnchor.y >= sourceAnchor.y ? 1 : -1;
+  const path = [
+    `M ${formatTopologyCoordinate(sourceAnchor.x)} ${formatTopologyCoordinate(sourceAnchor.y)}`,
+    `C ${formatTopologyCoordinate(sourceAnchor.x)} ${formatTopologyCoordinate(
+      sourceAnchor.y + controlOffset * verticalDirection
+    )}`,
+    `${formatTopologyCoordinate(targetAnchor.x)} ${formatTopologyCoordinate(
+      targetAnchor.y - controlOffset * verticalDirection
+    )}`,
+    `${formatTopologyCoordinate(targetAnchor.x)} ${formatTopologyCoordinate(targetAnchor.y)}`
+  ].join(" ");
+  const labelX = (sourceAnchor.x + targetAnchor.x) / 2;
+  const labelY = (sourceAnchor.y + targetAnchor.y) / 2;
 
   return (
-    <g className="architecture-edge" data-active={isActive}>
-      <path d={path} markerEnd={isActive ? "url(#architecture-arrow-active)" : undefined} />
+    <g className="architecture-edge" data-active={isActive} data-edge-id={edge.id}>
+      <path className="architecture-edge-glow" d={path} />
+      <path
+        className="architecture-edge-line"
+        d={path}
+        markerEnd={isActive ? "url(#architecture-arrow-active)" : undefined}
+      />
       {isActive ? (
-        <text x={labelX} y={labelY} textAnchor="middle">
+        <text
+          x={formatTopologyCoordinate(labelX)}
+          y={formatTopologyCoordinate(labelY)}
+          textAnchor="middle"
+        >
           {edge.label}
         </text>
       ) : null}

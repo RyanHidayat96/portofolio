@@ -3464,6 +3464,7 @@ textarea:focus-visible,
 
 .architecture-plane {
   position: absolute;
+  z-index: 0;
   left: 12%;
   right: 12%;
   border: 1px solid var(--border);
@@ -3475,20 +3476,20 @@ textarea:focus-visible,
 .architecture-plane-back {
   top: 12%;
   height: 34%;
-  opacity: 0.34;
+  opacity: 0.18;
 }
 
 .architecture-plane-mid {
   top: 30%;
   height: 34%;
-  opacity: 0.52;
+  opacity: 0.26;
 }
 
 .architecture-plane-front {
   top: 50%;
   height: 34%;
   border-color: var(--border-strong);
-  opacity: 0.7;
+  opacity: 0.34;
 }
 
 .architecture-edges,
@@ -3497,12 +3498,21 @@ textarea:focus-visible,
   inset: 0;
 }
 
+.architecture-edges {
+  z-index: 3;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.architecture-nodes {
+  z-index: 2;
+}
+
 .architecture-edge path {
   fill: none;
-  stroke: rgba(145, 164, 191, 0.32);
-  stroke-dasharray: 1.2 1.2;
   stroke-linecap: round;
-  stroke-width: 0.3;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
   transition:
     stroke var(--motion-base) var(--ease-standard),
     stroke-width var(--motion-base) var(--ease-standard),
@@ -3510,13 +3520,34 @@ textarea:focus-visible,
   vector-effect: non-scaling-stroke;
 }
 
-.architecture-edge[data-active="true"] path {
-  stroke: var(--accent);
-  stroke-dasharray: 0;
-  stroke-width: 0.58;
+.architecture-edge-glow {
+  stroke: rgba(85, 215, 255, 0.16);
+  stroke-dasharray: none;
+  stroke-width: 5.5;
+  opacity: 0.42;
 }
 
-.architecture-edge path[marker-end] {
+.architecture-edge-line {
+  stroke: rgba(194, 213, 239, 0.82);
+  stroke-dasharray: 5 4;
+  stroke-width: 1.65;
+  opacity: 0.98;
+}
+
+.architecture-edge[data-active="true"] .architecture-edge-glow {
+  stroke: rgba(85, 215, 255, 0.34);
+  stroke-width: 7;
+  opacity: 0.78;
+}
+
+.architecture-edge[data-active="true"] .architecture-edge-line {
+  stroke: var(--accent);
+  stroke-dasharray: 0;
+  stroke-width: 2.65;
+  opacity: 1;
+}
+
+.architecture-edge-line[marker-end] {
   marker-end: url(#architecture-arrow-active);
 }
 
