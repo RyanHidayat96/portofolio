@@ -69,6 +69,8 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
   const wasInteractiveRef = useRef(false);
   const [previewTexture, setPreviewTexture] = useState<THREE.CanvasTexture | null>(null);
   const isInteractive = state.activeSectionId === screenId && state.navigationState === 'section-open';
+  const isMonitor = screenId === 'pipeline' || screenId === 'terminal' ||
+    screenId === 'automation' || screenId === 'backend' || screenId === 'performance';
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
@@ -426,6 +428,9 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
         {previewTexture ? (
           <meshBasicMaterial
             key={`screen-preview-${previewTexture.uuid}`}
+            polygonOffset={isMonitor}
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
             map={previewTexture}
             color="#ffffff"
             toneMapped={false}
@@ -438,6 +443,9 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
           /* This clears the canvas only inside the display while preserving its depth. */
           <meshBasicMaterial
             key="live-screen-depth"
+            polygonOffset={isMonitor}
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
             color="#000000"
             blending={THREE.NoBlending}
             opacity={0}

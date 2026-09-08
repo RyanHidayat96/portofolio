@@ -165,7 +165,9 @@ function resolveScreenByMaterial(
   const screen = findScreenMesh(cabinet, [], materialName);
   if (!screen) return undefined;
 
-  return resolveMaterialScreenPlacement(screen, materialName)
+  // Flat monitor pages share the exact glass bounds and plane in both renderers.
+  // Their WebGL material supplies the depth bias, so no physical gap is needed.
+  return resolveMaterialScreenPlacement(screen, materialName, 1, 0)
     ?? resolveWholeMeshScreenPlacement(screen);
 }
 
@@ -275,7 +277,9 @@ function getTextureRightAxis(
 
 function resolveMaterialScreenPlacement(
   screen: THREE.Mesh,
-  materialName: string
+  materialName: string,
+  contentScale = 0.98,
+  surfaceOffset = 0.006
 ): ArcadeScreenPlacement | undefined {
   const geometry = screen.geometry;
   const positions = geometry.getAttribute('position');
@@ -325,9 +329,9 @@ function resolveMaterialScreenPlacement(
 
   const center = right.clone().multiplyScalar((ranges.right.min + ranges.right.max) / 2)
     .add(up.clone().multiplyScalar((ranges.up.min + ranges.up.max) / 2))
-    .add(normal.clone().multiplyScalar(ranges.normal.max + 0.006));
+    .add(normal.clone().multiplyScalar(ranges.normal.max + surfaceOffset));
 
-  return toWorldScreenPlacement(screen, center, right, up, width, height);
+  return toWorldScreenPlacement(screen, center, right, up, width, height, contentScale);
 }
 
 function collectMaterialTriangles(
@@ -391,7 +395,8 @@ function toWorldScreenPlacement(
   right: THREE.Vector3,
   up: THREE.Vector3,
   width: number,
-  height: number
+  height: number,
+  contentScale = 0.98
 ): ArcadeScreenPlacement | undefined {
   screen.updateWorldMatrix(true, false);
   const position = center.clone().applyMatrix4(screen.matrixWorld);
@@ -399,8 +404,8 @@ function toWorldScreenPlacement(
     .applyMatrix4(screen.matrixWorld).sub(position);
   const worldUp = center.clone().addScaledVector(up, height)
     .applyMatrix4(screen.matrixWorld).sub(position);
-  const worldWidth = worldRight.length() * 0.98;
-  const worldHeight = worldUp.length() * 0.98;
+  const worldWidth = worldRight.length() * contentScale;
+  const worldHeight = worldUp.length() * contentScale;
   if (worldWidth <= 0 || worldHeight <= 0) return undefined;
   worldRight.normalize();
   worldUp.normalize();
