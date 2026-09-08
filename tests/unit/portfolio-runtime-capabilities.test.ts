@@ -15,9 +15,14 @@ const capableMobileRuntime = {
 
 describe('portfolio runtime capabilities', () => {
   it('allows a sharper high-quality DPR on capable mobile screens', () => {
-    expect(getPortfolio3dDprLimit('high', capableMobileRuntime)).toBe(1.5);
+    expect(getPortfolio3dDprLimit('high', capableMobileRuntime)).toBe(2);
     expect(getPortfolio3dDprLimit('medium', capableMobileRuntime)).toBe(1.2);
     expect(getPortfolio3dDprLimit('low', capableMobileRuntime)).toBe(0.85);
+  });
+
+  it('backs off high-quality mobile DPR on balanced hardware', () => {
+    expect(getPortfolio3dDprLimit('high', { ...capableMobileRuntime, deviceMemory: 4 })).toBe(1.5);
+    expect(getPortfolio3dDprLimit('high', { ...capableMobileRuntime, hardwareConcurrency: 4 })).toBe(1.5);
   });
 
   it('keeps the conservative DPR limit for constrained mobile conditions', () => {

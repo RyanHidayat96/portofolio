@@ -815,7 +815,7 @@ function createScreenPreviewTexture(
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
   texture.generateMipmaps = true;
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  texture.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
   texture.needsUpdate = true;
 
   return texture;

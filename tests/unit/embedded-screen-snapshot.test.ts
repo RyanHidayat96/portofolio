@@ -86,8 +86,8 @@ describe('embedded screen snapshot', () => {
     expect(source.querySelector(`[${scrollAttribute}]`)).toBeNull();
     expect([scroll.style.cssText, content.style.cssText]).toEqual(stylesBefore);
     expect(scroll.scrollTop).toBe(600);
-    expect(canvas.width).toBe(1500);
-    expect(canvas.height).toBe(1200);
+    expect(canvas.width).toBe(1800);
+    expect(canvas.height).toBe(1440);
     expect(canvasContext.imageSmoothingEnabled).toBe(true);
     expect(canvasContext.imageSmoothingQuality).toBe('high');
     expect(drawImage).toHaveBeenCalledOnce();

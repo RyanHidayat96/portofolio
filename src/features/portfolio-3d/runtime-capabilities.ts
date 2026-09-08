@@ -45,29 +45,51 @@ export function getPortfolio3dRuntimeCapabilities(): Portfolio3dRuntimeCapabilit
 }
 
 
+const lowQualityDprLimit = 0.85;
+const mediumQualityDprLimit = 1.2;
+const desktopHighQualityDprLimit = 1.5;
+const mobileHighQualityDprLimit = 2;
+const mobileBalancedHighQualityDprLimit = 1.5;
+const constrainedRuntimeDprLimit = 1.2;
+
 export function getPortfolio3dDprLimit(
   qualityTier: Portfolio3dQualityTier,
   capabilities = getPortfolio3dRuntimeCapabilities()
 ): number {
-  const tierLimit = qualityTier === 'low' ? 0.85 : qualityTier === 'medium' ? 1.2 : 1.5;
+  const isMobileViewport = capabilities.isCoarsePointer || capabilities.isNarrowViewport;
+  const tierLimit = qualityTier === 'low'
+    ? lowQualityDprLimit
+    : qualityTier === 'medium'
+      ? mediumQualityDprLimit
+      : isMobileViewport
+        ? mobileHighQualityDprLimit
+        : desktopHighQualityDprLimit;
   const isConstrainedNetwork = capabilities.saveData ||
     capabilities.effectiveType === 'slow-2g' ||
     capabilities.effectiveType === '2g';
   const isVeryConstrainedHardware =
     (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 4) ||
     (typeof capabilities.hardwareConcurrency === 'number' && capabilities.hardwareConcurrency <= 2);
+  const isBalancedHardware =
+    (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 6) ||
+    (typeof capabilities.hardwareConcurrency === 'number' && capabilities.hardwareConcurrency <= 4);
 
   if (isConstrainedNetwork || isVeryConstrainedHardware) {
-    return Math.min(tierLimit, 1.2);
+    return Math.min(tierLimit, constrainedRuntimeDprLimit);
   }
 
   if (
-    capabilities.isCoarsePointer ||
-    capabilities.isNarrowViewport ||
-    (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 6) ||
-    (typeof capabilities.hardwareConcurrency === 'number' && capabilities.hardwareConcurrency <= 4)
+    isMobileViewport ||
+    isBalancedHardware
   ) {
-    return Math.min(tierLimit, qualityTier === 'high' ? 1.5 : 1.2);
+    return Math.min(
+      tierLimit,
+      qualityTier === 'high' && isMobileViewport && !isBalancedHardware
+        ? mobileHighQualityDprLimit
+        : qualityTier === 'high'
+          ? mobileBalancedHighQualityDprLimit
+          : mediumQualityDprLimit
+    );
   }
 
   return tierLimit;
