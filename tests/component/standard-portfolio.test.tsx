@@ -1,14 +1,24 @@
 import { capabilities } from "@/data/capabilities";
 import { education } from "@/data/education";
 import { experience } from "@/data/experience";
+import { professionalExperience, skillApplications } from "@/data/professional-summary";
 import { profile } from "@/data/profile";
+import { ExperienceArtworkScreen } from "@/features/portfolio-3d/components/ExperienceArtworkScreen";
+import { ProfileArtworkScreen } from "@/features/portfolio-3d/components/ProfileArtworkScreen";
 import { ExperiencePanel } from "@/features/workspace/components/ExperiencePanel";
 import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
 import { ProfilePanel } from "@/features/workspace/components/ProfilePanel";
 import { WorkspaceShell } from "@/features/workspace/components/WorkspaceShell";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+    configurable: true,
+    value: vi.fn()
+  });
+});
 
 describe("Standard portfolio hiring flow", () => {
   it("keeps profile, experience, contact, and CV reachable from the overview", async () => {
@@ -71,6 +81,40 @@ describe("Standard portfolio hiring flow", () => {
         0
       );
     });
+  });
+
+  it("keeps room profile and experience screens synced with the standard portfolio data", () => {
+    const { unmount } = render(<ProfileArtworkScreen interactive={false} />);
+    expect(screen.getByRole("heading", { name: "Professional Profile" })).toBeVisible();
+    expect(screen.getByText("Development With a Quality Background")).toBeVisible();
+    for (const credential of education) {
+      expect(screen.getByText(credential.institution)).toBeVisible();
+      expect(screen.getByText(credential.degree)).toBeVisible();
+    }
+    for (const application of Object.values(skillApplications)) {
+      expect(screen.getByText(application.title)).toBeVisible();
+    }
+    expect(screen.queryByText("Public profile summary")).not.toBeInTheDocument();
+    expect(screen.queryByText("Engineering Capability Matrix")).not.toBeInTheDocument();
+    unmount();
+
+    render(<ExperienceArtworkScreen interactive={false} />);
+    expect(screen.getByRole("heading", { name: "Work Experience" })).toBeVisible();
+    const roomRoles = within(
+      screen.getByRole("list", { name: /Work experience, most recent first/ })
+    ).getAllByRole("article");
+    expect(roomRoles).toHaveLength(professionalExperience.length);
+    roomRoles.forEach((article, index) => {
+      const role = professionalExperience[index];
+      expect(within(article).getByRole("heading", { name: role.role })).toBeVisible();
+      expect(within(article).getByText(role.company)).toBeVisible();
+      expect(within(article).getByText(role.period)).toBeVisible();
+      expect(article.querySelectorAll(".experience-artwork-contributions > li")).toHaveLength(
+        role.contributions.length
+      );
+    });
+    expect(screen.queryByText("Career shape, not resume detail.")).not.toBeInTheDocument();
+    expect(screen.queryByText("CV has detail")).not.toBeInTheDocument();
   });
 
   it("preserves mobile section selection, room link, and command palette access", async () => {

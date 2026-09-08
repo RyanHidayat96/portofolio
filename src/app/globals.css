@@ -7327,6 +7327,37 @@ textarea:focus-visible,
   line-height: 1.5;
 }
 
+.profile-frame-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.profile-frame-actions .professional-actions {
+  margin: 0;
+}
+
+.profile-frame-actions .button-base,
+.profile-frame-text-link {
+  min-height: 40px;
+  padding: 8px 11px;
+  font-size: 13px;
+}
+
+.profile-frame-text-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(85, 215, 255, 0.44);
+  background: rgba(19, 38, 52, 0.42);
+  color: #dff6ff;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
 .profile-frame-capabilities {
   margin-top: 32px;
 }
@@ -7461,6 +7492,77 @@ textarea:focus-visible,
   margin-top: 13px;
 }
 
+.profile-frame-capability .professional-technologies {
+  margin-top: 16px;
+}
+
+.profile-frame-capability .professional-tags {
+  gap: 7px;
+  margin: 0;
+}
+
+.profile-frame-capability .professional-tags .badge-base,
+.profile-frame-capability .professional-more summary,
+.profile-frame-capability .professional-more .professional-tags .badge-base {
+  font-size: 11px;
+}
+
+.profile-frame-capability .professional-more {
+  margin-top: 8px;
+}
+
+.profile-frame-capability .professional-more summary {
+  min-height: 34px;
+}
+
+.profile-frame-education {
+  margin-top: 32px;
+  border-top: 1px solid rgba(148, 190, 215, 0.28);
+  padding-top: 24px;
+}
+
+.profile-frame-education h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.profile-frame-education h3 svg {
+  color: #f2c55e;
+}
+
+.profile-frame-education div {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.profile-frame-education h4 {
+  margin: 0;
+  color: #edf5ff;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.profile-frame-education p,
+.profile-frame-education span {
+  margin: 0;
+  color: rgba(226, 238, 250, 0.72);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.profile-frame-education strong {
+  width: fit-content;
+  color: #ffe3a1;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
 @container (max-width: 640px) {
   .profile-artwork-content {
     padding: 22px 20px 28px;
@@ -7496,6 +7598,10 @@ textarea:focus-visible,
 
   .profile-frame-capability > header h4 {
     font-size: 20px;
+  }
+
+  .profile-frame-actions {
+    display: grid;
   }
 }
 
@@ -9223,6 +9329,141 @@ textarea:focus-visible,
   white-space: nowrap;
 }
 
+.experience-frame-actions {
+  margin-top: 18px;
+}
+
+.experience-frame-actions .professional-actions {
+  margin: 0;
+}
+
+.experience-frame-actions .button-base {
+  min-height: 38px;
+  padding: 8px 11px;
+  font-size: 12px;
+}
+
+.experience-artwork-role-list {
+  display: grid;
+  gap: 14px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.experience-artwork-role {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.32fr) minmax(0, 1fr);
+  gap: 16px;
+  border-top: 1px solid rgba(148, 190, 215, 0.28);
+  padding-top: 16px;
+}
+
+.experience-artwork-role-meta {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: rgba(219, 235, 247, 0.72);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.experience-artwork-role-body h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 21px;
+  line-height: 1.18;
+}
+
+.experience-artwork-company {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 7px 0 0;
+  color: #9edcff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.experience-artwork-company svg {
+  flex: 0 0 auto;
+}
+
+.experience-artwork-role-body > p:not(.experience-artwork-company, .experience-artwork-outcome) {
+  margin: 9px 0 0;
+  color: rgba(226, 238, 250, 0.76);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.experience-artwork-contributions {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.experience-artwork-contributions li {
+  position: relative;
+  padding-left: 15px;
+  color: rgba(226, 238, 250, 0.72);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.experience-artwork-contributions li::before {
+  position: absolute;
+  top: 0.65em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  background: #55d7ff;
+  content: "";
+}
+
+.experience-artwork-outcome {
+  margin: 12px 0 0;
+  border-left: 2px solid rgba(110, 231, 168, 0.64);
+  background: rgba(110, 231, 168, 0.08);
+  padding: 9px 11px;
+  color: rgba(230, 255, 241, 0.8);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.experience-artwork-outcome strong {
+  color: #82f0ba;
+}
+
+.experience-artwork-role-body .professional-technologies {
+  margin-top: 12px;
+}
+
+.experience-artwork-role-body .professional-tags {
+  gap: 6px;
+  margin: 0;
+}
+
+.experience-artwork-role-body .professional-tags .badge-base,
+.experience-artwork-role-body .professional-more summary,
+.experience-artwork-role-body .professional-more .professional-tags .badge-base {
+  font-size: 10px;
+}
+
+.experience-artwork-role-body .professional-more {
+  margin-top: 7px;
+}
+
+.experience-artwork-role-body .professional-more summary {
+  min-height: 32px;
+}
+
 @container (max-width: 560px) {
   .experience-artwork-section {
     margin-top: 20px;
@@ -9252,6 +9493,16 @@ textarea:focus-visible,
   .experience-artwork-dna-grid article,
   .experience-artwork-history-list article {
     padding: 12px;
+  }
+
+  .experience-artwork-role {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .experience-artwork-role-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    font-size: 10px;
   }
 }
 
