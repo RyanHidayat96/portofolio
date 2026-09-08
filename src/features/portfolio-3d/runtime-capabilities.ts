@@ -50,17 +50,24 @@ export function getPortfolio3dDprLimit(
   capabilities = getPortfolio3dRuntimeCapabilities()
 ): number {
   const tierLimit = qualityTier === 'low' ? 0.85 : qualityTier === 'medium' ? 1.2 : 1.5;
+  const isConstrainedNetwork = capabilities.saveData ||
+    capabilities.effectiveType === 'slow-2g' ||
+    capabilities.effectiveType === '2g';
+  const isVeryConstrainedHardware =
+    (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 4) ||
+    (typeof capabilities.hardwareConcurrency === 'number' && capabilities.hardwareConcurrency <= 2);
+
+  if (isConstrainedNetwork || isVeryConstrainedHardware) {
+    return Math.min(tierLimit, 1.2);
+  }
 
   if (
-    capabilities.saveData ||
-    capabilities.effectiveType === 'slow-2g' ||
-    capabilities.effectiveType === '2g' ||
     capabilities.isCoarsePointer ||
     capabilities.isNarrowViewport ||
     (typeof capabilities.deviceMemory === 'number' && capabilities.deviceMemory < 6) ||
     (typeof capabilities.hardwareConcurrency === 'number' && capabilities.hardwareConcurrency <= 4)
   ) {
-    return Math.min(tierLimit, 1.2);
+    return Math.min(tierLimit, qualityTier === 'high' ? 1.5 : 1.2);
   }
 
   return tierLimit;

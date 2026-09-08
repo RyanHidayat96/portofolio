@@ -1,6 +1,6 @@
 'use client';
 
-const maximumSnapshotDimension = 640;
+const maximumSnapshotDimension = 960;
 const snapshotBackgroundColor = '#0f1b29';
 const snapshotScrollAttribute = 'data-embedded-snapshot-scroll';
 
