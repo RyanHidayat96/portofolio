@@ -14,6 +14,8 @@ import {
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
+import { createPreviewCaptureQueue } from '../preview-capture-queue';
+import { usePortfolio3dState } from '../state/Portfolio3dState';
 
 // CSS3D pages use pixel coordinates while the GLB continues to use meters.
 const cssWorldScale = 1000;
@@ -51,6 +53,10 @@ interface EmbeddedScreenLayerRuntime {
   readonly screenRight: THREE.Vector3;
   readonly topLeft: THREE.Vector3;
   readonly topRight: THREE.Vector3;
+  readonly lastCameraMatrix: THREE.Matrix4;
+  readonly lastProjectionMatrix: THREE.Matrix4;
+  lastCameraChangeAt: number;
+  readonly previewQueue: ReturnType<typeof createPreviewCaptureQueue>;
   activeScreen?: EmbeddedScreenRegistration;
   width: number;
   height: number;
@@ -77,6 +83,7 @@ interface EmbeddedScreenLayerController {
     pixelHeight: number
   ) => void;
   forceRepaint: () => void;
+  schedulePreviewCapture: (capture: () => Promise<void>, delayMs: number) => () => void;
   render: () => void;
 }
 
@@ -86,6 +93,11 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
   children: ReactNode;
 }>): ReactElement {
   const { camera, gl, invalidate, size } = useThree();
+  const { state } = usePortfolio3dState();
+  const navigationStateRef = useRef(state.navigationState);
+  useLayoutEffect(() => {
+    navigationStateRef.current = state.navigationState;
+  }, [state.navigationState]);
   const runtimeRef = useRef<EmbeddedScreenLayerRuntime | null>(null);
   const [runtime, setRuntime] = useState<EmbeddedScreenLayerRuntime | null>(null);
   const repaintFrameRef = useRef<number | null>(null);
@@ -115,6 +127,15 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       screenRight: new THREE.Vector3(),
       topLeft: new THREE.Vector3(),
       topRight: new THREE.Vector3(),
+      lastCameraMatrix: new THREE.Matrix4(),
+      lastProjectionMatrix: new THREE.Matrix4(),
+      lastCameraChangeAt: performance.now(),
+      previewQueue: createPreviewCaptureQueue(() => {
+        const activeRuntime = runtimeRef.current;
+        return activeRuntime !== null && !document.hidden &&
+          navigationStateRef.current === 'overview' &&
+          performance.now() - activeRuntime.lastCameraChangeAt >= 180;
+      }),
       width: 0,
       height: 0
     };
@@ -128,6 +149,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         repaintFrameRef.current = null;
       }
       runtimeRef.current = null;
+      nextRuntime.previewQueue.dispose();
       renderer.domElement.remove();
       canvas.style.position = previousPosition;
       canvas.style.zIndex = previousZIndex;
@@ -146,9 +168,15 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
 
   useFrame(() => {
     const activeRuntime = runtimeRef.current;
-    if (activeRuntime && hasVisibleCssScreens(activeRuntime)) {
-      renderEmbeddedScreenLayer(activeRuntime, camera);
-    }
+    if (!activeRuntime) return;
+    camera.updateMatrixWorld();
+    const cameraChanged = !activeRuntime.lastCameraMatrix.equals(camera.matrixWorld) ||
+      !activeRuntime.lastProjectionMatrix.equals(camera.projectionMatrix);
+    if (!cameraChanged) return;
+    activeRuntime.lastCameraMatrix.copy(camera.matrixWorld);
+    activeRuntime.lastProjectionMatrix.copy(camera.projectionMatrix);
+    activeRuntime.lastCameraChangeAt = performance.now();
+    if (hasVisibleCssScreens(activeRuntime)) renderEmbeddedScreenLayer(activeRuntime, camera);
   });
 
   const controller = useMemo<EmbeddedScreenLayerController | null>(() => {
@@ -296,6 +324,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         render();
       },
       forceRepaint: triggerForceRepaint,
+      schedulePreviewCapture: runtime.previewQueue.enqueue,
       render
     };
   }, [camera, invalidate, runtime]);
@@ -442,5 +471,8 @@ function renderInteractiveScreen(
   const x = (topLeft.x + 1) * runtime.width / 2;
   const y = (1 - topLeft.y) * runtime.height / 2;
   const scale = (topRight.x - topLeft.x) * runtime.width / (2 * screen.pixelWidth);
-  screen.object.element.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+  const transform = `translate(${x}px, ${y}px) scale(${scale})`;
+  if (screen.object.element.style.transform !== transform) {
+    screen.object.element.style.transform = transform;
+  }
 }

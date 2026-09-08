@@ -12,7 +12,8 @@ export function ExperienceShell({
   sectionPanelSlot,
   focusControlsSlot,
   assetProgress,
-  isScreenFocusView = false
+  isScreenFocusView = false,
+  onRoomReset
 }: Readonly<{
   webglStatus: WebGLSupportStatus;
   canvasSlot: React.ReactNode;
@@ -22,6 +23,7 @@ export function ExperienceShell({
   focusControlsSlot?: React.ReactNode;
   assetProgress?: Portfolio3dLoadingProgress;
   isScreenFocusView?: boolean;
+  onRoomReset: () => void;
 }>): React.ReactElement {
   const isLoadingCritical =
     webglStatus === 'supported' ? (!assetProgress || !assetProgress.isCriticalComplete) : false;
@@ -116,13 +118,15 @@ export function ExperienceShell({
 
         <header inert={isScreenFocusView} aria-hidden={isScreenFocusView} className={`portfolio-3d-scene-header pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex items-start justify-between gap-4">
-            <div className="max-w-[390px]">
-              <p
+            <div className="portfolio-3d-top-actions pointer-events-auto flex max-w-[390px] flex-wrap justify-start gap-2">
+              <button
                 id="portfolio-3d-scene-title"
-                className="text-4xl font-semibold uppercase leading-none tracking-[0.01em] text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.62)] sm:text-5xl lg:text-6xl"
+                type="button"
+                className="button-base button-secondary bg-[rgba(14,23,35,0.72)] uppercase backdrop-blur-md"
+                onClick={onRoomReset}
               >
                 Ryan Hidayat
-              </p>
+              </button>
             </div>
 
             <div className="portfolio-3d-top-actions pointer-events-auto flex flex-wrap justify-end gap-2">

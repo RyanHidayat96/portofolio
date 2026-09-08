@@ -2,7 +2,7 @@
 
 import { Canvas, useThree } from '@react-three/fiber';
 import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
-import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, Suspense, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
@@ -50,6 +50,18 @@ import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScroll
 import { useWebGLSupport } from '../hooks/useWebGLSupport';
 import { Portfolio3dProvider, usePortfolio3dState } from '../state/Portfolio3dState';
 import { RoomShellStage } from './RoomShellStage';
+
+// Keep each document mounted with its own state. Navigation only re-renders
+// the screen whose interactive prop changes, not all nine lab/page trees.
+const MemoizedPipelineScreen = memo(ArcadePipelineScreen);
+const MemoizedAutomationScreen = memo(AutomationMonitorScreen);
+const MemoizedPerformanceScreen = memo(PerformanceMonitorScreen);
+const MemoizedApiScreen = memo(ApiMonitorScreen);
+const MemoizedTerminalScreen = memo(TerminalMonitorScreen);
+const MemoizedProfileScreen = memo(ProfileArtworkScreen);
+const MemoizedExperienceScreen = memo(ExperienceArtworkScreen);
+const MemoizedArchitectureScreen = memo(ArchitectureEmbeddedScreen);
+const MemoizedContactScreen = memo(ContactEmbeddedScreen);
 
 interface Portfolio3dErrorBoundaryState {
   readonly hasError: boolean;
@@ -230,37 +242,38 @@ function PortfolioExperienceContent({
         }
         assetProgress={assetProgress}
         isScreenFocusView={isScreenFocusView || isScreenApproach}
+        onRoomReset={() => setActiveSection('overview')}
       />
       {embeddedScreenElements.pipeline
-        ? createPortal(<ArcadePipelineScreen interactive={isScreenFocusView && isPipelineActive} />, embeddedScreenElements.pipeline)
+        ? createPortal(<MemoizedPipelineScreen interactive={isScreenFocusView && isPipelineActive} />, embeddedScreenElements.pipeline)
         : null}
       {embeddedScreenElements.automation
-        ? createPortal(<AutomationMonitorScreen interactive={isScreenFocusView && isAutomationActive} />, embeddedScreenElements.automation)
+        ? createPortal(<MemoizedAutomationScreen interactive={isScreenFocusView && isAutomationActive} />, embeddedScreenElements.automation)
         : null}
       {embeddedScreenElements.performance
-        ? createPortal(<PerformanceMonitorScreen interactive={isScreenFocusView && isPerformanceActive} />, embeddedScreenElements.performance)
+        ? createPortal(<MemoizedPerformanceScreen interactive={isScreenFocusView && isPerformanceActive} />, embeddedScreenElements.performance)
         : null}
       {embeddedScreenElements.backend
-        ? createPortal(<ApiMonitorScreen interactive={isScreenFocusView && isBackendActive} />, embeddedScreenElements.backend)
+        ? createPortal(<MemoizedApiScreen interactive={isScreenFocusView && isBackendActive} />, embeddedScreenElements.backend)
         : null}
       {embeddedScreenElements.terminal
-        ? createPortal(<TerminalMonitorScreen interactive={isScreenFocusView && isTerminalActive} />, embeddedScreenElements.terminal)
+        ? createPortal(<MemoizedTerminalScreen interactive={isScreenFocusView && isTerminalActive} />, embeddedScreenElements.terminal)
         : null}
       {embeddedScreenElements.profile
-        ? createPortal(<ProfileArtworkScreen interactive={isScreenFocusView && isProfileActive} />, embeddedScreenElements.profile)
+        ? createPortal(<MemoizedProfileScreen interactive={isScreenFocusView && isProfileActive} />, embeddedScreenElements.profile)
         : null}
       {embeddedScreenElements.experience
-        ? createPortal(<ExperienceArtworkScreen interactive={isScreenFocusView && isExperienceActive} />, embeddedScreenElements.experience)
+        ? createPortal(<MemoizedExperienceScreen interactive={isScreenFocusView && isExperienceActive} />, embeddedScreenElements.experience)
         : null}
       {embeddedScreenElements.architecture
         ? createPortal(
-          <ArchitectureEmbeddedScreen interactive={isScreenFocusView && isArchitectureActive} />,
+          <MemoizedArchitectureScreen interactive={isScreenFocusView && isArchitectureActive} />,
           embeddedScreenElements.architecture
         )
         : null}
       {embeddedScreenElements.contact
         ? createPortal(
-          <ContactEmbeddedScreen interactive={isScreenFocusView && isContactActive} />,
+          <MemoizedContactScreen interactive={isScreenFocusView && isContactActive} />,
           embeddedScreenElements.contact
         )
         : null}

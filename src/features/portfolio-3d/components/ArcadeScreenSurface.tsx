@@ -160,6 +160,7 @@ export function ArcadeScreenSurface({
     const activePointers = new Map<number, TouchPoint>();
     let gesture: TouchZoomGesture | undefined;
     let panGesture: TouchPanGesture | undefined;
+    let viewportFrame: number | undefined;
     let ownsGestureHostTouchAction = false;
     let scale = 1;
     let pan: EmbeddedScreenPan = { x: 0, y: 0 };
@@ -192,6 +193,10 @@ export function ArcadeScreenSurface({
     };
 
     const resetZoom = (): void => {
+      if (viewportFrame !== undefined) {
+        window.cancelAnimationFrame(viewportFrame);
+        viewportFrame = undefined;
+      }
       scale = 1;
       pan = { x: 0, y: 0 };
       syncGestureTouchAction();
@@ -202,9 +207,14 @@ export function ArcadeScreenSurface({
 
     const applyViewport = (): void => {
       syncGestureTouchAction();
-      onScreenZoomChange?.(screenId, scale);
-      onScreenPanChange?.(screenId, pan);
-      screenLayer.render();
+      if (viewportFrame !== undefined) return;
+      // Multiple touch events can arrive before one display frame. Commit only
+      // the latest pose; the camera rig then updates WebGL and CSS3D together.
+      viewportFrame = window.requestAnimationFrame(() => {
+        viewportFrame = undefined;
+        onScreenZoomChange?.(screenId, scale);
+        onScreenPanChange?.(screenId, pan);
+      });
     };
 
     const beginGesture = (): void => {
@@ -352,7 +362,7 @@ export function ArcadeScreenSurface({
       resetZoom();
       restoreGestureTouchAction();
     };
-  }, [isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
+  }, [gl, isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
   const capturePreview = useCallback(async (): Promise<boolean> => {
     const runtime = runtimeRef.current;
@@ -399,19 +409,15 @@ export function ArcadeScreenSurface({
     let cancelScheduledCapture = (): void => {};
 
     const scheduleCapture = (delayMs: number): void => {
-      cancelScheduledCapture = scheduleIdlePreviewCapture(() => {
+      cancelScheduledCapture = screenLayer.schedulePreviewCapture(async () => {
         if (isCancelled || isInteractive || previewTextureRef.current) {
           return;
         }
 
-        void capturePreview().then((didCapture) => {
-          if (isCancelled || didCapture || attempts >= 2) {
-            return;
-          }
-
-          attempts += 1;
-          scheduleCapture(previewCaptureRetryDelayMs);
-        });
+        const didCapture = await capturePreview();
+        if (isCancelled || didCapture || attempts >= 2) return;
+        attempts += 1;
+        scheduleCapture(previewCaptureRetryDelayMs);
       }, delayMs);
     };
 
@@ -421,7 +427,7 @@ export function ArcadeScreenSurface({
       isCancelled = true;
       cancelScheduledCapture();
     };
-  }, [capturePreview, isInteractive, screenId]);
+  }, [capturePreview, isInteractive, screenId, screenLayer]);
 
   useLayoutEffect(() => {
     if (isInteractive) {
@@ -470,7 +476,7 @@ export function ArcadeScreenSurface({
         <planeGeometry args={[screen.width, screen.height]} />
         {previewTexture && !isPreviewCapturePending ? (
           <meshBasicMaterial
-            key={`screen-preview-${previewTexture.uuid}`}
+            key="screen-preview"
             polygonOffset={isMonitor}
             polygonOffsetFactor={-1}
             polygonOffsetUnits={-1}
@@ -558,23 +564,4 @@ function createScreenPreviewTexture(
 function getInitialPreviewCaptureDelay(screenId: EmbeddedScreenId): number {
   const screenIndex = initialPreviewCaptureOrder.indexOf(screenId);
   return Math.max(screenIndex, 0) * initialPreviewCaptureIntervalMs;
-}
-
-function scheduleIdlePreviewCapture(callback: () => void, delayMs: number): () => void {
-  let idleCallbackId: number | undefined;
-  const timeoutId = window.setTimeout(() => {
-    if (typeof window.requestIdleCallback === "function") {
-      idleCallbackId = window.requestIdleCallback(callback, { timeout: 1200 });
-      return;
-    }
-
-    callback();
-  }, delayMs);
-
-  return () => {
-    window.clearTimeout(timeoutId);
-    if (idleCallbackId !== undefined && typeof window.cancelIdleCallback === "function") {
-      window.cancelIdleCallback(idleCallbackId);
-    }
-  };
 }
