@@ -42,7 +42,7 @@ export function ProfileArtworkScreen({
     <section className="profile-artwork-screen" aria-label="Profile">
       <header className="profile-artwork-heading">
         <UserRound size={22} aria-hidden="true" />
-        <span>Profile</span>
+        <h2>Profile</h2>
         <span className="profile-artwork-heading-label">{profile.role}</span>
       </header>
       <div

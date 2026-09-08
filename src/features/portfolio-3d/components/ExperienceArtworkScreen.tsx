@@ -27,7 +27,7 @@ export function ExperienceArtworkScreen({
     >
       <header className="experience-artwork-heading">
         <Briefcase size={22} aria-hidden="true" />
-        <span>Experience</span>
+        <h2>Experience</h2>
         <span className="experience-artwork-heading-label">Most recent first</span>
       </header>
       <div

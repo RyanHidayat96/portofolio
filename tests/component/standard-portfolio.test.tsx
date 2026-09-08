@@ -86,6 +86,7 @@ describe("Standard portfolio hiring flow", () => {
 
   it("keeps room profile and experience screens synced with the standard portfolio data", () => {
     const { unmount } = render(<ProfileArtworkScreen interactive={false} />);
+    expect(screen.getByRole("heading", { name: "Profile" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "Professional Profile" })).toBeVisible();
     expect(screen.getByText("Development With a Quality Background")).toBeVisible();
     for (const credential of education) {
@@ -100,6 +101,7 @@ describe("Standard portfolio hiring flow", () => {
     unmount();
 
     render(<ExperienceArtworkScreen interactive={false} />);
+    expect(screen.getByRole("heading", { name: "Experience" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "Work Experience" })).toBeVisible();
     const roomRoles = within(
       screen.getByRole("list", { name: /Work experience, most recent first/ })
