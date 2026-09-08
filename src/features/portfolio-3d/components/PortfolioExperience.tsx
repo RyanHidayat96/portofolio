@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
+import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Mail, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
 import { Component, Suspense, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import * as THREE from 'three';
@@ -281,11 +281,21 @@ function PortfolioExperienceContent({
   );
 }
 
-function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+export function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
+
+  useEffect(() => {
+    if (interactive) headingRef.current?.focus({ preventScroll: true });
+  }, [interactive]);
 
   return (
     <section className="architecture-embedded-screen" aria-label="Architecture">
+      <header className="architecture-embedded-heading">
+        <Network size={22} aria-hidden="true" />
+        <h2 ref={headingRef} tabIndex={-1}>Architecture</h2>
+        <span className="architecture-embedded-label">System topology</span>
+      </header>
       <div
         ref={scrollRef}
         className="architecture-embedded-content"
@@ -299,11 +309,21 @@ function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interactive: boo
   );
 }
 
-function ContactEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+export function ContactEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
+
+  useEffect(() => {
+    if (interactive) headingRef.current?.focus({ preventScroll: true });
+  }, [interactive]);
 
   return (
     <section className="contact-book-screen" aria-label="Contact">
+      <header className="contact-book-heading">
+        <Mail size={22} aria-hidden="true" />
+        <h2 ref={headingRef} tabIndex={-1}>Contact</h2>
+        <span className="contact-book-label">CV &amp; channels</span>
+      </header>
       <div
         ref={scrollRef}
         className="contact-book-content"

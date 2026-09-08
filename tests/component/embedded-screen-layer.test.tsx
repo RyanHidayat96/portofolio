@@ -6,6 +6,19 @@ import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import {
   EmbeddedScreenLayer, useEmbeddedScreenLayer, type EmbeddedScreenRegistration
 } from '../../src/features/portfolio-3d/components/EmbeddedScreenLayer';
+import type { EmbeddedScreenId } from '../../src/features/portfolio-3d/arcade-screen';
+
+const embeddedScreenIds = [
+  'pipeline',
+  'automation',
+  'performance',
+  'backend',
+  'terminal',
+  'profile',
+  'experience',
+  'architecture',
+  'contact'
+] as const satisfies readonly EmbeddedScreenId[];
 
 const harness = vi.hoisted(() => ({
   frame: () => {},
@@ -78,7 +91,7 @@ afterEach(() => {
 });
 
 describe('embedded screen render scheduling', () => {
-  it('skips repeated idle renders but updates for movement, zoom and explicit screen changes', () => {
+  it('skips repeated idle renders but updates for movement, zoom and explicit screen changes', async () => {
     render(<Subject />);
     act(() => harness.frame());
     harness.renderCss.mockClear();
@@ -92,9 +105,36 @@ describe('embedded screen render scheduling', () => {
     expect(screen.object.element.style.display).toBe('none');
     act(() => layer.setInteractive(screen, true));
     expect(screen.object.element.style.display).toBe('');
+    expect(screen.object.element.style.visibility).toBe('hidden');
     const transform = screen.object.element.style.transform;
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(screen.object.element.style.visibility).toBe('');
     act(() => { harness.root.camera.position.y += 1; harness.frame(); });
     expect(screen.object.element.style.transform).not.toBe(transform);
+  });
+
+  it.each(embeddedScreenIds)(
+    'delays live reveal for preview-backed %s screen until its projected layout is ready',
+    async (screenId) => {
+      screen = { ...screen, screenId };
+      render(<Subject />);
+
+      act(() => layer.setPreviewAvailable(screen, true));
+      act(() => layer.setInteractive(screen, true));
+
+      expect(screen.object.element.style.display).toBe('');
+      expect(screen.object.element.style.visibility).toBe('hidden');
+
+      await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+
+      expect(screen.object.element.style.visibility).toBe('');
+    }
+  );
+
+  it('keeps uncaptured first-time screens visible immediately', () => {
+    render(<Subject />);
+    act(() => layer.setInteractive(screen, true));
+    expect(screen.object.element.style.visibility).toBe('');
   });
 
   it('preserves the last scroll and keeps the page visible until its return snapshot commits', () => {

@@ -58,6 +58,7 @@ interface EmbeddedScreenLayerRuntime {
   lastCameraChangeAt: number;
   readonly previewQueue: ReturnType<typeof createPreviewCaptureQueue>;
   activeScreen?: EmbeddedScreenRegistration;
+  activationRevealFrame?: number;
   width: number;
   height: number;
 }
@@ -147,6 +148,10 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       if (repaintFrameRef.current !== null) {
         cancelAnimationFrame(repaintFrameRef.current);
         repaintFrameRef.current = null;
+      }
+      if (nextRuntime.activationRevealFrame !== undefined) {
+        cancelAnimationFrame(nextRuntime.activationRevealFrame);
+        nextRuntime.activationRevealFrame = undefined;
       }
       runtimeRef.current = null;
       nextRuntime.previewQueue.dispose();
@@ -249,6 +254,12 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           .filter((element) => element.scrollTop !== 0 || element.scrollLeft !== 0)
           .map((element) => ({ element, top: element.scrollTop, left: element.scrollLeft }));
 
+        if (runtime.activationRevealFrame !== undefined) {
+          cancelAnimationFrame(runtime.activationRevealFrame);
+          runtime.activationRevealFrame = undefined;
+        }
+        let shouldRevealActiveScreenAfterProjection = false;
+
         if (isInteractive) {
           if (runtime.activeScreen && runtime.activeScreen !== screen) {
             restoreScreenToLayer(runtime, runtime.activeScreen);
@@ -258,6 +269,9 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           runtime.activeScreen = screen;
           screen.object.visible = true;
           screen.object.element.style.display = '';
+          shouldRevealActiveScreenAfterProjection =
+            screen.hasPreview && !screen.isPreviewCapturePending;
+          screen.object.element.style.visibility = shouldRevealActiveScreenAfterProjection ? 'hidden' : '';
           screen.object.element.style.pointerEvents = 'auto';
 
           // Android Chrome renders this 3D transform correctly but its hit-test
@@ -281,6 +295,16 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         scrollPositions.forEach(({ element, top, left }) => {
           element.scrollTo({ top, left, behavior: 'instant' });
         });
+        if (shouldRevealActiveScreenAfterProjection) {
+          runtime.activationRevealFrame = requestAnimationFrame(() => {
+            runtime.activationRevealFrame = undefined;
+            if (runtime.activeScreen !== screen || !screen.isInteractive) return;
+
+            screen.object.element.style.visibility = '';
+            render();
+          });
+        }
+
         triggerForceRepaint();
       },
       setPreviewCapturePending: (screen, isPending): void => {
@@ -396,6 +420,7 @@ function restoreScreenToLayer(
   }
   screen.isFlattenedForInteraction = false;
   screen.object.element.style.pointerEvents = 'none';
+  screen.object.element.style.visibility = '';
   syncScreenPreviewVisibility(screen);
 }
 

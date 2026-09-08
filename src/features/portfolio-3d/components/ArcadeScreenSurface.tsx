@@ -161,6 +161,8 @@ export function ArcadeScreenSurface({
     let gesture: TouchZoomGesture | undefined;
     let panGesture: TouchPanGesture | undefined;
     let viewportFrame: number | undefined;
+    let isTouchEventGestureActive = false;
+    let isViewportGestureActive = false;
     let ownsGestureHostTouchAction = false;
     let scale = 1;
     let pan: EmbeddedScreenPan = { x: 0, y: 0 };
@@ -172,8 +174,12 @@ export function ArcadeScreenSurface({
       // Before zoom, keep native vertical document scrolling available. Once
       // enlarged, the complete focused room owns one-finger camera panning,
       // including the visible model around the flattened CSS3D page.
-      const touchAction = isInteractive && isMobileViewport() ? (scale > 1 ? "none" : "pan-y") : "";
+      const isViewportGesture = isViewportGestureActive || scale > 1;
+      const touchAction = isInteractive && isMobileViewport() ? (isViewportGesture ? "none" : "pan-y") : "";
       element.style.touchAction = touchAction;
+      runtime.content.style.touchAction = touchAction;
+      if (touchAction === "none") element.dataset.gestureMode = "viewport";
+      else delete element.dataset.gestureMode;
       if (isInteractive && gestureHost) {
         gestureHost.style.touchAction = touchAction;
         ownsGestureHostTouchAction = true;
@@ -181,6 +187,9 @@ export function ArcadeScreenSurface({
     };
 
     const restoreGestureTouchAction = (): void => {
+      element.style.touchAction = "";
+      runtime.content.style.touchAction = "";
+      delete element.dataset.gestureMode;
       if (gestureHost && ownsGestureHostTouchAction) {
         gestureHost.style.touchAction = previousGestureHostTouchAction ?? "";
         ownsGestureHostTouchAction = false;
@@ -199,6 +208,8 @@ export function ArcadeScreenSurface({
       }
       scale = 1;
       pan = { x: 0, y: 0 };
+      isTouchEventGestureActive = false;
+      isViewportGestureActive = false;
       syncGestureTouchAction();
       onScreenZoomChange?.(screenId, scale);
       onScreenPanChange?.(screenId, pan);
@@ -253,17 +264,71 @@ export function ArcadeScreenSurface({
       applyViewport();
     };
 
-    const updatePan = (): void => {
-      if (!panGesture || activePointers.size !== 1) return;
+    const beginZoomGestureFromPoints = (first: TouchPoint, second: TouchPoint): void => {
+      gesture = {
+        initialDistance: getTouchDistance(first, second),
+        initialScale: scale,
+        initialCenter: getTouchCenter(first, second),
+        initialPan: pan
+      };
+    };
 
-      const point = activePointers.values().next().value;
-      if (!point) return;
+    const updateZoomGestureFromPoints = (first: TouchPoint, second: TouchPoint): void => {
+      if (!gesture) return;
+
+      const nextScale = clamp(
+        (gesture.initialScale * getTouchDistance(first, second)) /
+          Math.max(gesture.initialDistance, 1),
+        1,
+        maximumMobileScreenZoom
+      );
+      scale = nextScale;
+      pan = getPannedViewportOffset(
+        gesture.initialPan,
+        gesture.initialCenter,
+        getTouchCenter(first, second),
+        scale
+      );
+      applyViewport();
+    };
+
+    const updatePanFromPoint = (point: TouchPoint): void => {
+      if (!panGesture) return;
 
       pan = getPannedViewportOffset(panGesture.initialPan, panGesture.initialPoint, point, scale);
       applyViewport();
     };
 
+    const getFirstTouchPoint = (touches: TouchList): TouchPoint | undefined => {
+      const touch = touches.item(0);
+      return touch ? { x: touch.clientX, y: touch.clientY } : undefined;
+    };
+
+    const getFirstTwoTouchPoints = (
+      touches: TouchList
+    ): readonly [TouchPoint, TouchPoint] | undefined => {
+      const first = touches.item(0);
+      const second = touches.item(1);
+      return first && second
+        ? [{ x: first.clientX, y: first.clientY }, { x: second.clientX, y: second.clientY }]
+        : undefined;
+    };
+
+    const beginTouchZoomGesture = (touches: TouchList): boolean => {
+      const points = getFirstTwoTouchPoints(touches);
+      if (!points) return false;
+
+      activePointers.clear();
+      panGesture = undefined;
+      isTouchEventGestureActive = true;
+      isViewportGestureActive = true;
+      beginZoomGestureFromPoints(points[0], points[1]);
+      syncGestureTouchAction();
+      return true;
+    };
+
     const onPointerDown = (event: PointerEvent): void => {
+      if (isTouchEventGestureActive) return;
       if (event.pointerType !== "touch" || !isMobileViewport() || !isGestureTarget(event.target))
         return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -287,6 +352,7 @@ export function ArcadeScreenSurface({
     };
 
     const onPointerMove = (event: PointerEvent): void => {
+      if (isTouchEventGestureActive) return;
       if (!activePointers.has(event.pointerId)) return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (gesture && activePointers.size === 2) {
@@ -307,7 +373,7 @@ export function ArcadeScreenSurface({
         }
 
         event.preventDefault();
-        updatePan();
+        updatePanFromPoint(point);
       }
     };
 
@@ -327,6 +393,83 @@ export function ArcadeScreenSurface({
         panGesture = undefined;
       }
       if (activePointers.size < 2) gesture = undefined;
+    };
+
+    const onTouchStart = (event: TouchEvent): void => {
+      if (!isMobileViewport() || !isGestureTarget(event.target)) return;
+
+      if (event.touches.length >= 2) {
+        if (beginTouchZoomGesture(event.touches)) event.preventDefault();
+        return;
+      }
+
+      if (event.touches.length === 1 && scale > 1) {
+        const point = getFirstTouchPoint(event.touches);
+        if (!point) return;
+
+        activePointers.clear();
+        gesture = undefined;
+        isTouchEventGestureActive = true;
+        isViewportGestureActive = true;
+        panGesture = {
+          initialPoint: point,
+          initialPan: pan,
+          isPanning: false
+        };
+        syncGestureTouchAction();
+      }
+    };
+
+    const onTouchMove = (event: TouchEvent): void => {
+      if (!isMobileViewport() || !isGestureTarget(event.target)) return;
+
+      if (event.touches.length >= 2) {
+        if (!gesture && !beginTouchZoomGesture(event.touches)) return;
+        const points = getFirstTwoTouchPoints(event.touches);
+        if (!points) return;
+
+        event.preventDefault();
+        isTouchEventGestureActive = true;
+        isViewportGestureActive = true;
+        updateZoomGestureFromPoints(points[0], points[1]);
+        return;
+      }
+
+      if (event.touches.length === 1 && scale > 1) {
+        const point = getFirstTouchPoint(event.touches);
+        if (!point) return;
+
+        isTouchEventGestureActive = true;
+        isViewportGestureActive = true;
+        if (!panGesture) {
+          panGesture = { initialPoint: point, initialPan: pan, isPanning: false };
+          syncGestureTouchAction();
+          return;
+        }
+
+        if (!panGesture.isPanning) {
+          const dragDistance = getTouchDistance(panGesture.initialPoint, point);
+          if (dragDistance < minimumMobileCameraPanDistance) return;
+
+          panGesture = { ...panGesture, isPanning: true };
+        }
+
+        event.preventDefault();
+        updatePanFromPoint(point);
+      }
+    };
+
+    const onTouchEnd = (event: TouchEvent): void => {
+      if (!isTouchEventGestureActive) return;
+      if (event.touches.length >= 2 && beginTouchZoomGesture(event.touches)) return;
+      gesture = undefined;
+      const remainingPoint = scale > 1 ? getFirstTouchPoint(event.touches) : undefined;
+      panGesture = remainingPoint
+        ? { initialPoint: remainingPoint, initialPan: pan, isPanning: false }
+        : undefined;
+      isTouchEventGestureActive = Boolean(remainingPoint);
+      isViewportGestureActive = scale > 1;
+      syncGestureTouchAction();
     };
 
     const onViewportChange = (): void => {
@@ -351,6 +494,10 @@ export function ArcadeScreenSurface({
     window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
     window.addEventListener("pointerup", endGesture, true);
     window.addEventListener("pointercancel", endGesture, true);
+    window.addEventListener("touchstart", onTouchStart, { capture: true, passive: false });
+    window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
+    window.addEventListener("touchend", onTouchEnd, { capture: true, passive: false });
+    window.addEventListener("touchcancel", onTouchEnd, { capture: true, passive: false });
     window.addEventListener("resize", onViewportChange);
 
     return () => {
@@ -358,6 +505,10 @@ export function ArcadeScreenSurface({
       window.removeEventListener("pointermove", onPointerMove, true);
       window.removeEventListener("pointerup", endGesture, true);
       window.removeEventListener("pointercancel", endGesture, true);
+      window.removeEventListener("touchstart", onTouchStart, true);
+      window.removeEventListener("touchmove", onTouchMove, true);
+      window.removeEventListener("touchend", onTouchEnd, true);
+      window.removeEventListener("touchcancel", onTouchEnd, true);
       window.removeEventListener("resize", onViewportChange);
       resetZoom();
       restoreGestureTouchAction();

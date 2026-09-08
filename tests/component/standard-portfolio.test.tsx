@@ -4,6 +4,7 @@ import { experience } from "@/data/experience";
 import { professionalExperience, skillApplications } from "@/data/professional-summary";
 import { profile } from "@/data/profile";
 import { ExperienceArtworkScreen } from "@/features/portfolio-3d/components/ExperienceArtworkScreen";
+import { ArchitectureEmbeddedScreen, ContactEmbeddedScreen } from "@/features/portfolio-3d/components/PortfolioExperience";
 import { ProfileArtworkScreen } from "@/features/portfolio-3d/components/ProfileArtworkScreen";
 import { ExperiencePanel } from "@/features/workspace/components/ExperiencePanel";
 import { OverviewPanel } from "@/features/workspace/components/OverviewPanel";
@@ -115,6 +116,17 @@ describe("Standard portfolio hiring flow", () => {
     });
     expect(screen.queryByText("Career shape, not resume detail.")).not.toBeInTheDocument();
     expect(screen.queryByText("CV has detail")).not.toBeInTheDocument();
+  });
+
+  it("labels room architecture and contact frame screens like the monitor screens", () => {
+    const { unmount } = render(<ArchitectureEmbeddedScreen interactive={false} />);
+    expect(screen.getByRole("heading", { name: "Architecture" })).toBeVisible();
+    expect(screen.getByText("System topology")).toBeVisible();
+    unmount();
+
+    render(<ContactEmbeddedScreen interactive={false} />);
+    expect(screen.getByRole("heading", { name: "Contact" })).toBeVisible();
+    expect(screen.getByText("CV & channels")).toBeVisible();
   });
 
   it("preserves mobile section selection, room link, and command palette access", async () => {
