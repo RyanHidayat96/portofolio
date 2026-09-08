@@ -14,6 +14,7 @@ import {
 const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
+const minimumMobileCameraPanDistance = 8;
 
 export interface EmbeddedScreenPan {
   readonly x: number;
@@ -35,6 +36,7 @@ interface TouchZoomGesture {
 interface TouchPanGesture {
   readonly initialPoint: TouchPoint;
   readonly initialPan: EmbeddedScreenPan;
+  readonly isPanning: boolean;
 }
 
 export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZoomChange, onScreenPanChange }: Readonly<{
@@ -129,17 +131,28 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     let scale = 1;
     let pan: EmbeddedScreenPan = { x: 0, y: 0 };
 
+    const isMobileViewport = (): boolean => window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
+
+    const syncGestureTouchAction = (): void => {
+      // Before zoom, keep native vertical document scrolling available. Once
+      // enlarged, the same page surface owns one-finger camera panning in all
+      // directions while controls outside the frame remain untouched.
+      element.style.touchAction = isInteractive && isMobileViewport()
+        ? scale > 1 ? 'none' : 'pan-y'
+        : '';
+    };
+
     const resetZoom = (): void => {
       scale = 1;
       pan = { x: 0, y: 0 };
+      syncGestureTouchAction();
       onScreenZoomChange?.(screenId, scale);
       onScreenPanChange?.(screenId, pan);
       if (isInteractive) screenLayer.render();
     };
 
-    const isMobileViewport = (): boolean => window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
-
     const applyViewport = (): void => {
+      syncGestureTouchAction();
       onScreenZoomChange?.(screenId, scale);
       onScreenPanChange?.(screenId, pan);
       screenLayer.render();
@@ -195,14 +208,14 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
       // Once the focused screen is enlarged, a new single-finger drag should
-      // pan its camera viewport too. A touch without movement still reaches
-      // the embedded document as a regular click.
+      // pan its camera viewport too. Do not capture on pointerdown: a touch
+      // without meaningful movement must remain a click on the live document.
       if (activePointers.size === 1 && scale > 1) {
         panGesture = {
           initialPoint: { x: event.clientX, y: event.clientY },
-          initialPan: pan
+          initialPan: pan,
+          isPanning: false
         };
-        if (!element.hasPointerCapture(event.pointerId)) element.setPointerCapture(event.pointerId);
         return;
       }
 
@@ -225,6 +238,17 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       }
 
       if (panGesture && activePointers.size === 1) {
+        const point = activePointers.values().next().value;
+        if (!point) return;
+
+        if (!panGesture.isPanning) {
+          const dragDistance = getTouchDistance(panGesture.initialPoint, point);
+          if (dragDistance < minimumMobileCameraPanDistance) return;
+
+          panGesture = { ...panGesture, isPanning: true };
+          if (!element.hasPointerCapture(event.pointerId)) element.setPointerCapture(event.pointerId);
+        }
+
         event.preventDefault();
         updatePan();
       }
@@ -239,7 +263,8 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
         if (remainingPoint) {
           panGesture = {
             initialPoint: remainingPoint,
-            initialPan: pan
+            initialPan: pan,
+            isPanning: false
           };
         }
       } else if (activePointers.size === 0) {

@@ -9279,6 +9279,7 @@ textarea:focus-visible,
     inset: max(0.75rem, env(safe-area-inset-top)) 0.75rem auto;
     gap: 0.5rem;
     transform: translateZ(0);
+    touch-action: none;
   }
 
   .arcade-focus-controls .button-base {
@@ -9286,6 +9287,7 @@ textarea:focus-visible,
     padding: 0.5rem 0.65rem;
     font-size: 0.75rem;
     white-space: nowrap;
+    touch-action: none;
   }
 
   .portfolio-3d-section-popover {

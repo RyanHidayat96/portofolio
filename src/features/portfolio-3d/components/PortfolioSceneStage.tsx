@@ -442,7 +442,9 @@ const overviewOrbitZoomBounds = {
   minDistanceScale: 0.55,
   maxDistanceScale: 1.25,
   mobileMinDistanceScale: 0.42,
-  mobileMaxDistanceScale: 1.02
+  mobileMaxDistanceScale: 1.02,
+  azimuthRange: 0.5,
+  mobileAzimuthRange: 0.44
 } as const;
 
 function InteractiveOrbitControls(): null {
@@ -859,7 +861,9 @@ function syncOverviewOrbitControls(
   const offset = camera.position.clone().sub(target);
   const overviewDistance = offset.length();
   const overviewAzimuth = Math.atan2(offset.x, offset.z);
-  const azimuthRange = 0.32;
+  const azimuthRange = isMobileViewport
+    ? overviewOrbitZoomBounds.mobileAzimuthRange
+    : overviewOrbitZoomBounds.azimuthRange;
   const minDistanceScale = isMobileViewport
     ? overviewOrbitZoomBounds.mobileMinDistanceScale
     : overviewOrbitZoomBounds.minDistanceScale;
