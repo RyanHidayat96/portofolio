@@ -1,16 +1,13 @@
-'use client';
+"use client";
 
-import { useThree } from '@react-three/fiber';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
-import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
-import { usePortfolio3dState } from '../state/Portfolio3dState';
-import {
-  type EmbeddedScreenRegistration,
-  useEmbeddedScreenLayer
-} from './EmbeddedScreenLayer';
-import { captureEmbeddedScreenSnapshot } from './EmbeddedScreenSnapshot';
+import { useThree } from "@react-three/fiber";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
+import type { ArcadeScreenPlacement, EmbeddedScreenId } from "../arcade-screen";
+import { usePortfolio3dState } from "../state/Portfolio3dState";
+import { type EmbeddedScreenRegistration, useEmbeddedScreenLayer } from "./EmbeddedScreenLayer";
+import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
 
 const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
@@ -19,15 +16,15 @@ const minimumMobileCameraPanDistance = 8;
 const initialPreviewCaptureIntervalMs = 420;
 const previewCaptureRetryDelayMs = 360;
 const initialPreviewCaptureOrder: readonly EmbeddedScreenId[] = [
-  'pipeline',
-  'automation',
-  'performance',
-  'backend',
-  'terminal',
-  'profile',
-  'experience',
-  'architecture',
-  'contact'
+  "pipeline",
+  "automation",
+  "performance",
+  "backend",
+  "terminal",
+  "profile",
+  "experience",
+  "architecture",
+  "contact"
 ];
 
 export interface EmbeddedScreenPan {
@@ -53,7 +50,13 @@ interface TouchPanGesture {
   readonly isPanning: boolean;
 }
 
-export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZoomChange, onScreenPanChange }: Readonly<{
+export function ArcadeScreenSurface({
+  screen,
+  screenId,
+  onScreenReady,
+  onScreenZoomChange,
+  onScreenPanChange
+}: Readonly<{
   screen: ArcadeScreenPlacement;
   screenId: EmbeddedScreenId;
   onScreenReady?: (screenId: EmbeddedScreenId, element: HTMLElement | null) => void;
@@ -69,19 +72,24 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
   const wasInteractiveRef = useRef(false);
   const [previewTexture, setPreviewTexture] = useState<THREE.CanvasTexture | null>(null);
   const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
-  const isInteractive = state.activeSectionId === screenId && state.navigationState === 'section-open';
-  const isMonitor = screenId === 'pipeline' || screenId === 'terminal' ||
-    screenId === 'automation' || screenId === 'backend' || screenId === 'performance';
+  const isInteractive =
+    state.activeSectionId === screenId && state.navigationState === "section-open";
+  const isMonitor =
+    screenId === "pipeline" ||
+    screenId === "terminal" ||
+    screenId === "automation" ||
+    screenId === "backend" ||
+    screenId === "performance";
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
-  const pixelHeight = pixelWidth * screen.height / screen.width;
+  const pixelHeight = (pixelWidth * screen.height) / screen.width;
 
   useLayoutEffect(() => {
-    const element = document.createElement('div');
+    const element = document.createElement("div");
     element.className = `arcade-screen-document arcade-screen-document--${screenId}`;
-    const content = document.createElement('div');
-    content.className = 'arcade-screen-content';
+    const content = document.createElement("div");
+    content.className = "arcade-screen-content";
     element.appendChild(content);
     const object = new CSS3DObject(element);
     const runtime: EmbeddedScreenRegistration = {
@@ -116,14 +124,14 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const runtime = runtimeRef.current;
     if (!runtime) return;
     const element = runtime.object.element;
-    const selectionMode = isInteractive ? 'text' : 'none';
-    element.style.pointerEvents = isInteractive ? 'auto' : 'none';
+    const selectionMode = isInteractive ? "text" : "none";
+    element.style.pointerEvents = isInteractive ? "auto" : "none";
     // CSS3DObject defaults to user-select: none. Let the focused document use
     // native selection and copy, while the room preview remains non-selectable.
     element.style.userSelect = selectionMode;
-    element.style.setProperty('-webkit-user-select', selectionMode);
+    element.style.setProperty("-webkit-user-select", selectionMode);
     element.inert = !isInteractive;
-    element.setAttribute('aria-hidden', String(!isInteractive));
+    element.setAttribute("aria-hidden", String(!isInteractive));
     const canvas = gl.domElement;
     const previousPointerEvents = canvas.style.pointerEvents;
     const previousEventsEnabled = get().events.enabled;
@@ -131,7 +139,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     screenLayer.render();
     if (isInteractive) {
       // Let native DOM inputs handle clicks and scrolling without scene raycasts.
-      canvas.style.pointerEvents = 'none';
+      canvas.style.pointerEvents = "none";
       setEvents({ enabled: false });
     }
     return () => {
@@ -147,21 +155,40 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
 
     const { object } = runtime;
     const element = object.element;
+    const gestureHost = gl.domElement.parentElement;
+    const previousGestureHostTouchAction = gestureHost?.style.touchAction;
     const activePointers = new Map<number, TouchPoint>();
     let gesture: TouchZoomGesture | undefined;
     let panGesture: TouchPanGesture | undefined;
+    let ownsGestureHostTouchAction = false;
     let scale = 1;
     let pan: EmbeddedScreenPan = { x: 0, y: 0 };
 
-    const isMobileViewport = (): boolean => window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
+    const isMobileViewport = (): boolean =>
+      window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches;
 
     const syncGestureTouchAction = (): void => {
       // Before zoom, keep native vertical document scrolling available. Once
-      // enlarged, the same page surface owns one-finger camera panning in all
-      // directions while controls outside the frame remain untouched.
-      element.style.touchAction = isInteractive && isMobileViewport()
-        ? scale > 1 ? 'none' : 'pan-y'
-        : '';
+      // enlarged, the complete focused room owns one-finger camera panning,
+      // including the visible model around the flattened CSS3D page.
+      const touchAction = isInteractive && isMobileViewport() ? (scale > 1 ? "none" : "pan-y") : "";
+      element.style.touchAction = touchAction;
+      if (isInteractive && gestureHost) {
+        gestureHost.style.touchAction = touchAction;
+        ownsGestureHostTouchAction = true;
+      }
+    };
+
+    const restoreGestureTouchAction = (): void => {
+      if (gestureHost && ownsGestureHostTouchAction) {
+        gestureHost.style.touchAction = previousGestureHostTouchAction ?? "";
+        ownsGestureHostTouchAction = false;
+      }
+    };
+
+    const isGestureTarget = (target: EventTarget | null): boolean => {
+      if (!(target instanceof Node)) return false;
+      return gestureHost ? gestureHost.contains(target) : element.contains(target);
     };
 
     const resetZoom = (): void => {
@@ -201,7 +228,8 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
       if (!first || !second) return;
 
       const nextScale = clamp(
-        gesture.initialScale * getTouchDistance(first, second) / Math.max(gesture.initialDistance, 1),
+        (gesture.initialScale * getTouchDistance(first, second)) /
+          Math.max(gesture.initialDistance, 1),
         1,
         maximumMobileScreenZoom
       );
@@ -226,7 +254,8 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     };
 
     const onPointerDown = (event: PointerEvent): void => {
-      if (event.pointerType !== 'touch' || !isMobileViewport()) return;
+      if (event.pointerType !== "touch" || !isMobileViewport() || !isGestureTarget(event.target))
+        return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
       // Once the focused screen is enlarged, a new single-finger drag should
@@ -243,9 +272,6 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
 
       if (activePointers.size === 2) {
         event.preventDefault();
-        activePointers.forEach((_, pointerId) => {
-          if (!element.hasPointerCapture(pointerId)) element.setPointerCapture(pointerId);
-        });
         beginGesture();
       }
     };
@@ -268,7 +294,6 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
           if (dragDistance < minimumMobileCameraPanDistance) return;
 
           panGesture = { ...panGesture, isPanning: true };
-          if (!element.hasPointerCapture(event.pointerId)) element.setPointerCapture(event.pointerId);
         }
 
         event.preventDefault();
@@ -279,7 +304,6 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const endGesture = (event: PointerEvent): void => {
       const wasPinching = Boolean(gesture);
       activePointers.delete(event.pointerId);
-      if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
       if (activePointers.size === 1 && wasPinching && scale > 1) {
         const remainingPoint = activePointers.values().next().value;
         if (remainingPoint) {
@@ -303,21 +327,30 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     };
 
     resetZoom();
-    if (!isInteractive) return resetZoom;
+    if (!isInteractive) {
+      return () => {
+        resetZoom();
+        restoreGestureTouchAction();
+      };
+    }
 
-    element.addEventListener('pointerdown', onPointerDown, { passive: false });
-    element.addEventListener('pointermove', onPointerMove, { passive: false });
-    element.addEventListener('pointerup', endGesture);
-    element.addEventListener('pointercancel', endGesture);
-    window.addEventListener('resize', onViewportChange);
+    // The flattened CSS3D document covers only the physical monitor. Listen at
+    // the room host in capture phase so a pan can start in the surrounding 3D
+    // model too, while controls rendered outside that host remain untouched.
+    window.addEventListener("pointerdown", onPointerDown, { capture: true, passive: false });
+    window.addEventListener("pointermove", onPointerMove, { capture: true, passive: false });
+    window.addEventListener("pointerup", endGesture, true);
+    window.addEventListener("pointercancel", endGesture, true);
+    window.addEventListener("resize", onViewportChange);
 
     return () => {
-      element.removeEventListener('pointerdown', onPointerDown);
-      element.removeEventListener('pointermove', onPointerMove);
-      element.removeEventListener('pointerup', endGesture);
-      element.removeEventListener('pointercancel', endGesture);
-      window.removeEventListener('resize', onViewportChange);
+      window.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("pointermove", onPointerMove, true);
+      window.removeEventListener("pointerup", endGesture, true);
+      window.removeEventListener("pointercancel", endGesture, true);
+      window.removeEventListener("resize", onViewportChange);
       resetZoom();
+      restoreGestureTouchAction();
     };
   }, [isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
@@ -431,7 +464,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
         quaternion={screen.quaternion}
         onClick={(event) => {
           event.stopPropagation();
-          if (event.delta <= 5 && state.navigationState === 'overview') setActiveSection(screenId);
+          if (event.delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
         }}
       >
         <planeGeometry args={[screen.width, screen.height]} />
@@ -494,8 +527,8 @@ function getPannedViewportOffset(
 
   // This maps a full drag across the zoomed-overflow area to the camera's
   // initial screen bounds. A fresh one-finger touch remains native page scroll.
-  const maxDragX = Math.max(1, window.innerWidth * zoomOverflow / 2);
-  const maxDragY = Math.max(1, window.innerHeight * zoomOverflow / 2);
+  const maxDragX = Math.max(1, (window.innerWidth * zoomOverflow) / 2);
+  const maxDragY = Math.max(1, (window.innerHeight * zoomOverflow) / 2);
 
   return {
     x: clamp(initialPan.x - (currentPoint.x - initialPoint.x) / maxDragX, -1, 1),
@@ -530,7 +563,7 @@ function getInitialPreviewCaptureDelay(screenId: EmbeddedScreenId): number {
 function scheduleIdlePreviewCapture(callback: () => void, delayMs: number): () => void {
   let idleCallbackId: number | undefined;
   const timeoutId = window.setTimeout(() => {
-    if (typeof window.requestIdleCallback === 'function') {
+    if (typeof window.requestIdleCallback === "function") {
       idleCallbackId = window.requestIdleCallback(callback, { timeout: 1200 });
       return;
     }
@@ -540,7 +573,7 @@ function scheduleIdlePreviewCapture(callback: () => void, delayMs: number): () =
 
   return () => {
     window.clearTimeout(timeoutId);
-    if (idleCallbackId !== undefined && typeof window.cancelIdleCallback === 'function') {
+    if (idleCallbackId !== undefined && typeof window.cancelIdleCallback === "function") {
       window.cancelIdleCallback(idleCallbackId);
     }
   };
