@@ -18,6 +18,7 @@ const maximumEmbeddedContentScrollSpeed = 2.2;
 const embeddedContentScrollEdgeTolerance = 1;
 const initialPreviewCaptureIntervalMs = 260;
 const previewCaptureRetryDelayMs = 360;
+const returnPreviewCaptureDelayMs = 0;
 const initialPreviewCaptureOrder: readonly EmbeddedScreenId[] = [
   "pipeline",
   "automation",
@@ -80,6 +81,7 @@ export function ArcadeScreenSurface({
   const previewTextureRef = useRef<THREE.CanvasTexture | null>(null);
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
+  const cancelReturnPreviewCaptureRef = useRef<(() => void) | null>(null);
   const [previewTexture, setPreviewTexture] = useState<THREE.CanvasTexture | null>(null);
   const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
   const isInteractive =
@@ -642,6 +644,11 @@ export function ArcadeScreenSurface({
     };
   }, [gl, isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
+  const cancelReturnPreviewCapture = useCallback((): void => {
+    cancelReturnPreviewCaptureRef.current?.();
+    cancelReturnPreviewCaptureRef.current = null;
+  }, []);
+
   const capturePreview = useCallback(async (): Promise<boolean> => {
     const runtime = runtimeRef.current;
     if (!runtime || !runtime.content.firstElementChild) {
@@ -707,8 +714,27 @@ export function ArcadeScreenSurface({
     };
   }, [capturePreview, isInteractive, screenId, screenLayer]);
 
+  const scheduleReturnPreviewCapture = useCallback((): void => {
+    const runtime = runtimeRef.current;
+    if (!runtime || !runtime.content.firstElementChild) {
+      return;
+    }
+
+    cancelReturnPreviewCapture();
+
+    // Keep the latest live page visible, but move DOM-to-image work off the
+    // camera animation path so returning to the room remains smooth.
+    setIsPreviewCapturePending(true);
+    screenLayer.setPreviewCapturePending(runtime, true);
+    cancelReturnPreviewCaptureRef.current = screenLayer.schedulePreviewCapture(async () => {
+      cancelReturnPreviewCaptureRef.current = null;
+      await capturePreview();
+    }, returnPreviewCaptureDelayMs);
+  }, [cancelReturnPreviewCapture, capturePreview, screenLayer]);
+
   useLayoutEffect(() => {
     if (isInteractive) {
+      cancelReturnPreviewCapture();
       wasInteractiveRef.current = true;
       return;
     }
@@ -718,8 +744,8 @@ export function ArcadeScreenSurface({
     }
 
     wasInteractiveRef.current = false;
-    void capturePreview();
-  }, [capturePreview, isInteractive]);
+    scheduleReturnPreviewCapture();
+  }, [cancelReturnPreviewCapture, isInteractive, scheduleReturnPreviewCapture]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -735,10 +761,11 @@ export function ArcadeScreenSurface({
 
   useEffect(() => {
     return () => {
+      cancelReturnPreviewCapture();
       previewCaptureRequestRef.current += 1;
       previewTextureRef.current = null;
     };
-  }, []);
+  }, [cancelReturnPreviewCapture]);
 
   return (
     <>

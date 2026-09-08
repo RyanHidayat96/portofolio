@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { ArcadeScreenSurface, type EmbeddedScreenPan } from '../../src/features/portfolio-3d/components/ArcadeScreenSurface';
 import type { EmbeddedScreenRegistration } from '../../src/features/portfolio-3d/components/EmbeddedScreenLayer';
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../../src/features/portfolio-3d/arcade-screen';
+import { captureEmbeddedScreenSnapshot } from '../../src/features/portfolio-3d/components/EmbeddedScreenSnapshot';
 
 const harness = vi.hoisted(() => ({
   root: {} as {
@@ -14,6 +15,7 @@ const harness = vi.hoisted(() => ({
   },
   runtime: undefined as EmbeddedScreenRegistration | undefined,
   state: { activeSectionId: 'architecture', navigationState: 'section-open' },
+  scheduledPreviewCaptures: [] as { capture: () => Promise<void>; delayMs: number }[],
   screenLayer: {
     registerScreen: vi.fn((screen: EmbeddedScreenRegistration) => {
       harness.runtime = screen;
@@ -25,7 +27,15 @@ const harness = vi.hoisted(() => ({
     }),
     setPreviewCapturePending: vi.fn(),
     setPreviewAvailable: vi.fn(),
-    schedulePreviewCapture: vi.fn(() => () => {}),
+    schedulePreviewCapture: vi.fn((capture: () => Promise<void>, delayMs: number) => {
+      const job = { capture, delayMs };
+      harness.scheduledPreviewCaptures.push(job);
+      return () => {
+        harness.scheduledPreviewCaptures = harness.scheduledPreviewCaptures.filter(
+          (entry) => entry !== job
+        );
+      };
+    }),
     render: vi.fn()
   },
   setActiveSection: vi.fn()
@@ -139,6 +149,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     vi.useFakeTimers();
     harness.runtime = undefined;
     harness.state = { activeSectionId: 'architecture', navigationState: 'section-open' };
+    harness.scheduledPreviewCaptures = [];
     harness.setActiveSection.mockClear();
     Object.values(harness.screenLayer).forEach((entry) => {
       if (typeof entry === 'function' && 'mockClear' in entry) entry.mockClear();
@@ -286,5 +297,42 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     ]);
     expect(horizontalPanMove.defaultPrevented).toBe(true);
     expect(scrollContainer.scrollTop).toBe(100);
+  });
+
+  it('keeps the live frame visible but defers the return snapshot work off the camera transition', async () => {
+    const snapshotCanvas = document.createElement('canvas');
+    vi.mocked(captureEmbeddedScreenSnapshot).mockResolvedValue(snapshotCanvas);
+    const { rerender } = render(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+    expect(harness.runtime).toBeDefined();
+    harness.runtime!.content.appendChild(document.createElement('section'));
+
+    harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
+    rerender(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+
+    expect(harness.screenLayer.setPreviewCapturePending).toHaveBeenCalledWith(
+      harness.runtime,
+      true
+    );
+    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
+
+    const returnCapture = harness.scheduledPreviewCaptures.find((job) => job.delayMs === 0);
+    expect(returnCapture).toBeDefined();
+    await act(async () => { await returnCapture?.capture(); });
+
+    expect(captureEmbeddedScreenSnapshot).toHaveBeenCalledWith(harness.runtime!.content);
   });
 });
