@@ -47,7 +47,7 @@ import {
   maximumMobileScreenZoom,
   type EmbeddedScreenPan
 } from './ArcadeScreenSurface';
-import { EmbeddedScreenLayer } from './EmbeddedScreenLayer';
+import { EmbeddedScreenLayer, useEmbeddedScreenLayer } from './EmbeddedScreenLayer';
 import { HotspotInteractionLayer } from './HotspotInteractionLayer';
 import { SceneAsset, type AssetRuntimeNodeMap } from './SceneAsset';
 import { SceneAssetBoundary } from './SceneAssetBoundary';
@@ -363,6 +363,7 @@ export function PortfolioSceneStage({
         : null}
 
       <EmbeddedScreenLayer>
+        <ScreenRepaintController />
         {arcadeScreen ? (
           <ArcadeScreenSurface screen={arcadeScreen} screenId="pipeline" onScreenReady={onEmbeddedScreenReady} onScreenZoomChange={handleEmbeddedScreenZoomChange} onScreenPanChange={handleEmbeddedScreenPanChange} />
         ) : null}
@@ -401,6 +402,19 @@ export function PortfolioSceneStage({
       ) : null}
     </>
   );
+}
+
+function ScreenRepaintController(): null {
+  const screenLayer = useEmbeddedScreenLayer();
+  const { state } = usePortfolio3dState();
+
+  useEffect(() => {
+    if (state.navigationState === 'overview' || state.navigationState === 'section-open') {
+      screenLayer.forceRepaint();
+    }
+  }, [screenLayer, state.navigationState]);
+
+  return null;
 }
 
 function CameraDebugOverlay(): null {

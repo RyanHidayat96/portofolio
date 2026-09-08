@@ -5847,6 +5847,11 @@ textarea:focus-visible,
   color: #eef5ff;
 }
 
+.arcade-screen-document[aria-hidden="true"],
+.arcade-screen-document[aria-hidden="true"] * {
+  pointer-events: none !important;
+}
+
 .arcade-screen-content {
   width: 100%;
   height: 100%;
@@ -9205,39 +9210,68 @@ textarea:focus-visible,
 
   .portfolio-3d-navigation-panel {
     position: fixed;
+    z-index: 2147483000;
     bottom: max(0.75rem, env(safe-area-inset-bottom));
     left: 0.75rem;
     width: calc(100vw - 1.5rem);
-    display: grid;
-    grid-template-rows: minmax(0, 1fr);
-    height: min(35svh, 22rem);
-    max-height: min(35svh, 22rem);
+    height: min(31svh, 13rem);
+    max-height: min(31svh, 13rem);
     overflow: hidden;
-    padding: 0.65rem;
+    padding: 0.5rem;
     background: #280c09;
-    isolation: auto;
+    isolation: isolate;
   }
 
-  /* Keep the fixed frame static; only this child participates in touch scroll.
-     This avoids Android Chrome dropping the menu raster over the WebGL canvas. */
   .portfolio-3d-navigation-scroll {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"],
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div {
+    height: 100%;
+  }
+
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.3rem;
+  }
+
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div > p {
+    margin: 0;
+    font-size: 0.55rem;
+    letter-spacing: 0.18em;
+    line-height: 1;
+  }
+
+  .portfolio-3d-navigation-panel [aria-label="3D portfolio areas"] > div > div {
+    display: grid;
     min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    gap: 0.25rem;
   }
 
   .portfolio-3d-shell .portfolio-3d-area-button {
-    min-height: 40px;
-    gap: 0.6rem;
-    padding: 0.5rem 0.62rem;
-    font-size: 0.94rem;
+    min-height: 0;
+    height: 100%;
+    gap: 0.35rem;
+    padding: 0.24rem 0.35rem;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    white-space: nowrap;
   }
 
   .portfolio-3d-shell .portfolio-3d-area-icon {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: 0 0 auto;
+  }
+
+  .portfolio-3d-shell .portfolio-3d-area-icon svg {
+    width: 0.7rem;
+    height: 0.7rem;
   }
 
   .arcade-focus-controls {
@@ -9262,7 +9296,7 @@ textarea:focus-visible,
 
 @media (max-width: 390px) {
   .portfolio-3d-navigation-panel {
-    height: min(37svh, 21rem);
-    max-height: min(37svh, 21rem);
+    height: min(32svh, 13rem);
+    max-height: min(32svh, 13rem);
   }
 }

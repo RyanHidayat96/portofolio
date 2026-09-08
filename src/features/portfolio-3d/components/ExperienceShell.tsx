@@ -35,6 +35,19 @@ export function ExperienceShell({
         assetProgress.failedCriticalAssets > 0 ? `, ${assetProgress.failedCriticalAssets} failed` : ''
       }.`
     : 'Preparing the progressive 3D runtime.';
+  const navigationPanel = (
+    <aside
+      id="portfolio-3d-panel"
+      inert={isScreenFocusView}
+      aria-hidden={isScreenFocusView}
+      className={`portfolio-3d-shell portfolio-3d-glass-panel portfolio-3d-navigation-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-hidden p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-[opacity,transform] duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
+      aria-label="3D portfolio controls and section content"
+    >
+      <div className="portfolio-3d-navigation-scroll">
+        {navigationSlot}
+      </div>
+    </aside>
+  );
 
   if (webglStatus === 'unsupported') {
     return <>{fallbackSlot}</>;
@@ -123,17 +136,7 @@ export function ExperienceShell({
           </div>
         </header>
 
-        <aside
-          id="portfolio-3d-panel"
-          inert={isScreenFocusView}
-          aria-hidden={isScreenFocusView}
-          className={`portfolio-3d-glass-panel portfolio-3d-navigation-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-hidden p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-[opacity,transform] duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
-          aria-label="3D portfolio controls and section content"
-        >
-          <div className="portfolio-3d-navigation-scroll">
-            {navigationSlot}
-          </div>
-        </aside>
+        {navigationPanel}
 
         {focusControlsSlot}
 

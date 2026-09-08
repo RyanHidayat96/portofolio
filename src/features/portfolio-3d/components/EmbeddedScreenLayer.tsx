@@ -27,6 +27,7 @@ export interface EmbeddedScreenRegistration {
   pixelWidth: number;
   pixelHeight: number;
   isInteractive: boolean;
+  isFlattenedForInteraction?: boolean;
   cssTransform?: string;
 }
 
@@ -54,6 +55,7 @@ interface EmbeddedScreenLayerController {
     pixelHeight: number
   ) => void;
   setInteractive: (screen: EmbeddedScreenRegistration, isInteractive: boolean) => void;
+  forceRepaint: () => void;
   render: () => void;
 }
 
@@ -65,6 +67,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
   const { camera, gl, invalidate, size } = useThree();
   const runtimeRef = useRef<EmbeddedScreenLayerRuntime | null>(null);
   const [runtime, setRuntime] = useState<EmbeddedScreenLayerRuntime | null>(null);
+  const repaintFrameRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const canvas = gl.domElement;
@@ -74,6 +77,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
     const renderer = new CSS3DRenderer();
     renderer.domElement.className = 'arcade-css-layer';
     renderer.domElement.style.zIndex = screenLayerZIndex;
+    renderer.domElement.style.pointerEvents = 'none';
     const previousPosition = canvas.style.position;
     const previousZIndex = canvas.style.zIndex;
     canvas.style.position = 'relative';
@@ -97,6 +101,10 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
     invalidate();
 
     return () => {
+      if (repaintFrameRef.current !== null) {
+        cancelAnimationFrame(repaintFrameRef.current);
+        repaintFrameRef.current = null;
+      }
       runtimeRef.current = null;
       renderer.domElement.remove();
       canvas.style.position = previousPosition;
@@ -125,6 +133,41 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
     const render = (): void => {
       renderEmbeddedScreenLayer(runtime, camera);
       invalidate();
+    };
+
+    const triggerForceRepaint = (): void => {
+      if (repaintFrameRef.current !== null) {
+        cancelAnimationFrame(repaintFrameRef.current);
+      }
+
+      // Android Chrome evicts raster tiles of off-screen 3D preserve-3d layers.
+      // Applying a sub-pixel transform jitter across two animation frames forces
+      // Chromium's compositor to re-rasterize all tile backings immediately.
+      let step = 0;
+      const applyJitter = (): void => {
+        step += 1;
+        const offset = step === 1 ? ' translateZ(0.0005px)' : '';
+
+        for (const s of runtime.screens) {
+          if (!s.isInteractive) {
+            const baseTransform = s.cssTransform ?? s.object.element.style.transform;
+            if (baseTransform) {
+              s.object.element.style.transform = baseTransform.replace(/\s*translateZ\([^)]*\)/g, '') + offset;
+            }
+          }
+        }
+
+        renderEmbeddedScreenLayer(runtime, camera);
+        invalidate();
+
+        if (step < 2) {
+          repaintFrameRef.current = requestAnimationFrame(applyJitter);
+        } else {
+          repaintFrameRef.current = null;
+        }
+      };
+
+      repaintFrameRef.current = requestAnimationFrame(applyJitter);
     };
 
     return {
@@ -156,12 +199,18 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
             restoreScreenToLayer(runtime, runtime.activeScreen);
           }
 
-          runtime.scene.remove(screen.object);
           screen.isInteractive = true;
           runtime.activeScreen = screen;
+          screen.object.element.style.display = '';
+          screen.object.element.style.pointerEvents = 'auto';
+
+          // Android Chrome renders this 3D transform correctly but its hit-test
+          // resolves to the CSS3D wrapper rather than inputs within the document.
+          // Flatten only the focused document so native controls can receive touch.
+          runtime.scene.remove(screen.object);
+          screen.isFlattenedForInteraction = true;
           screen.cssTransform = screen.object.element.style.transform;
           screen.object.element.style.transformOrigin = '0 0';
-          screen.object.element.style.pointerEvents = 'auto';
           runtime.renderer.domElement.appendChild(screen.object.element);
         } else {
           restoreScreenToLayer(runtime, screen);
@@ -169,7 +218,9 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
 
         syncLayerPointerEvents(runtime);
         render();
+        triggerForceRepaint();
       },
+      forceRepaint: triggerForceRepaint,
       render
     };
   }, [camera, invalidate, runtime]);
@@ -213,25 +264,33 @@ function restoreScreenToLayer(
 ): void {
   if (runtime.activeScreen === screen) runtime.activeScreen = undefined;
   screen.isInteractive = false;
-  if (screen.cssTransform !== undefined) {
-    // CSS3DRenderer caches transforms. Restore the exact prior value so a
-    // cached matrix still leaves the DOM display in the correct position.
-    screen.object.element.style.transform = screen.cssTransform;
-    screen.cssTransform = undefined;
+  if (screen.isFlattenedForInteraction) {
+    if (screen.cssTransform !== undefined) {
+      screen.object.element.style.transform = screen.cssTransform;
+      screen.cssTransform = undefined;
+    }
+    screen.object.element.style.transformOrigin = '';
+    if (screen.object.parent !== runtime.scene) runtime.scene.add(screen.object);
   }
-  screen.object.element.style.transformOrigin = '';
+  screen.isFlattenedForInteraction = false;
   screen.object.element.style.pointerEvents = 'none';
-  if (screen.object.parent !== runtime.scene) runtime.scene.add(screen.object);
 }
 
 function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
-  // The layer covers the viewport, so it must never capture clicks outside the
-  // flattened active document. The document itself explicitly opts into auto.
+  const activeScreen = runtime.activeScreen;
+  const isInteractive = Boolean(activeScreen);
+  // Elevate z-index above the canvas container when interactive so mobile touch gestures
+  // and scroll hit the active document directly. Return to 0 when in overview.
+  runtime.renderer.domElement.style.zIndex = isInteractive ? '2' : screenLayerZIndex;
   runtime.renderer.domElement.style.pointerEvents = 'none';
   const rendererView = runtime.renderer.domElement.firstElementChild as HTMLElement | null;
   const rendererCamera = rendererView?.firstElementChild as HTMLElement | null;
   rendererView?.style.setProperty('pointer-events', 'none');
   rendererCamera?.style.setProperty('pointer-events', 'none');
+
+  for (const s of runtime.screens) {
+    s.object.element.style.pointerEvents = s === activeScreen ? 'auto' : 'none';
+  }
 }
 
 function renderEmbeddedScreenLayer(
@@ -239,7 +298,9 @@ function renderEmbeddedScreenLayer(
   camera: THREE.Camera
 ): void {
   const activeScreen = runtime.activeScreen;
-  if (activeScreen) renderInteractiveScreen(runtime, activeScreen, camera);
+  if (activeScreen?.isFlattenedForInteraction) {
+    renderInteractiveScreen(runtime, activeScreen, camera);
+  }
 
   runtime.camera.copy(camera, false);
   camera.getWorldPosition(runtime.camera.position).multiplyScalar(cssWorldScale);

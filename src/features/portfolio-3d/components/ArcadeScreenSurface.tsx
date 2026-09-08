@@ -92,6 +92,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     if (!runtime) return;
     const element = runtime.object.element;
     const selectionMode = isInteractive ? 'text' : 'none';
+    runtime.object.visible = true;
     element.style.pointerEvents = isInteractive ? 'auto' : 'none';
     // CSS3DObject defaults to user-select: none. Let the focused document use
     // native selection and copy, while the room preview remains non-selectable.
@@ -103,6 +104,7 @@ export function ArcadeScreenSurface({ screen, screenId, onScreenReady, onScreenZ
     const previousPointerEvents = canvas.style.pointerEvents;
     const previousEventsEnabled = get().events.enabled;
     screenLayer.setInteractive(runtime, isInteractive);
+    screenLayer.render();
     if (isInteractive) {
       // Let native DOM inputs handle clicks and scrolling without scene raycasts.
       canvas.style.pointerEvents = 'none';
