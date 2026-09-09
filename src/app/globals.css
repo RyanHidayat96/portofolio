@@ -6334,6 +6334,51 @@ textarea:focus-visible,
   touch-action: none !important;
 }
 
+.arcade-screen-document[data-gesture-mode="viewport"] :is(
+  .arcade-pipeline-scroll,
+  .monitor-automation-scroll,
+  .monitor-performance-scroll,
+  .monitor-api-scroll,
+  .monitor-terminal-scroll,
+  .profile-artwork-content,
+  .experience-artwork-content,
+  .architecture-embedded-content,
+  .contact-book-content
+) {
+  scroll-behavior: auto;
+}
+
+.arcade-screen-scroll-indicator {
+  position: absolute;
+  top: var(--scroll-indicator-top, 8px);
+  right: 8px;
+  z-index: 40;
+  width: 10px;
+  height: var(--scroll-indicator-height, calc(100% - 16px));
+  border: 1px solid rgba(103, 226, 255, 0.48);
+  border-radius: 999px;
+  background: rgba(4, 9, 14, 0.68);
+  box-shadow: 0 0 18px rgba(85, 215, 255, 0.24);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.arcade-screen-scroll-indicator-thumb {
+  position: absolute;
+  right: 2px;
+  left: 2px;
+  height: var(--scroll-indicator-thumb-height, 42px);
+  border-radius: inherit;
+  background: linear-gradient(180deg, #85e9ff, #45bddb);
+  box-shadow: 0 0 12px rgba(103, 226, 255, 0.64);
+  transform: translate3d(0, var(--scroll-indicator-thumb-y, 0), 0);
+}
+
+.arcade-screen-document[data-scroll-indicator="visible"] .arcade-screen-scroll-indicator {
+  opacity: 1;
+}
+
 .arcade-pipeline-screen {
   display: flex;
   flex-direction: column;

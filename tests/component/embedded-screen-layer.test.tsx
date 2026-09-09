@@ -108,6 +108,8 @@ describe('embedded screen render scheduling', () => {
     expect(screen.object.element.style.visibility).toBe('hidden');
     const transform = screen.object.element.style.transform;
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(screen.object.element.style.visibility).toBe('hidden');
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(screen.object.element.style.visibility).toBe('');
     act(() => { harness.root.camera.position.y += 1; harness.frame(); });
     expect(screen.object.element.style.transform).not.toBe(transform);
@@ -125,6 +127,8 @@ describe('embedded screen render scheduling', () => {
       expect(screen.object.element.style.display).toBe('');
       expect(screen.object.element.style.visibility).toBe('hidden');
 
+      await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+      expect(screen.object.element.style.visibility).toBe('hidden');
       await act(async () => { await vi.advanceTimersByTimeAsync(20); });
 
       expect(screen.object.element.style.visibility).toBe('');

@@ -69,6 +69,18 @@ const placement = {
   height: 1.2
 } as const satisfies ArcadeScreenPlacement;
 
+const embeddedScreenIds = [
+  'pipeline',
+  'automation',
+  'performance',
+  'backend',
+  'terminal',
+  'profile',
+  'experience',
+  'architecture',
+  'contact'
+] as const satisfies readonly EmbeddedScreenId[];
+
 function createMatchMedia(matches: boolean): typeof window.matchMedia {
   return vi.fn().mockImplementation((query: string) => ({
     matches,
@@ -234,10 +246,11 @@ describe('ArcadeScreenSurface mobile gestures', () => {
   });
 
   it('scrolls embedded frame content before panning the zoomed viewport', async () => {
+    harness.state = { activeSectionId: 'experience', navigationState: 'section-open' };
     render(
       <ArcadeScreenSurface
         screen={placement}
-        screenId="architecture"
+        screenId="experience"
         onScreenZoomChange={onScreenZoomChange}
         onScreenPanChange={onScreenPanChange}
       />
@@ -261,7 +274,10 @@ describe('ArcadeScreenSurface mobile gestures', () => {
       createTouch(screenTarget, 2, 130, 100)
     ]);
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
-    expect(onScreenZoomChangeMock).toHaveBeenLastCalledWith('architecture', 2);
+    expect(onScreenZoomChangeMock).toHaveBeenLastCalledWith('experience', 2);
+    expect(harness.runtime!.object.element).toHaveAttribute('data-scroll-indicator', 'visible');
+    expect(harness.runtime!.object.element.querySelector('.arcade-screen-scroll-indicator')).toBeInTheDocument();
+    expect(harness.runtime!.object.element.querySelector('.arcade-screen-scroll-indicator-thumb')).toBeInTheDocument();
     dispatchTouchEvent(screenTarget, 'touchend', []);
     onScreenPanChangeMock.mockClear();
 
@@ -271,7 +287,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
       createTouch(screenTarget, 3, 140, 130)
     ]);
     expect(scrollMove.defaultPrevented).toBe(true);
-    expect(scrollContainer.scrollTop).toBe(100);
+    expect(scrollContainer.scrollTop).toBe(50);
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(onScreenPanChangeMock).not.toHaveBeenCalled();
     dispatchTouchEvent(screenTarget, 'touchend', []);
@@ -286,7 +302,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(bottomPanMove.defaultPrevented).toBe(true);
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(onScreenPanChangeMock).toHaveBeenLastCalledWith(
-      'architecture',
+      'experience',
       expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
     );
 
@@ -300,6 +316,44 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(horizontalPanMove.defaultPrevented).toBe(true);
     expect(scrollContainer.scrollTop).toBe(100);
   });
+
+  it.each(embeddedScreenIds)(
+    'shows the zoom scroll indicator for the %s frame',
+    async (screenId) => {
+      harness.state = { activeSectionId: screenId, navigationState: 'section-open' };
+      render(
+        <ArcadeScreenSurface
+          screen={placement}
+          screenId={screenId}
+          onScreenZoomChange={onScreenZoomChange}
+          onScreenPanChange={onScreenPanChange}
+        />
+      );
+      expect(harness.runtime).toBeDefined();
+      host.appendChild(harness.runtime!.object.element);
+      const scrollContainer = document.createElement('div');
+      scrollContainer.style.overflowY = 'auto';
+      setScrollMetrics(scrollContainer, { clientHeight: 100, scrollHeight: 300 });
+      screenTarget = document.createElement('button');
+      scrollContainer.appendChild(screenTarget);
+      harness.runtime!.content.appendChild(scrollContainer);
+
+      dispatchTouchEvent(screenTarget, 'touchstart', [
+        createTouch(screenTarget, 1, 100, 100),
+        createTouch(screenTarget, 2, 120, 100)
+      ]);
+      dispatchTouchEvent(screenTarget, 'touchmove', [
+        createTouch(screenTarget, 1, 90, 100),
+        createTouch(screenTarget, 2, 130, 100)
+      ]);
+      await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+
+      expect(onScreenZoomChangeMock).toHaveBeenLastCalledWith(screenId, 2);
+      expect(harness.runtime!.object.element).toHaveAttribute('data-scroll-indicator', 'visible');
+      expect(harness.runtime!.object.element.querySelector('.arcade-screen-scroll-indicator')).toBeInTheDocument();
+      expect(harness.runtime!.object.element.querySelector('.arcade-screen-scroll-indicator-thumb')).toBeInTheDocument();
+    }
+  );
 
   it('keeps the live frame visible but defers the return snapshot work off the camera transition', async () => {
     const snapshotCanvas = document.createElement('canvas');

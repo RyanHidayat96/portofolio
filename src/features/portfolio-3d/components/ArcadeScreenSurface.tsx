@@ -14,7 +14,6 @@ const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
-const maximumEmbeddedContentScrollSpeed = 2.2;
 const embeddedContentScrollEdgeTolerance = 1;
 const initialPreviewCaptureIntervalMs = 260;
 const previewCaptureRetryDelayMs = 360;
@@ -57,7 +56,6 @@ interface TouchPanGesture {
   readonly initialScrollTop?: number;
   readonly maxScrollLeft?: number;
   readonly maxScrollTop?: number;
-  readonly contentScrollSpeed?: number;
   readonly hasScrolledContent?: boolean;
 }
 
@@ -78,6 +76,8 @@ export function ArcadeScreenSurface({
   const { state, setActiveSection } = usePortfolio3dState();
   const screenLayer = useEmbeddedScreenLayer();
   const runtimeRef = useRef<EmbeddedScreenRegistration | null>(null);
+  const scrollIndicatorRef = useRef<HTMLDivElement | null>(null);
+  const scrollIndicatorThumbRef = useRef<HTMLDivElement | null>(null);
   const previewTextureRef = useRef<THREE.CanvasTexture | null>(null);
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
@@ -102,7 +102,16 @@ export function ArcadeScreenSurface({
     element.className = `arcade-screen-document arcade-screen-document--${screenId}`;
     const content = document.createElement("div");
     content.className = "arcade-screen-content";
+    const scrollIndicator = document.createElement("div");
+    scrollIndicator.className = "arcade-screen-scroll-indicator";
+    scrollIndicator.setAttribute("aria-hidden", "true");
+    const scrollIndicatorThumb = document.createElement("div");
+    scrollIndicatorThumb.className = "arcade-screen-scroll-indicator-thumb";
+    scrollIndicator.appendChild(scrollIndicatorThumb);
     element.appendChild(content);
+    element.appendChild(scrollIndicator);
+    scrollIndicatorRef.current = scrollIndicator;
+    scrollIndicatorThumbRef.current = scrollIndicatorThumb;
     const object = new CSS3DObject(element);
     const runtime: EmbeddedScreenRegistration = {
       screenId,
@@ -122,6 +131,12 @@ export function ArcadeScreenSurface({
     return () => {
       screenLayer.unregisterScreen(runtime);
       runtimeRef.current = null;
+      if (scrollIndicatorRef.current === scrollIndicator) {
+        scrollIndicatorRef.current = null;
+      }
+      if (scrollIndicatorThumbRef.current === scrollIndicatorThumb) {
+        scrollIndicatorThumbRef.current = null;
+      }
       onScreenReady?.(screenId, null);
     };
   }, [onScreenReady, screenId, screenLayer]);
@@ -196,6 +211,7 @@ export function ArcadeScreenSurface({
         gestureHost.style.touchAction = touchAction;
         ownsGestureHostTouchAction = true;
       }
+      syncScrollIndicator();
     };
 
     const restoreGestureTouchAction = (): void => {
@@ -206,6 +222,7 @@ export function ArcadeScreenSurface({
         gestureHost.style.touchAction = previousGestureHostTouchAction ?? "";
         ownsGestureHostTouchAction = false;
       }
+      element.removeAttribute("data-scroll-indicator");
     };
 
     const isGestureTarget = (target: EventTarget | null): boolean => {
@@ -240,6 +257,66 @@ export function ArcadeScreenSurface({
       return undefined;
     };
 
+    const findPrimaryScrollIndicatorTarget = (): HTMLElement | undefined => {
+      const candidates = [
+        runtime.content,
+        ...runtime.content.querySelectorAll<HTMLElement>("*")
+      ];
+
+      for (const current of candidates) {
+        if (!(current instanceof HTMLElement)) continue;
+        const style = window.getComputedStyle(current);
+        const hasVerticalScroll =
+          isScrollableOverflow(style.overflowY) &&
+          current.scrollHeight > current.clientHeight + embeddedContentScrollEdgeTolerance;
+        if (hasVerticalScroll) return current;
+      }
+
+      return undefined;
+    };
+
+    const syncScrollIndicator = (scrollTarget = findPrimaryScrollIndicatorTarget()): void => {
+      const indicator = scrollIndicatorRef.current;
+      const thumb = scrollIndicatorThumbRef.current;
+      const isViewportGesture = isViewportGestureActive || scale > 1;
+      const maxScrollTop = scrollTarget
+        ? Math.max(0, scrollTarget.scrollHeight - scrollTarget.clientHeight)
+        : 0;
+
+      if (
+        !indicator ||
+        !thumb ||
+        !isInteractive ||
+        !isMobileViewport() ||
+        !isViewportGesture ||
+        !scrollTarget ||
+        maxScrollTop <= embeddedContentScrollEdgeTolerance
+      ) {
+        element.removeAttribute("data-scroll-indicator");
+        return;
+      }
+
+      const trackTop = clamp(scrollTarget.offsetTop || 8, 8, Math.max(8, pixelHeight - 48));
+      const trackHeight = clamp(
+        scrollTarget.clientHeight || pixelHeight - trackTop - 8,
+        48,
+        Math.max(48, pixelHeight - trackTop - 8)
+      );
+      const thumbHeight = clamp(
+        trackHeight * (scrollTarget.clientHeight / scrollTarget.scrollHeight),
+        42,
+        trackHeight
+      );
+      const thumbTravel = Math.max(0, trackHeight - thumbHeight);
+      const thumbY = maxScrollTop > 0 ? (scrollTarget.scrollTop / maxScrollTop) * thumbTravel : 0;
+
+      element.dataset.scrollIndicator = "visible";
+      indicator.style.setProperty("--scroll-indicator-top", `${trackTop}px`);
+      indicator.style.setProperty("--scroll-indicator-height", `${trackHeight}px`);
+      thumb.style.setProperty("--scroll-indicator-thumb-height", `${thumbHeight}px`);
+      thumb.style.setProperty("--scroll-indicator-thumb-y", `${clamp(thumbY, 0, thumbTravel)}px`);
+    };
+
     const beginPanGesture = (
       initialPoint: TouchPoint,
       target: EventTarget | null
@@ -259,8 +336,7 @@ export function ArcadeScreenSurface({
         initialScrollLeft: scrollTarget?.scrollLeft,
         initialScrollTop: scrollTarget?.scrollTop,
         maxScrollLeft,
-        maxScrollTop,
-        contentScrollSpeed: Math.min(Math.max(scale, 1), maximumEmbeddedContentScrollSpeed)
+        maxScrollTop
       };
     };
 
@@ -269,7 +345,6 @@ export function ArcadeScreenSurface({
       axis: "x" | "y",
       initialScrollPosition: number,
       maxScrollPosition: number,
-      contentScrollSpeed: number,
       gestureDelta: number
     ): boolean => {
       if (Math.abs(gestureDelta) < minimumEmbeddedContentScrollDistance) return false;
@@ -278,22 +353,23 @@ export function ArcadeScreenSurface({
 
       const currentScrollPosition =
         axis === "y" ? scrollTarget.scrollTop : scrollTarget.scrollLeft;
-      const zoomAdjustedGestureDelta = gestureDelta * contentScrollSpeed;
       const nextScrollPosition = clamp(
-        initialScrollPosition - zoomAdjustedGestureDelta,
+        initialScrollPosition - gestureDelta,
         0,
         maxScrollPosition
       );
       if (Math.abs(nextScrollPosition - currentScrollPosition) > embeddedContentScrollEdgeTolerance) {
         if (axis === "y") scrollTarget.scrollTop = nextScrollPosition;
         else scrollTarget.scrollLeft = nextScrollPosition;
+        syncScrollIndicator(scrollTarget);
         return true;
       }
 
-      if (zoomAdjustedGestureDelta < 0) {
+      syncScrollIndicator(scrollTarget);
+      if (gestureDelta < 0) {
         return currentScrollPosition < maxScrollPosition - embeddedContentScrollEdgeTolerance;
       }
-      if (zoomAdjustedGestureDelta > 0) {
+      if (gestureDelta > 0) {
         return currentScrollPosition > embeddedContentScrollEdgeTolerance;
       }
 
@@ -313,7 +389,6 @@ export function ArcadeScreenSurface({
               panGesture.initialScrollTop ?? panGesture.scrollTarget.scrollTop,
               panGesture.maxScrollTop ??
                 Math.max(0, panGesture.scrollTarget.scrollHeight - panGesture.scrollTarget.clientHeight),
-              panGesture.contentScrollSpeed ?? 1,
               deltaY
             )
           : applyContentScrollAxis(
@@ -322,7 +397,6 @@ export function ArcadeScreenSurface({
               panGesture.initialScrollLeft ?? panGesture.scrollTarget.scrollLeft,
               panGesture.maxScrollLeft ??
                 Math.max(0, panGesture.scrollTarget.scrollWidth - panGesture.scrollTarget.clientWidth),
-              panGesture.contentScrollSpeed ?? 1,
               deltaX
             );
 
@@ -601,6 +675,11 @@ export function ArcadeScreenSurface({
       syncGestureTouchAction();
     };
 
+    const onScroll = (event: Event): void => {
+      if (!(event.target instanceof HTMLElement)) return;
+      syncScrollIndicator(event.target);
+    };
+
     const onViewportChange = (): void => {
       activePointers.clear();
       gesture = undefined;
@@ -628,6 +707,7 @@ export function ArcadeScreenSurface({
     window.addEventListener("touchend", onTouchEnd, { capture: true, passive: false });
     window.addEventListener("touchcancel", onTouchEnd, { capture: true, passive: false });
     window.addEventListener("resize", onViewportChange);
+    element.addEventListener("scroll", onScroll, true);
 
     return () => {
       window.removeEventListener("pointerdown", onPointerDown, true);
@@ -639,6 +719,7 @@ export function ArcadeScreenSurface({
       window.removeEventListener("touchend", onTouchEnd, true);
       window.removeEventListener("touchcancel", onTouchEnd, true);
       window.removeEventListener("resize", onViewportChange);
+      element.removeEventListener("scroll", onScroll, true);
       resetZoom();
       restoreGestureTouchAction();
     };

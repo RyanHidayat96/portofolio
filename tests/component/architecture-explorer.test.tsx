@@ -90,4 +90,27 @@ describe("ArchitectureExplorer", () => {
     expect(coordinates?.[6]).toBe(target.x);
     expect(coordinates?.[7]).toBeLessThan(target.y);
   });
+
+  it("paints active edge labels explicitly to avoid unstyled SVG flashes", () => {
+    const activePreset = architecturePresets[0];
+    const selectedNode = activePreset?.nodes[0];
+    const activeEdge = activePreset?.edges.find(
+      (edge) => edge.source === selectedNode?.id || edge.target === selectedNode?.id
+    );
+
+    const { container } = render(<ArchitectureExplorer />);
+
+    if (!activeEdge) {
+      return;
+    }
+
+    const edgeGroup = container.querySelector(`[data-edge-id="${activeEdge.id}"]`);
+    const edgeLabel = edgeGroup?.querySelector(".architecture-edge-label");
+
+    expect(edgeGroup).toHaveAttribute("data-active", "true");
+    expect(edgeLabel).toHaveTextContent(activeEdge.label);
+    expect(edgeLabel).toHaveAttribute("fill", "var(--accent)");
+    expect(edgeLabel).toHaveAttribute("stroke", "var(--surface-deeper)");
+    expect(edgeLabel).toHaveAttribute("paint-order", "stroke");
+  });
 });

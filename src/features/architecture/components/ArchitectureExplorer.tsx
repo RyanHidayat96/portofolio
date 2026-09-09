@@ -410,9 +410,15 @@ function TopologyEdge({
       />
       {isActive ? (
         <text
+          className="architecture-edge-label"
           x={formatTopologyCoordinate(labelX)}
           y={formatTopologyCoordinate(labelY)}
           textAnchor="middle"
+          dominantBaseline="central"
+          fill="var(--accent)"
+          stroke="var(--surface-deeper)"
+          strokeWidth={0.9}
+          paintOrder="stroke"
         >
           {edge.label}
         </text>

@@ -322,11 +322,13 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         });
         if (shouldRevealActiveScreenAfterProjection) {
           runtime.activationRevealFrame = requestAnimationFrame(() => {
-            runtime.activationRevealFrame = undefined;
-            if (runtime.activeScreen !== screen || !screen.isInteractive) return;
+            runtime.activationRevealFrame = requestAnimationFrame(() => {
+              runtime.activationRevealFrame = undefined;
+              if (runtime.activeScreen !== screen || !screen.isInteractive) return;
 
-            screen.object.element.style.visibility = '';
-            render();
+              screen.object.element.style.visibility = '';
+              render();
+            });
           });
         }
 
