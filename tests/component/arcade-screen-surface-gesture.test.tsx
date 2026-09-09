@@ -36,7 +36,8 @@ const harness = vi.hoisted(() => ({
         );
       };
     }),
-    render: vi.fn()
+    render: vi.fn(),
+    canCapturePreview: vi.fn(() => true)
   },
   setActiveSection: vi.fn()
 }));
@@ -154,6 +155,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     Object.values(harness.screenLayer).forEach((entry) => {
       if (typeof entry === 'function' && 'mockClear' in entry) entry.mockClear();
     });
+    vi.mocked(captureEmbeddedScreenSnapshot).mockReset();
 
     host = document.createElement('div');
     const canvas = document.createElement('canvas');
@@ -333,6 +335,43 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(returnCapture).toBeDefined();
     await act(async () => { await returnCapture?.capture(); });
 
-    expect(captureEmbeddedScreenSnapshot).toHaveBeenCalledWith(harness.runtime!.content);
+    expect(captureEmbeddedScreenSnapshot).toHaveBeenCalledWith(
+      harness.runtime!.content,
+      expect.objectContaining({ shouldContinue: expect.any(Function) })
+    );
+  });
+
+  it('does not start heavy snapshot work when a queued capture fires after room input or focus starts', async () => {
+    const { rerender } = render(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+    expect(harness.runtime).toBeDefined();
+    harness.runtime!.content.appendChild(document.createElement('section'));
+
+    harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
+    rerender(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+    const returnCapture = harness.scheduledPreviewCaptures.find((job) => job.delayMs === 0);
+    expect(returnCapture).toBeDefined();
+
+    harness.screenLayer.canCapturePreview.mockReturnValue(false);
+    await act(async () => { await returnCapture?.capture(); });
+
+    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
+    expect(harness.screenLayer.setPreviewCapturePending).toHaveBeenLastCalledWith(
+      harness.runtime,
+      false
+    );
   });
 });

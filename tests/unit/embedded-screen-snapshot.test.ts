@@ -117,4 +117,11 @@ describe('embedded screen snapshot', () => {
     expect(scroll.scrollTop).toBe(300);
     expect((scroll.firstElementChild as HTMLElement).style.transform).toBe('scale(1)');
   });
+
+  it('cancels before DOM serialization when the room starts moving or focusing', async () => {
+    const source = createSource();
+    await expect(captureEmbeddedScreenSnapshot(source, { shouldContinue: () => false }))
+      .rejects.toThrow('cancelled');
+    expect(toSvg).not.toHaveBeenCalled();
+  });
 });

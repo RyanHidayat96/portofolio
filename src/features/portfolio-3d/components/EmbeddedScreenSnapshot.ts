@@ -5,8 +5,16 @@ const maximumSnapshotDimension = 1800;
 const snapshotBackgroundColor = '#0f1b29';
 const snapshotScrollAttribute = 'data-embedded-snapshot-scroll';
 
-export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promise<HTMLCanvasElement> {
+interface EmbeddedScreenSnapshotOptions {
+  readonly shouldContinue?: () => boolean;
+}
+
+export async function captureEmbeddedScreenSnapshot(
+  source: HTMLElement,
+  options: EmbeddedScreenSnapshotOptions = {}
+): Promise<HTMLCanvasElement> {
   await waitForEmbeddedScreenPaint();
+  assertSnapshotCanContinue(options);
   const sourceWidth = Math.round(source.clientWidth);
   const sourceHeight = Math.round(source.clientHeight);
   if (sourceWidth < 1 || sourceHeight < 1) {
@@ -17,10 +25,12 @@ export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promis
     maximumSnapshotDimension / Math.max(sourceWidth, sourceHeight)
   );
   const { toSvg } = await import('html-to-image');
+  assertSnapshotCanContinue(options);
   const restoreScrollMarkers = markScrolledContent(source);
   let svg: string;
 
   try {
+    assertSnapshotCanContinue(options);
     svg = await toSvg(source, {
       width: sourceWidth,
       height: sourceHeight,
@@ -31,6 +41,7 @@ export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promis
   } finally {
     restoreScrollMarkers();
   }
+  assertSnapshotCanContinue(options);
 
   // Apply scroll offsets only to the serialized clone. Changing transforms on
   // the live page would visibly scroll it a second time during camera return.
@@ -54,6 +65,7 @@ export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promis
   const image = new Image();
   image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(snapshot))}`;
   await image.decode();
+  assertSnapshotCanContinue(options);
 
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(sourceWidth * snapshotScale));
@@ -66,6 +78,12 @@ export async function captureEmbeddedScreenSnapshot(source: HTMLElement): Promis
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   return canvas;
+}
+
+function assertSnapshotCanContinue(options: EmbeddedScreenSnapshotOptions): void {
+  if (options.shouldContinue && !options.shouldContinue()) {
+    throw new Error('Embedded screen snapshot capture was cancelled.');
+  }
 }
 
 function markScrolledContent(source: HTMLElement): () => void {

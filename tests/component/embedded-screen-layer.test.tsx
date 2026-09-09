@@ -170,4 +170,21 @@ describe('embedded screen render scheduling', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(360); });
     expect(capture).toHaveBeenCalledOnce();
   });
+
+  it('waits for room input to settle before running preview captures', async () => {
+    render(<Subject />);
+    const capture = vi.fn(async () => {});
+    act(() => layer.schedulePreviewCapture(capture, 0));
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(100); });
+    const pointerMove = new Event('pointermove', { bubbles: true });
+    Object.defineProperty(pointerMove, 'buttons', { value: 1 });
+    act(() => harness.root.gl.domElement.parentElement!.dispatchEvent(pointerMove));
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(160); });
+    expect(capture).not.toHaveBeenCalled();
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(160); });
+    expect(capture).toHaveBeenCalledOnce();
+  });
 });

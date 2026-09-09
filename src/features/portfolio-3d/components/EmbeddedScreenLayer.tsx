@@ -16,9 +16,11 @@ import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRe
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
 import { createPreviewCaptureQueue } from '../preview-capture-queue';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
+import type { Portfolio3dNavigationState } from '../types';
 
 // CSS3D pages use pixel coordinates while the GLB continues to use meters.
 const cssWorldScale = 1000;
+const previewCaptureIdleMs = 180;
 const screenLayerZIndex = '0';
 const screenOverlayLayerZIndex = '2';
 
@@ -56,6 +58,7 @@ interface EmbeddedScreenLayerRuntime {
   readonly lastCameraMatrix: THREE.Matrix4;
   readonly lastProjectionMatrix: THREE.Matrix4;
   lastCameraChangeAt: number;
+  lastUserInteractionAt: number;
   readonly previewQueue: ReturnType<typeof createPreviewCaptureQueue>;
   activeScreen?: EmbeddedScreenRegistration;
   activationRevealFrame?: number;
@@ -85,6 +88,7 @@ interface EmbeddedScreenLayerController {
   ) => void;
   forceRepaint: () => void;
   schedulePreviewCapture: (capture: () => Promise<void>, delayMs: number) => () => void;
+  canCapturePreview: () => boolean;
   render: () => void;
 }
 
@@ -117,6 +121,19 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
     canvas.style.position = 'relative';
     canvas.style.zIndex = '1';
     parent.insertBefore(renderer.domElement, canvas);
+    const markRoomInputActivity = (event: Event): void => {
+      if (
+        typeof PointerEvent !== 'undefined' &&
+        event instanceof PointerEvent &&
+        event.type === 'pointermove' &&
+        event.buttons === 0
+      ) {
+        return;
+      }
+
+      const activeRuntime = runtimeRef.current;
+      if (activeRuntime) activeRuntime.lastUserInteractionAt = performance.now();
+    };
 
     const nextRuntime: EmbeddedScreenLayerRuntime = {
       renderer,
@@ -131,18 +148,21 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       lastCameraMatrix: new THREE.Matrix4(),
       lastProjectionMatrix: new THREE.Matrix4(),
       lastCameraChangeAt: performance.now(),
-      previewQueue: createPreviewCaptureQueue(() => {
-        const activeRuntime = runtimeRef.current;
-        return activeRuntime !== null && !document.hidden &&
-          navigationStateRef.current === 'overview' &&
-          performance.now() - activeRuntime.lastCameraChangeAt >= 180;
-      }),
+      lastUserInteractionAt: performance.now(),
+      previewQueue: createPreviewCaptureQueue(() =>
+        canCaptureEmbeddedScreenPreview(runtimeRef.current, navigationStateRef.current)
+      ),
       width: 0,
       height: 0
     };
     runtimeRef.current = nextRuntime;
     setRuntime(nextRuntime);
     invalidate();
+    parent.addEventListener('pointerdown', markRoomInputActivity, true);
+    parent.addEventListener('pointermove', markRoomInputActivity, true);
+    parent.addEventListener('touchstart', markRoomInputActivity, { capture: true, passive: true });
+    parent.addEventListener('touchmove', markRoomInputActivity, { capture: true, passive: true });
+    parent.addEventListener('wheel', markRoomInputActivity, { capture: true, passive: true });
 
     return () => {
       if (repaintFrameRef.current !== null) {
@@ -153,6 +173,11 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         cancelAnimationFrame(nextRuntime.activationRevealFrame);
         nextRuntime.activationRevealFrame = undefined;
       }
+      parent.removeEventListener('pointerdown', markRoomInputActivity, true);
+      parent.removeEventListener('pointermove', markRoomInputActivity, true);
+      parent.removeEventListener('touchstart', markRoomInputActivity, true);
+      parent.removeEventListener('touchmove', markRoomInputActivity, true);
+      parent.removeEventListener('wheel', markRoomInputActivity, true);
       runtimeRef.current = null;
       nextRuntime.previewQueue.dispose();
       renderer.domElement.remove();
@@ -349,6 +374,8 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       },
       forceRepaint: triggerForceRepaint,
       schedulePreviewCapture: runtime.previewQueue.enqueue,
+      canCapturePreview: () =>
+        canCaptureEmbeddedScreenPreview(runtimeRef.current, navigationStateRef.current),
       render
     };
   }, [camera, invalidate, runtime]);
@@ -422,6 +449,19 @@ function restoreScreenToLayer(
   screen.object.element.style.pointerEvents = 'none';
   screen.object.element.style.visibility = '';
   syncScreenPreviewVisibility(screen);
+}
+
+function canCaptureEmbeddedScreenPreview(
+  runtime: EmbeddedScreenLayerRuntime | null,
+  navigationState: Portfolio3dNavigationState
+): boolean {
+  if (!runtime || document.hidden || navigationState !== 'overview') return false;
+
+  const now = performance.now();
+  return (
+    now - runtime.lastCameraChangeAt >= previewCaptureIdleMs &&
+    now - runtime.lastUserInteractionAt >= previewCaptureIdleMs
+  );
 }
 
 function syncScreenPreviewVisibility(screen: EmbeddedScreenRegistration): void {

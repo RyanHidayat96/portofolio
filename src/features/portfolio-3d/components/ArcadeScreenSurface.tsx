@@ -656,14 +656,32 @@ export function ArcadeScreenSurface({
     }
 
     const requestId = ++previewCaptureRequestRef.current;
+    const clearPendingCapture = (): void => {
+      if (previewCaptureRequestRef.current === requestId && runtimeRef.current === runtime) {
+        setIsPreviewCapturePending(false);
+        screenLayer.setPreviewCapturePending(runtime, false);
+      }
+    };
+    const shouldContinueCapture = (): boolean =>
+      previewCaptureRequestRef.current === requestId &&
+      runtimeRef.current === runtime &&
+      !runtime.isInteractive &&
+      screenLayer.canCapturePreview();
+    if (!shouldContinueCapture()) {
+      clearPendingCapture();
+      return false;
+    }
+
     // Keep the current CSS3D viewport visible through the depth-tested opening
     // until its replacement texture has committed. Never reveal the old preview.
     setIsPreviewCapturePending(true);
     screenLayer.setPreviewCapturePending(runtime, true);
 
     try {
-      const canvas = await captureEmbeddedScreenSnapshot(runtime.content);
-      if (previewCaptureRequestRef.current !== requestId || runtimeRef.current !== runtime) {
+      const canvas = await captureEmbeddedScreenSnapshot(runtime.content, {
+        shouldContinue: shouldContinueCapture
+      });
+      if (!shouldContinueCapture()) {
         return false;
       }
 
@@ -675,10 +693,7 @@ export function ArcadeScreenSurface({
 
       return true;
     } catch {
-      if (previewCaptureRequestRef.current === requestId && runtimeRef.current === runtime) {
-        setIsPreviewCapturePending(false);
-        screenLayer.setPreviewCapturePending(runtime, false);
-      }
+      clearPendingCapture();
 
       return false;
     }
@@ -722,14 +737,24 @@ export function ArcadeScreenSurface({
 
     cancelReturnPreviewCapture();
 
-    // Keep the latest live page visible, but move DOM-to-image work off the
-    // camera animation path so returning to the room remains smooth.
+    // Keep the latest live page visible, but move DOM-to-image work away from
+    // camera animation and active room input so transitions remain smooth.
     setIsPreviewCapturePending(true);
     screenLayer.setPreviewCapturePending(runtime, true);
-    cancelReturnPreviewCaptureRef.current = screenLayer.schedulePreviewCapture(async () => {
-      cancelReturnPreviewCaptureRef.current = null;
-      await capturePreview();
-    }, returnPreviewCaptureDelayMs);
+    let attempts = 0;
+    const scheduleCapture = (delayMs: number): void => {
+      cancelReturnPreviewCaptureRef.current = screenLayer.schedulePreviewCapture(async () => {
+        cancelReturnPreviewCaptureRef.current = null;
+        const didCapture = await capturePreview();
+        if (didCapture || runtimeRef.current !== runtime || runtime.isInteractive) return;
+        if (attempts >= 3) return;
+
+        attempts += 1;
+        scheduleCapture(previewCaptureRetryDelayMs);
+      }, delayMs);
+    };
+
+    scheduleCapture(returnPreviewCaptureDelayMs);
   }, [cancelReturnPreviewCapture, capturePreview, screenLayer]);
 
   useLayoutEffect(() => {
