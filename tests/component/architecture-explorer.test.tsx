@@ -110,6 +110,9 @@ describe("ArchitectureExplorer", () => {
     expect(edgeGroup).toHaveAttribute("data-active", "true");
     expect(edgeLabel).toHaveTextContent(activeEdge.label);
     expect(edgeLabel).toHaveAttribute("fill", "var(--accent)");
+    expect(edgeLabel).toHaveAttribute("font-size", "2.2");
+    expect(edgeLabel).toHaveAttribute("font-weight", "800");
+    expect(edgeLabel).toHaveAttribute("letter-spacing", "0.06em");
     expect(edgeLabel).toHaveAttribute("stroke", "var(--surface-deeper)");
     expect(edgeLabel).toHaveAttribute("paint-order", "stroke");
   });

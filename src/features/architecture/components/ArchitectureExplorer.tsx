@@ -415,6 +415,12 @@ function TopologyEdge({
           y={formatTopologyCoordinate(labelY)}
           textAnchor="middle"
           dominantBaseline="central"
+          fontFamily={
+            "SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace"
+          }
+          fontSize={2.2}
+          fontWeight={800}
+          letterSpacing="0.06em"
           fill="var(--accent)"
           stroke="var(--surface-deeper)"
           strokeWidth={0.9}
