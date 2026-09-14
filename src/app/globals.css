@@ -8786,6 +8786,71 @@ textarea:focus-visible,
   }
 }
 
+/* Embedded monitor pages should keep the desktop composition on every device.
+   Tailwind breakpoints are viewport-based, while the CSS3D monitor keeps a fixed
+   desktop-sized document. These scoped overrides prevent mobile browsers from
+   switching the content inside the 3D frame to a different mobile layout. */
+.arcade-screen-document .sm\:p-7 {
+  padding: 1.75rem;
+}
+
+.arcade-screen-document .sm\:flex-row,
+.arcade-screen-document .lg\:flex-row {
+  flex-direction: row;
+}
+
+.arcade-screen-document .sm\:items-start,
+.arcade-screen-document .lg\:items-start {
+  align-items: flex-start;
+}
+
+.arcade-screen-document .sm\:justify-between,
+.arcade-screen-document .lg\:justify-between {
+  justify-content: space-between;
+}
+
+.arcade-screen-document .sm\:grid-cols-2,
+.arcade-screen-document .lg\:grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.arcade-screen-document .sm\:grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.arcade-screen-document .xl\:grid-cols-4,
+.performance-lab-screen .mt-7.grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.api-playground-screen {
+  grid-template-columns: minmax(185px, 0.7fr) minmax(0, 1.3fr);
+}
+
+.api-playground-screen > :nth-child(2) > :nth-child(2) {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+}
+
+.api-playground-screen .api-playground-index {
+  display: block;
+}
+
+.automation-lab-screen .automation-screen-results > div:last-child {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.performance-lab-screen > .grid > div:last-child {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+}
+
+.pipeline-simulator-screen .pipeline-reports {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.pipeline-simulator-screen .pipeline-signal-rail {
+  display: grid;
+}
+
 /* 3D portfolio cinematic shell */
 .portfolio-3d-shell {
   background:
