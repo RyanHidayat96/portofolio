@@ -20,7 +20,7 @@ function createSource(): HTMLDivElement {
   source.innerHTML = `
     <div
       class="scroll"
-      style="overflow: auto; --embedded-screen-scrollbar-thumb: #66ddff; --embedded-screen-scrollbar-track: #081014; --embedded-screen-scrollbar-size: 8px; --embedded-screen-scrollbar-thumb-inset: 1px"
+      style="overflow: auto; --embedded-screen-scrollbar-thumb: #66ddff; --embedded-screen-scrollbar-track: #081014; --embedded-screen-scrollbar-size: 5px; --embedded-screen-scrollbar-thumb-inset: 1px"
     >
       <section style="transform: scale(1)">Last page state</section>
     </div>`;
@@ -109,15 +109,15 @@ describe('embedded screen snapshot', () => {
       '.embedded-screen-snapshot-scrollbar-thumb--horizontal'
     );
     expect(verticalScrollbar?.getAttribute('style')).toContain('right:0px');
-    expect(verticalScrollbar?.getAttribute('style')).toContain('width:8px');
-    expect(verticalScrollbar?.getAttribute('style')).toContain('height:392px');
+    expect(verticalScrollbar?.getAttribute('style')).toContain('width:5px');
+    expect(verticalScrollbar?.getAttribute('style')).toContain('height:395px');
     expect(verticalScrollbar?.getAttribute('style')).toContain('background:#081014');
-    expect(verticalThumb?.getAttribute('style')).toContain('top:235px');
-    expect(verticalThumb?.getAttribute('style')).toContain('width:6px');
+    expect(verticalThumb?.getAttribute('style')).toContain('top:237px');
+    expect(verticalThumb?.getAttribute('style')).toContain('width:3px');
     expect(verticalThumb?.getAttribute('style')).toContain('background:#66ddff');
     expect(horizontalScrollbar?.getAttribute('style')).toContain('bottom:0px');
-    expect(horizontalScrollbar?.getAttribute('style')).toContain('height:8px');
-    expect(horizontalScrollbar?.getAttribute('style')).toContain('width:492px');
+    expect(horizontalScrollbar?.getAttribute('style')).toContain('height:5px');
+    expect(horizontalScrollbar?.getAttribute('style')).toContain('width:495px');
     expect(horizontalThumb?.getAttribute('style')).toContain('left:13px');
     expect(source.querySelector(`[${scrollAttribute}]`)).toBeNull();
     expect([scroll.style.cssText, content.style.cssText]).toEqual(stylesBefore);
