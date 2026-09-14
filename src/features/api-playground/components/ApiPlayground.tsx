@@ -74,7 +74,13 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
   const lifecycleSteps = getApiLifecycleSteps({ endpoint, response, error, isLoading });
 
   return (
-    <div className={isScreenMode ? "api-playground-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
+    <div
+      className={
+        isScreenMode
+          ? "api-playground-layout api-playground-screen"
+          : "api-playground-layout api-playground-layout--workspace grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]"
+      }
+    >
       <Panel className="api-playground-index p-4">
         <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
@@ -98,13 +104,13 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
         </div>
       </Panel>
 
-      <div className="grid gap-5">
-        <Panel className="p-5 sm:p-7">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="api-playground-main grid gap-5">
+        <Panel className="api-request-panel p-5 sm:p-7">
+          <div className="api-request-header flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="mono text-sm text-[#55d7ff]">REQUEST</p>
               <h2 className="mt-2 text-2xl font-semibold">{endpoint.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-[#8a96a8]">{endpoint.description}</p>
+              <p className="api-request-description mt-3 text-sm leading-6 text-[#8a96a8]">{endpoint.description}</p>
             </div>
             <Button
               variant="primary"
@@ -118,7 +124,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
             </Button>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="api-request-facts mt-6 grid gap-3 sm:grid-cols-3">
             <RequestFact label="Method" value={endpoint.method} tone="info" />
             <RequestFact label="Endpoint" value={endpoint.path} />
             <RequestFact label="Accept" value="application/json" />
@@ -127,8 +133,8 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
           <ApiLifecycleRail steps={lifecycleSteps} />
         </Panel>
 
-        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <Panel className="p-5">
+        <div className="api-result-grid grid gap-5">
+          <Panel className="api-contract-panel p-5">
             <div className="flex items-start gap-3">
               <FileJson aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
               <div>
@@ -155,7 +161,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
             </div>
           </Panel>
 
-          <Panel className="p-5">
+          <Panel className="api-response-panel p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="mono text-sm text-[#55d7ff]">RESPONSE</p>
@@ -166,7 +172,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
               </Badge>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="api-response-facts mt-4 grid gap-2 sm:grid-cols-3">
               <ResponseFact
                 label="Status"
                 value={
@@ -191,7 +197,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
 
             <pre
               aria-label="API response body"
-              className="api-response-body mono mt-5 min-h-[360px] overflow-auto text-sm leading-6 text-[#c8d4e6]"
+              className="api-response-body mono mt-4 min-h-[520px] overflow-auto text-sm leading-6 text-[#c8d4e6]"
             >
               {error ??
                 (response ? JSON.stringify(response.body, null, 2) : "// Response appears here")}

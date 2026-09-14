@@ -25,6 +25,22 @@ describe("ApiPlayground", () => {
     expect(screen.getByText(firstEndpoint.responseShape[0] ?? "")).toBeInTheDocument();
   });
 
+  it("marks the response panel as the dominant result surface in screen mode", () => {
+    const { rerender } = render(<ApiPlayground />);
+
+    expect(screen.getByLabelText("API response body").closest(".api-response-panel")).not.toBeNull();
+    expect(screen.getByLabelText("API response body").closest(".api-result-grid")).not.toBeNull();
+    expect(screen.getByText("Method").closest(".api-request-facts")).not.toBeNull();
+    expect(screen.getByText("REQUEST").closest(".api-request-header")).not.toBeNull();
+    expect(document.querySelector(".api-contract-panel")).not.toBeNull();
+
+    rerender(<ApiPlayground variant="screen" />);
+
+    expect(screen.getByLabelText("API response body").closest(".api-response-panel")).not.toBeNull();
+    expect(screen.getByLabelText("API response body").closest(".api-result-grid")).not.toBeNull();
+    expect(document.querySelector(".api-contract-panel")).not.toBeNull();
+  });
+
   it("sends request and displays measured response metadata", async () => {
     const user = userEvent.setup();
     const firstEndpoint = apiEndpoints[0];
@@ -92,7 +108,7 @@ describe("ApiPlayground", () => {
 
     await waitFor(() => expect(screen.getByText("request failed")).toBeInTheDocument());
     expect(screen.getByText("Network unavailable")).toBeInTheDocument();
-    expect(screen.getByText("failed")).toBeInTheDocument();
+    expect(screen.getAllByText("failed").length).toBeGreaterThan(0);
     expect(screen.queryByText("200 OK")).not.toBeInTheDocument();
   });
 });

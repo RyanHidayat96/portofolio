@@ -5925,6 +5925,128 @@ textarea:focus-visible,
   color: var(--text-subtle);
 }
 
+.api-playground-layout,
+.api-playground-main,
+.api-result-grid,
+.api-request-header,
+.api-request-facts,
+.api-request-panel,
+.api-contract-panel,
+.api-response-panel,
+.api-response-facts {
+  min-width: 0;
+}
+
+.api-result-grid {
+  align-items: start;
+}
+
+.api-request-panel {
+  align-content: start;
+}
+
+.api-request-description {
+  max-width: 64ch;
+}
+
+.api-playground-layout--workspace .api-playground-main {
+  gap: 0.9rem;
+}
+
+.api-playground-layout--workspace .api-request-panel {
+  padding: 1rem 1.1rem;
+}
+
+.api-playground-layout--workspace .api-request-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.api-playground-layout--workspace .api-request-header h2 {
+  margin-top: 0.25rem;
+  font-size: 1.3rem;
+}
+
+.api-playground-layout--workspace .api-request-description {
+  margin-top: 0.4rem;
+  line-height: 1.45;
+}
+
+.api-playground-layout--workspace .api-request-facts {
+  grid-template-columns: minmax(90px, 0.26fr) minmax(180px, 0.4fr) minmax(170px, 0.34fr);
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.api-playground-layout--workspace .api-request-panel .api-fact-card {
+  padding: 0.75rem 0.85rem;
+}
+
+.api-playground-layout--workspace .api-request-panel .api-lifecycle-rail {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.api-playground-layout--workspace .api-request-panel .api-lifecycle-rail li {
+  padding: 0.62rem 0.7rem;
+}
+
+.api-response-panel {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
+.api-response-facts {
+  flex: 0 0 auto;
+}
+
+.api-response-facts .api-fact-card {
+  padding: 0.75rem 0.85rem;
+}
+
+.api-response-panel .api-fact-card {
+  min-width: 0;
+}
+
+.api-response-panel .api-fact-card p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.api-response-panel .api-fact-card p:last-child {
+  line-height: 1.35;
+}
+
+.api-playground-layout--workspace .api-contract-panel {
+  order: 2;
+  align-self: start;
+}
+
+.api-playground-layout--workspace .api-response-panel {
+  order: 1;
+  min-height: min(96vh, 1040px);
+}
+
+.api-playground-layout--workspace .api-response-body {
+  min-height: clamp(680px, 76vh, 920px);
+}
+
+.api-playground-layout--workspace .api-result-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.api-playground-layout--workspace .api-contract-list {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.api-playground-layout--workspace .api-contract-panel > .mt-5.flex {
+  margin-top: 1rem;
+}
+
 .api-endpoint-button,
 .challenge-scenario-button,
 .challenge-choice-button {
@@ -5978,6 +6100,7 @@ textarea:focus-visible,
 
 .api-response-body {
   background: var(--surface-deeper);
+  flex: 1 1 auto;
 }
 
 .api-lifecycle-rail,
@@ -8286,7 +8409,7 @@ textarea:focus-visible,
 
 .api-playground-screen {
   display: grid;
-  grid-template-columns: minmax(185px, 0.7fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(140px, 0.34fr) minmax(0, 1.66fr);
   gap: 12px;
   min-width: 0;
   padding: 14px;
@@ -8297,21 +8420,23 @@ textarea:focus-visible,
   min-width: 0;
 }
 
-.api-playground-screen > :nth-child(2) {
+.api-playground-screen .api-playground-main {
   display: grid;
   gap: 12px;
   min-width: 0;
 }
 
-.api-playground-screen > :nth-child(2) > :nth-child(2) {
+.api-playground-screen .api-result-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   min-width: 0;
+  align-items: start;
 }
 
 .api-playground-screen .panel-surface {
   min-width: 0;
+  overflow: hidden;
   border-color: #293442;
   background: #10141d;
 }
@@ -8342,15 +8467,26 @@ textarea:focus-visible,
   padding: 10px;
 }
 
+.api-playground-screen .api-request-panel {
+  padding: 10px 12px;
+}
+
+.api-playground-screen .api-request-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
 .api-playground-screen .api-endpoint-button span {
   font-size: 11px;
   line-height: 1.35;
 }
 
 .api-playground-screen .api-lifecycle-rail {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .api-playground-screen .api-lifecycle-rail li {
@@ -8358,17 +8494,91 @@ textarea:focus-visible,
   padding: 9px;
 }
 
+.api-playground-screen .api-lifecycle-rail svg {
+  width: 12px;
+  height: 12px;
+}
+
 .api-playground-screen .api-lifecycle-rail strong,
 .api-playground-screen .api-lifecycle-rail span {
   font-size: 10px;
 }
 
-.api-playground-screen .api-response-body {
-  min-height: 180px;
-  max-height: 260px;
-  margin-top: 12px;
+.api-playground-screen .api-lifecycle-rail li {
+  padding: 6px 7px;
+}
+
+.api-playground-screen .api-contract-panel {
+  order: 2;
+  align-self: start;
+}
+
+.api-playground-screen .api-response-panel {
+  order: 1;
+  min-height: 560px;
+  align-self: stretch;
+}
+
+.api-playground-screen .api-request-header h2 {
+  margin-top: 3px;
+  font-size: 16px;
+}
+
+.api-playground-screen .api-request-description {
+  display: -webkit-box;
+  margin-top: 4px;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.api-playground-screen .api-request-facts {
+  grid-template-columns: minmax(58px, 0.23fr) minmax(104px, 0.41fr) minmax(92px, 0.36fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.api-playground-screen .api-request-panel .api-fact-card {
+  padding: 7px 8px;
+}
+
+.api-playground-screen .api-request-panel .api-fact-card p {
+  font-size: 10px;
+}
+
+.api-playground-screen .api-request-panel .api-fact-card p:last-child {
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.api-playground-screen .api-response-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.api-playground-screen .api-response-panel .api-fact-card {
+  padding: 8px;
+}
+
+.api-playground-screen .api-response-panel .api-fact-card p {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.api-playground-screen .api-response-panel .api-fact-card p:last-child {
+  margin-top: 6px;
   font-size: 11px;
-  line-height: 1.45;
+}
+
+.api-playground-screen .api-response-body {
+  min-height: 520px;
+  max-height: none;
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 @container (max-width: 760px) {
@@ -8824,11 +9034,12 @@ textarea:focus-visible,
 }
 
 .api-playground-screen {
-  grid-template-columns: minmax(185px, 0.7fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(140px, 0.34fr) minmax(0, 1.66fr);
 }
 
-.api-playground-screen > :nth-child(2) > :nth-child(2) {
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+.api-playground-screen .api-result-grid {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
 }
 
 .api-playground-screen .api-playground-index {
