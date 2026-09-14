@@ -158,6 +158,28 @@ describe('embedded screen render scheduling', () => {
     expect(screen.object.visible).toBe(true);
   });
 
+  it.each(embeddedScreenIds)(
+    'projects flattened interactive %s screens with both screen axes',
+    (screenId) => {
+      screen = { ...screen, screenId };
+      render(<Subject />);
+      screen.screen = {
+        ...screen.screen,
+        quaternion: new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(0, 0, 1),
+          Math.PI / 12
+        )
+      };
+
+      act(() => layer.setInteractive(screen, true));
+
+      const matrixValues = screen.object.element.style.transform.match(/-?\d+(?:\.\d+)?(?:e-?\d+)?/gi)?.map(Number);
+      expect(screen.object.element.style.transform).toMatch(/^matrix\(/);
+      expect(Math.abs(matrixValues?.[1] ?? 0)).toBeGreaterThan(0.001);
+      expect(Math.abs(matrixValues?.[2] ?? 0)).toBeGreaterThan(0.001);
+    }
+  );
+
   it('waits for overview and camera rest, including after StrictMode remount', async () => {
     const view = render(<StrictMode><Subject /></StrictMode>);
     const capture = vi.fn(async () => {});

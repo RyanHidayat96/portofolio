@@ -55,6 +55,7 @@ interface EmbeddedScreenLayerRuntime {
   readonly screenRight: THREE.Vector3;
   readonly topLeft: THREE.Vector3;
   readonly topRight: THREE.Vector3;
+  readonly bottomLeft: THREE.Vector3;
   readonly lastCameraMatrix: THREE.Matrix4;
   readonly lastProjectionMatrix: THREE.Matrix4;
   lastCameraChangeAt: number;
@@ -145,6 +146,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       screenRight: new THREE.Vector3(),
       topLeft: new THREE.Vector3(),
       topRight: new THREE.Vector3(),
+      bottomLeft: new THREE.Vector3(),
       lastCameraMatrix: new THREE.Matrix4(),
       lastProjectionMatrix: new THREE.Matrix4(),
       lastCameraChangeAt: performance.now(),
@@ -519,7 +521,7 @@ function renderInteractiveScreen(
   screen: EmbeddedScreenRegistration,
   camera: THREE.Camera
 ): void {
-  const { screenUp, screenRight, topLeft, topRight } = runtime;
+  const { screenUp, screenRight, topLeft, topRight, bottomLeft } = runtime;
   const placement = screen.screen;
   screenUp.set(0, 1, 0).applyQuaternion(placement.quaternion);
   screenRight.set(1, 0, 0).applyQuaternion(placement.quaternion);
@@ -534,11 +536,23 @@ function renderInteractiveScreen(
     .addScaledVector(screenRight, placement.width / 2)
     .addScaledVector(screenUp, placement.height / 2)
     .project(camera);
+  bottomLeft
+    .copy(placement.position)
+    .addScaledVector(screenRight, -placement.width / 2)
+    .addScaledVector(screenUp, -placement.height / 2)
+    .project(camera);
 
   const x = (topLeft.x + 1) * runtime.width / 2;
   const y = (1 - topLeft.y) * runtime.height / 2;
-  const scale = (topRight.x - topLeft.x) * runtime.width / (2 * screen.pixelWidth);
-  const transform = `translate(${x}px, ${y}px) scale(${scale})`;
+  const rightX = (topRight.x + 1) * runtime.width / 2;
+  const rightY = (1 - topRight.y) * runtime.height / 2;
+  const bottomX = (bottomLeft.x + 1) * runtime.width / 2;
+  const bottomY = (1 - bottomLeft.y) * runtime.height / 2;
+  const xAxisX = (rightX - x) / screen.pixelWidth;
+  const xAxisY = (rightY - y) / screen.pixelWidth;
+  const yAxisX = (bottomX - x) / screen.pixelHeight;
+  const yAxisY = (bottomY - y) / screen.pixelHeight;
+  const transform = `matrix(${xAxisX}, ${xAxisY}, ${yAxisX}, ${yAxisY}, ${x}, ${y})`;
   if (screen.object.element.style.transform !== transform) {
     screen.object.element.style.transform = transform;
   }

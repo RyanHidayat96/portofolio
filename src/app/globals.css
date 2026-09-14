@@ -8851,6 +8851,27 @@ textarea:focus-visible,
   display: grid;
 }
 
+.arcade-screen-document .sm\:p-6 {
+  padding: 1.5rem;
+}
+
+.arcade-screen-document .md\:grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.arcade-screen-document .architecture-stage-panel,
+.arcade-screen-document .architecture-details-panel {
+  padding: 1.4rem;
+}
+
+.arcade-screen-document .architecture-heading {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.arcade-screen-document .architecture-presets {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 /* 3D portfolio cinematic shell */
 .portfolio-3d-shell {
   background:
@@ -9716,6 +9737,7 @@ textarea:focus-visible,
   --embedded-screen-scrollbar-thumb-glow: rgba(102, 221, 255, 0.88);
   --embedded-screen-scrollbar-size: 5px;
   --embedded-screen-scrollbar-thumb-inset: 1px;
+  --embedded-screen-mobile-scrollbar-gutter: 10px;
   --embedded-screen-scrollbar-min-thumb: 28px;
   --background: #0a1520;
   --background-soft: #101c2a;
@@ -9976,6 +9998,27 @@ textarea:focus-visible,
   border-radius: 999px;
   background: var(--embedded-screen-scrollbar-thumb);
   box-shadow: 0 0 9px var(--embedded-screen-scrollbar-thumb-glow);
+}
+
+@media (max-width: 767px) {
+  .arcade-screen-document :is(
+    .arcade-pipeline-scroll,
+    .monitor-automation-scroll,
+    .monitor-performance-scroll,
+    .monitor-api-scroll,
+    .monitor-terminal-scroll,
+    .architecture-embedded-content
+  ) {
+    padding-inline-end: var(--embedded-screen-mobile-scrollbar-gutter);
+  }
+
+  .arcade-screen-document .profile-artwork-content {
+    padding-inline-end: calc(34px + var(--embedded-screen-mobile-scrollbar-gutter));
+  }
+
+  .arcade-screen-document .experience-artwork-content {
+    padding-inline-end: calc(24px + var(--embedded-screen-mobile-scrollbar-gutter));
+  }
 }
 
 .portfolio-3d-shell #portfolio-3d-scene-title {
