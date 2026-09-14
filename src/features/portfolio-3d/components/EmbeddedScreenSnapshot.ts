@@ -70,7 +70,6 @@ export async function captureEmbeddedScreenSnapshot(
       style.transform = `translate(${-metrics.left}px, ${-metrics.top}px) ${transform}`.trim();
       style.transformOrigin = 'top left';
     }
-    appendSnapshotScrollIndicators(element, metrics);
   }
 
   const image = new Image();
@@ -152,126 +151,8 @@ function parseScrollSnapshotMetrics(value: string): ScrollSnapshotMetrics {
   };
 }
 
-function appendSnapshotScrollIndicators(element: HTMLElement, metrics: ScrollSnapshotMetrics): void {
-  appendVerticalScrollIndicator(element, metrics);
-  appendHorizontalScrollIndicator(element, metrics);
-}
-
-function appendVerticalScrollIndicator(element: HTMLElement, metrics: ScrollSnapshotMetrics): void {
-  if (metrics.scrollHeight <= metrics.clientHeight + 1 || metrics.clientHeight < 16) return;
-  const inset = 7;
-  const thickness = 8;
-  const trackLength = Math.max(1, metrics.clientHeight - inset * 2);
-  const thumbLength = clamp(
-    Math.round((metrics.clientHeight / metrics.scrollHeight) * trackLength),
-    Math.min(28, trackLength),
-    trackLength
-  );
-  const maxScroll = Math.max(1, metrics.scrollHeight - metrics.clientHeight);
-  const maxTravel = Math.max(0, trackLength - thumbLength);
-  const thumbOffset = Math.round((clamp(metrics.top, 0, maxScroll) / maxScroll) * maxTravel);
-  const track = createSnapshotElement(
-    element,
-    'embedded-screen-snapshot-scrollbar embedded-screen-snapshot-scrollbar--vertical',
-    [
-      'position:absolute',
-      `top:${inset}px`,
-      'right:4px',
-      `width:${thickness}px`,
-      `height:${trackLength}px`,
-      'border-radius:999px',
-      'background:rgba(8,14,20,0.82)',
-      'box-shadow:0 0 0 1px rgba(85,215,255,0.38),0 0 9px rgba(85,215,255,0.32)',
-      'pointer-events:none',
-      'z-index:2147483647'
-    ]
-  );
-  const thumb = createSnapshotElement(
-    element,
-    'embedded-screen-snapshot-scrollbar-thumb embedded-screen-snapshot-scrollbar-thumb--vertical',
-    [
-      'position:absolute',
-      'left:1px',
-      `top:${thumbOffset}px`,
-      `width:${thickness - 2}px`,
-      `height:${thumbLength}px`,
-      'border-radius:999px',
-      'background:#66ddff',
-      'box-shadow:0 0 9px rgba(102,221,255,0.88)'
-    ]
-  );
-  track.appendChild(thumb);
-  element.appendChild(track);
-}
-
-function appendHorizontalScrollIndicator(element: HTMLElement, metrics: ScrollSnapshotMetrics): void {
-  if (metrics.scrollWidth <= metrics.clientWidth + 1 || metrics.clientWidth < 16) return;
-  const inset = 7;
-  const thickness = 8;
-  const trackLength = Math.max(1, metrics.clientWidth - inset * 2);
-  const thumbLength = clamp(
-    Math.round((metrics.clientWidth / metrics.scrollWidth) * trackLength),
-    Math.min(28, trackLength),
-    trackLength
-  );
-  const maxScroll = Math.max(1, metrics.scrollWidth - metrics.clientWidth);
-  const maxTravel = Math.max(0, trackLength - thumbLength);
-  const thumbOffset = Math.round((clamp(metrics.left, 0, maxScroll) / maxScroll) * maxTravel);
-  const track = createSnapshotElement(
-    element,
-    'embedded-screen-snapshot-scrollbar embedded-screen-snapshot-scrollbar--horizontal',
-    [
-      'position:absolute',
-      'left:7px',
-      'bottom:4px',
-      `width:${trackLength}px`,
-      `height:${thickness}px`,
-      'border-radius:999px',
-      'background:rgba(8,14,20,0.82)',
-      'box-shadow:0 0 0 1px rgba(85,215,255,0.38),0 0 9px rgba(85,215,255,0.32)',
-      'pointer-events:none',
-      'z-index:2147483647'
-    ]
-  );
-  const thumb = createSnapshotElement(
-    element,
-    'embedded-screen-snapshot-scrollbar-thumb embedded-screen-snapshot-scrollbar-thumb--horizontal',
-    [
-      'position:absolute',
-      `left:${thumbOffset}px`,
-      'top:1px',
-      `width:${thumbLength}px`,
-      `height:${thickness - 2}px`,
-      'border-radius:999px',
-      'background:#66ddff',
-      'box-shadow:0 0 9px rgba(102,221,255,0.88)'
-    ]
-  );
-  track.appendChild(thumb);
-  element.appendChild(track);
-}
-
-function createSnapshotElement(
-  owner: HTMLElement,
-  className: string,
-  declarations: readonly string[]
-): HTMLElement {
-  const element = owner.ownerDocument.createElementNS(
-    'http://www.w3.org/1999/xhtml',
-    'div'
-  ) as HTMLElement;
-  element.className = className;
-  element.setAttribute('aria-hidden', 'true');
-  element.setAttribute('style', declarations.join(';'));
-  return element;
-}
-
 function isScrollableOverflow(value: string): boolean {
   return value === 'auto' || value === 'scroll' || value === 'overlay';
-}
-
-function clamp(value: number, minimum: number, maximum: number): number {
-  return Math.min(Math.max(value, minimum), maximum);
 }
 
 function waitForEmbeddedScreenPaint(): Promise<void> {

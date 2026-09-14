@@ -9709,6 +9709,11 @@ textarea:focus-visible,
 
 /* CSS3D documents are portfolio pages, not part of the retro room chrome. */
 .arcade-screen-document {
+  --embedded-screen-scrollbar-thumb: #66ddff;
+  --embedded-screen-scrollbar-track: #081014;
+  --embedded-screen-scrollbar-ring: rgba(85, 215, 255, 0.38);
+  --embedded-screen-scrollbar-track-glow: rgba(85, 215, 255, 0.32);
+  --embedded-screen-scrollbar-thumb-glow: rgba(102, 221, 255, 0.88);
   --background: #0a1520;
   --background-soft: #101c2a;
   --surface: #162536;
@@ -9891,6 +9896,83 @@ textarea:focus-visible,
   border-color: rgba(103, 226, 255, 0.82);
   background: linear-gradient(135deg, rgba(103, 226, 255, 0.12), transparent 34%), #0f1b29;
   box-shadow: inset 0 0 0 8px rgba(103, 226, 255, 0.06);
+}
+
+.arcade-screen-document :is(
+  .arcade-pipeline-scroll,
+  .monitor-automation-scroll,
+  .monitor-performance-scroll,
+  .monitor-api-scroll,
+  .monitor-terminal-scroll,
+  .profile-artwork-content,
+  .experience-artwork-content,
+  .architecture-embedded-content,
+  .architecture-artwork-content,
+  .contact-book-content
+) {
+  scrollbar-color: var(--embedded-screen-scrollbar-thumb) var(--embedded-screen-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+.arcade-screen-document :is(
+  .arcade-pipeline-scroll,
+  .monitor-automation-scroll,
+  .monitor-performance-scroll,
+  .monitor-api-scroll,
+  .monitor-terminal-scroll,
+  .profile-artwork-content,
+  .experience-artwork-content,
+  .architecture-embedded-content,
+  .architecture-artwork-content,
+  .contact-book-content
+)::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.arcade-screen-document :is(
+  .arcade-pipeline-scroll,
+  .monitor-automation-scroll,
+  .monitor-performance-scroll,
+  .monitor-api-scroll,
+  .monitor-terminal-scroll,
+  .profile-artwork-content,
+  .experience-artwork-content,
+  .architecture-embedded-content,
+  .architecture-artwork-content,
+  .contact-book-content
+)::-webkit-scrollbar-track,
+.arcade-screen-document :is(
+  .arcade-pipeline-scroll,
+  .monitor-automation-scroll,
+  .monitor-performance-scroll,
+  .monitor-api-scroll,
+  .monitor-terminal-scroll,
+  .profile-artwork-content,
+  .experience-artwork-content,
+  .architecture-embedded-content,
+  .architecture-artwork-content,
+  .contact-book-content
+)::-webkit-scrollbar-corner {
+  background: var(--embedded-screen-scrollbar-track);
+}
+
+.arcade-screen-document :is(
+  .arcade-pipeline-scroll,
+  .monitor-automation-scroll,
+  .monitor-performance-scroll,
+  .monitor-api-scroll,
+  .monitor-terminal-scroll,
+  .profile-artwork-content,
+  .experience-artwork-content,
+  .architecture-embedded-content,
+  .architecture-artwork-content,
+  .contact-book-content
+)::-webkit-scrollbar-thumb {
+  border: 2px solid var(--embedded-screen-scrollbar-track);
+  border-radius: 999px;
+  background: var(--embedded-screen-scrollbar-thumb);
+  box-shadow: 0 0 9px var(--embedded-screen-scrollbar-thumb-glow);
 }
 
 .portfolio-3d-shell #portfolio-3d-scene-title {
