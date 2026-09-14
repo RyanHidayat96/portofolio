@@ -20,7 +20,7 @@ function createSource(): HTMLDivElement {
   source.innerHTML = `
     <div
       class="scroll"
-      style="overflow: auto"
+      style="overflow: auto; --embedded-screen-scrollbar-thumb: #66ddff; --embedded-screen-scrollbar-track: #081014; --embedded-screen-scrollbar-size: 8px; --embedded-screen-scrollbar-thumb-inset: 1px"
     >
       <section style="transform: scale(1)">Last page state</section>
     </div>`;
@@ -96,7 +96,29 @@ describe('embedded screen snapshot', () => {
     const clone = new DOMParser().parseFromString(serializedSnapshot, 'image/svg+xml');
     expect(clone.querySelector<HTMLElement>('section')!.style.transform).toBe('translate(-24px, -600px) scale(1)');
     expect(clone.querySelector<HTMLElement>('.nested')!.style.transform).toBe('translate(0px, -15px)');
-    expect(clone.querySelector('.embedded-screen-snapshot-scrollbar')).toBeNull();
+    const verticalScrollbar = clone.querySelector<HTMLElement>(
+      '.embedded-screen-snapshot-scrollbar--vertical'
+    );
+    const verticalThumb = clone.querySelector<HTMLElement>(
+      '.embedded-screen-snapshot-scrollbar-thumb--vertical'
+    );
+    const horizontalScrollbar = clone.querySelector<HTMLElement>(
+      '.embedded-screen-snapshot-scrollbar--horizontal'
+    );
+    const horizontalThumb = clone.querySelector<HTMLElement>(
+      '.embedded-screen-snapshot-scrollbar-thumb--horizontal'
+    );
+    expect(verticalScrollbar?.getAttribute('style')).toContain('right:0px');
+    expect(verticalScrollbar?.getAttribute('style')).toContain('width:8px');
+    expect(verticalScrollbar?.getAttribute('style')).toContain('height:392px');
+    expect(verticalScrollbar?.getAttribute('style')).toContain('background:#081014');
+    expect(verticalThumb?.getAttribute('style')).toContain('top:235px');
+    expect(verticalThumb?.getAttribute('style')).toContain('width:6px');
+    expect(verticalThumb?.getAttribute('style')).toContain('background:#66ddff');
+    expect(horizontalScrollbar?.getAttribute('style')).toContain('bottom:0px');
+    expect(horizontalScrollbar?.getAttribute('style')).toContain('height:8px');
+    expect(horizontalScrollbar?.getAttribute('style')).toContain('width:492px');
+    expect(horizontalThumb?.getAttribute('style')).toContain('left:13px');
     expect(source.querySelector(`[${scrollAttribute}]`)).toBeNull();
     expect([scroll.style.cssText, content.style.cssText]).toEqual(stylesBefore);
     expect(scroll.scrollTop).toBe(600);
@@ -107,14 +129,15 @@ describe('embedded screen snapshot', () => {
     expect(drawImage).toHaveBeenCalledOnce();
   });
 
-  it('captures top-position scrollable content without synthetic scrollbars', async () => {
+  it('keeps a slim top-position scroll indicator in session snapshots', async () => {
     const source = createSource();
 
     await captureEmbeddedScreenSnapshot(source);
 
     const clone = new DOMParser().parseFromString(serializedSnapshot, 'image/svg+xml');
-    expect(clone.querySelector('.embedded-screen-snapshot-scrollbar')).toBeNull();
     expect(clone.querySelector<HTMLElement>('section')!.style.transform).toBe('translate(0px, 0px) scale(1)');
+    expect(clone.querySelector('.embedded-screen-snapshot-scrollbar--vertical')).not.toBeNull();
+    expect(clone.querySelector('.embedded-screen-snapshot-scrollbar-thumb--vertical')?.getAttribute('style')).toContain('top:0px');
   });
 
   it('captures the updated scroll offset again on the next return', async () => {

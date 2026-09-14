@@ -9,6 +9,14 @@ interface EmbeddedScreenSnapshotOptions {
   readonly shouldContinue?: () => boolean;
 }
 
+interface ScrollSnapshotStyle {
+  readonly thumb: string;
+  readonly track: string;
+  readonly thickness: number;
+  readonly thumbInset: number;
+  readonly minimumThumbLength: number;
+}
+
 interface ScrollSnapshotMetrics {
   readonly left: number;
   readonly top: number;
@@ -16,6 +24,7 @@ interface ScrollSnapshotMetrics {
   readonly clientHeight: number;
   readonly scrollWidth: number;
   readonly scrollHeight: number;
+  readonly style: ScrollSnapshotStyle;
 }
 
 export async function captureEmbeddedScreenSnapshot(
@@ -70,6 +79,7 @@ export async function captureEmbeddedScreenSnapshot(
       style.transform = `translate(${-metrics.left}px, ${-metrics.top}px) ${transform}`.trim();
       style.transformOrigin = 'top left';
     }
+    appendSnapshotScrollIndicators(element, metrics);
   }
 
   const image = new Image();
@@ -135,7 +145,8 @@ function getScrollSnapshotMetrics(element: HTMLElement): ScrollSnapshotMetrics |
     clientWidth,
     clientHeight,
     scrollWidth,
-    scrollHeight
+    scrollHeight,
+    style: getSnapshotScrollbarStyle(element)
   };
 }
 
@@ -147,12 +158,193 @@ function parseScrollSnapshotMetrics(value: string): ScrollSnapshotMetrics {
     clientWidth: parsed.clientWidth ?? 0,
     clientHeight: parsed.clientHeight ?? 0,
     scrollWidth: parsed.scrollWidth ?? parsed.clientWidth ?? 0,
-    scrollHeight: parsed.scrollHeight ?? parsed.clientHeight ?? 0
+    scrollHeight: parsed.scrollHeight ?? parsed.clientHeight ?? 0,
+    style: parsed.style ?? getDefaultSnapshotScrollbarStyle()
+  };
+}
+
+function appendSnapshotScrollIndicators(element: HTMLElement, metrics: ScrollSnapshotMetrics): void {
+  const hasVerticalScroll = metrics.scrollHeight > metrics.clientHeight + 1;
+  const hasHorizontalScroll = metrics.scrollWidth > metrics.clientWidth + 1;
+  appendVerticalScrollIndicator(element, metrics, hasHorizontalScroll);
+  appendHorizontalScrollIndicator(element, metrics, hasVerticalScroll);
+  if (hasVerticalScroll && hasHorizontalScroll) appendScrollbarCorner(element, metrics.style);
+}
+
+function appendVerticalScrollIndicator(
+  element: HTMLElement,
+  metrics: ScrollSnapshotMetrics,
+  hasHorizontalScroll: boolean
+): void {
+  if (metrics.scrollHeight <= metrics.clientHeight + 1 || metrics.clientHeight < 16) return;
+
+  const { style } = metrics;
+  const thickness = Math.min(style.thickness, Math.max(1, metrics.clientWidth));
+  const thumbInset = clamp(style.thumbInset, 0, Math.max(0, Math.floor((thickness - 1) / 2)));
+  const thumbThickness = Math.max(1, thickness - thumbInset * 2);
+  const trackLength = Math.max(1, metrics.clientHeight - (hasHorizontalScroll ? thickness : 0));
+  const thumbLength = clamp(
+    Math.round((metrics.clientHeight / metrics.scrollHeight) * trackLength),
+    Math.min(style.minimumThumbLength, trackLength),
+    trackLength
+  );
+  const maxScroll = Math.max(1, metrics.scrollHeight - metrics.clientHeight);
+  const maxTravel = Math.max(0, trackLength - thumbLength);
+  const thumbOffset = Math.round((clamp(metrics.top, 0, maxScroll) / maxScroll) * maxTravel);
+
+  const track = createSnapshotElement(
+    element,
+    'embedded-screen-snapshot-scrollbar embedded-screen-snapshot-scrollbar--vertical',
+    [
+      'position:absolute',
+      'top:0px',
+      'right:0px',
+      `width:${thickness}px`,
+      `height:${trackLength}px`,
+      `background:${style.track}`,
+      'pointer-events:none',
+      'z-index:2147483647'
+    ]
+  );
+  const thumb = createSnapshotElement(
+    element,
+    'embedded-screen-snapshot-scrollbar-thumb embedded-screen-snapshot-scrollbar-thumb--vertical',
+    [
+      'position:absolute',
+      `left:${thumbInset}px`,
+      `top:${thumbOffset}px`,
+      `width:${thumbThickness}px`,
+      `height:${thumbLength}px`,
+      'border-radius:999px',
+      `background:${style.thumb}`
+    ]
+  );
+  track.appendChild(thumb);
+  element.appendChild(track);
+}
+
+function appendHorizontalScrollIndicator(
+  element: HTMLElement,
+  metrics: ScrollSnapshotMetrics,
+  hasVerticalScroll: boolean
+): void {
+  if (metrics.scrollWidth <= metrics.clientWidth + 1 || metrics.clientWidth < 16) return;
+
+  const { style } = metrics;
+  const thickness = Math.min(style.thickness, Math.max(1, metrics.clientHeight));
+  const thumbInset = clamp(style.thumbInset, 0, Math.max(0, Math.floor((thickness - 1) / 2)));
+  const thumbThickness = Math.max(1, thickness - thumbInset * 2);
+  const trackLength = Math.max(1, metrics.clientWidth - (hasVerticalScroll ? thickness : 0));
+  const thumbLength = clamp(
+    Math.round((metrics.clientWidth / metrics.scrollWidth) * trackLength),
+    Math.min(style.minimumThumbLength, trackLength),
+    trackLength
+  );
+  const maxScroll = Math.max(1, metrics.scrollWidth - metrics.clientWidth);
+  const maxTravel = Math.max(0, trackLength - thumbLength);
+  const thumbOffset = Math.round((clamp(metrics.left, 0, maxScroll) / maxScroll) * maxTravel);
+
+  const track = createSnapshotElement(
+    element,
+    'embedded-screen-snapshot-scrollbar embedded-screen-snapshot-scrollbar--horizontal',
+    [
+      'position:absolute',
+      'left:0px',
+      'bottom:0px',
+      `width:${trackLength}px`,
+      `height:${thickness}px`,
+      `background:${style.track}`,
+      'pointer-events:none',
+      'z-index:2147483647'
+    ]
+  );
+  const thumb = createSnapshotElement(
+    element,
+    'embedded-screen-snapshot-scrollbar-thumb embedded-screen-snapshot-scrollbar-thumb--horizontal',
+    [
+      'position:absolute',
+      `left:${thumbOffset}px`,
+      `top:${thumbInset}px`,
+      `width:${thumbLength}px`,
+      `height:${thumbThickness}px`,
+      'border-radius:999px',
+      `background:${style.thumb}`
+    ]
+  );
+  track.appendChild(thumb);
+  element.appendChild(track);
+}
+
+function appendScrollbarCorner(element: HTMLElement, style: ScrollSnapshotStyle): void {
+  element.appendChild(
+    createSnapshotElement(
+      element,
+      'embedded-screen-snapshot-scrollbar-corner',
+      [
+        'position:absolute',
+        'right:0px',
+        'bottom:0px',
+        `width:${style.thickness}px`,
+        `height:${style.thickness}px`,
+        `background:${style.track}`,
+        'pointer-events:none',
+        'z-index:2147483647'
+      ]
+    )
+  );
+}
+
+function createSnapshotElement(
+  owner: HTMLElement,
+  className: string,
+  declarations: readonly string[]
+): HTMLElement {
+  const element = owner.ownerDocument.createElementNS(
+    'http://www.w3.org/1999/xhtml',
+    'div'
+  ) as HTMLElement;
+  element.className = className;
+  element.setAttribute('aria-hidden', 'true');
+  element.setAttribute('style', declarations.join(';'));
+  return element;
+}
+
+function getSnapshotScrollbarStyle(element: HTMLElement): ScrollSnapshotStyle {
+  const style = window.getComputedStyle(element);
+  const readColor = (propertyName: string, fallback: string): string => {
+    const value = style.getPropertyValue(propertyName).trim();
+    return value || fallback;
+  };
+  const readPixels = (propertyName: string, fallback: number): number => {
+    const parsed = Number.parseFloat(style.getPropertyValue(propertyName));
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  };
+
+  return {
+    thumb: readColor('--embedded-screen-scrollbar-thumb', '#66ddff'),
+    track: readColor('--embedded-screen-scrollbar-track', '#081014'),
+    thickness: readPixels('--embedded-screen-scrollbar-size', 8),
+    thumbInset: readPixels('--embedded-screen-scrollbar-thumb-inset', 1),
+    minimumThumbLength: readPixels('--embedded-screen-scrollbar-min-thumb', 28)
+  };
+}
+
+function getDefaultSnapshotScrollbarStyle(): ScrollSnapshotStyle {
+  return {
+    thumb: '#66ddff',
+    track: '#081014',
+    thickness: 8,
+    thumbInset: 1,
+    minimumThumbLength: 28
   };
 }
 
 function isScrollableOverflow(value: string): boolean {
   return value === 'auto' || value === 'scroll' || value === 'overlay';
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(Math.max(value, minimum), maximum);
 }
 
 function waitForEmbeddedScreenPaint(): Promise<void> {

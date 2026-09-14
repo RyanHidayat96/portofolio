@@ -9714,6 +9714,9 @@ textarea:focus-visible,
   --embedded-screen-scrollbar-ring: rgba(85, 215, 255, 0.38);
   --embedded-screen-scrollbar-track-glow: rgba(85, 215, 255, 0.32);
   --embedded-screen-scrollbar-thumb-glow: rgba(102, 221, 255, 0.88);
+  --embedded-screen-scrollbar-size: 8px;
+  --embedded-screen-scrollbar-thumb-inset: 1px;
+  --embedded-screen-scrollbar-min-thumb: 28px;
   --background: #0a1520;
   --background-soft: #101c2a;
   --surface: #162536;
@@ -9926,8 +9929,8 @@ textarea:focus-visible,
   .architecture-artwork-content,
   .contact-book-content
 )::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: var(--embedded-screen-scrollbar-size);
+  height: var(--embedded-screen-scrollbar-size);
 }
 
 .arcade-screen-document :is(
@@ -9969,7 +9972,7 @@ textarea:focus-visible,
   .architecture-artwork-content,
   .contact-book-content
 )::-webkit-scrollbar-thumb {
-  border: 2px solid var(--embedded-screen-scrollbar-track);
+  border: var(--embedded-screen-scrollbar-thumb-inset) solid var(--embedded-screen-scrollbar-track);
   border-radius: 999px;
   background: var(--embedded-screen-scrollbar-thumb);
   box-shadow: 0 0 9px var(--embedded-screen-scrollbar-thumb-glow);
