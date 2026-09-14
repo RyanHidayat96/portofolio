@@ -666,7 +666,7 @@ export function ArcadeScreenSurface({
     screenLayer.setPreviewCapturePending(runtime, true);
 
     try {
-      const canvas = await captureEmbeddedScreenSnapshot(runtime.content, {
+      const canvas = await captureEmbeddedScreenSnapshot(runtime.object.element, {
         shouldContinue: shouldContinueCapture
       });
       if (!shouldContinueCapture()) {

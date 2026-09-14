@@ -375,7 +375,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     await act(async () => { await returnCapture?.capture(); });
 
     expect(captureEmbeddedScreenSnapshot).toHaveBeenCalledWith(
-      harness.runtime!.content,
+      harness.runtime!.object.element,
       expect.objectContaining({ shouldContinue: expect.any(Function) })
     );
   });
