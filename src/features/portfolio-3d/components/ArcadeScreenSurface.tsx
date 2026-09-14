@@ -5,6 +5,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import * as THREE from "three";
 import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from "../arcade-screen";
+import { withPortfolio3dBasePath } from "../asset-url";
+import { getEmbeddedScreenStaticPreview } from "../embedded-screen-preview-manifest";
 import { usePortfolio3dState } from "../state/Portfolio3dState";
 import { type EmbeddedScreenRegistration, useEmbeddedScreenLayer } from "./EmbeddedScreenLayer";
 import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
@@ -15,20 +17,8 @@ export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
-const initialPreviewCaptureIntervalMs = 260;
 const previewCaptureRetryDelayMs = 360;
 const returnPreviewCaptureDelayMs = 0;
-const initialPreviewCaptureOrder: readonly EmbeddedScreenId[] = [
-  "pipeline",
-  "automation",
-  "performance",
-  "backend",
-  "terminal",
-  "profile",
-  "experience",
-  "architecture",
-  "contact"
-];
 
 export interface EmbeddedScreenPan {
   readonly x: number;
@@ -76,12 +66,17 @@ export function ArcadeScreenSurface({
   const { state, setActiveSection } = usePortfolio3dState();
   const screenLayer = useEmbeddedScreenLayer();
   const runtimeRef = useRef<EmbeddedScreenRegistration | null>(null);
-  const previewTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  const previewTextureRef = useRef<THREE.Texture | null>(null);
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
   const cancelReturnPreviewCaptureRef = useRef<(() => void) | null>(null);
-  const [previewTexture, setPreviewTexture] = useState<THREE.CanvasTexture | null>(null);
+  const staticPreview = getEmbeddedScreenStaticPreview(screenId);
+  const staticPreviewUrl = staticPreview
+    ? withPortfolio3dBasePath(staticPreview.publicPath)
+    : undefined;
+  const [previewTexture, setPreviewTexture] = useState<THREE.Texture | null>(null);
   const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
+  const [staticPreviewLoadFailed, setStaticPreviewLoadFailed] = useState(false);
   const isInteractive =
     state.activeSectionId === screenId && state.navigationState === "section-open";
   const isMonitor =
@@ -693,7 +688,49 @@ export function ArcadeScreenSurface({
   }, [gl, invalidate, screenLayer]);
 
   useEffect(() => {
+    setStaticPreviewLoadFailed(false);
+  }, [staticPreviewUrl]);
+
+  useEffect(() => {
+    if (isInteractive || previewTextureRef.current || !staticPreviewUrl) {
+      return;
+    }
+
+    let isCancelled = false;
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load(
+      staticPreviewUrl,
+      (loadedTexture) => {
+        if (isCancelled) {
+          loadedTexture.dispose();
+          return;
+        }
+
+        const nextTexture = configureScreenPreviewTexture(loadedTexture, gl);
+        previewTextureRef.current = nextTexture;
+        setPreviewTexture(nextTexture);
+        setIsPreviewCapturePending(false);
+        invalidate();
+      },
+      undefined,
+      () => {
+        if (!isCancelled) setStaticPreviewLoadFailed(true);
+      }
+    );
+
+    return () => {
+      isCancelled = true;
+      if (previewTextureRef.current !== texture && !texture.image) {
+        texture.dispose();
+      }
+    };
+  }, [gl, invalidate, isInteractive, staticPreviewUrl]);
+
+  useEffect(() => {
     if (isInteractive || previewTextureRef.current) {
+      return;
+    }
+    if (staticPreviewUrl && !staticPreviewLoadFailed) {
       return;
     }
 
@@ -714,13 +751,13 @@ export function ArcadeScreenSurface({
       }, delayMs);
     };
 
-    scheduleCapture(getInitialPreviewCaptureDelay(screenId));
+    scheduleCapture(0);
 
     return () => {
       isCancelled = true;
       cancelScheduledCapture();
     };
-  }, [capturePreview, isInteractive, screenId, screenLayer]);
+  }, [capturePreview, isInteractive, screenLayer, staticPreviewLoadFailed, staticPreviewUrl]);
 
   const scheduleReturnPreviewCapture = useCallback((): void => {
     const runtime = runtimeRef.current;
@@ -872,8 +909,15 @@ function clamp(value: number, minimum: number, maximum: number): number {
 function createScreenPreviewTexture(
   canvas: HTMLCanvasElement,
   renderer: THREE.WebGLRenderer
-): THREE.CanvasTexture {
+): THREE.Texture {
   const texture = new THREE.CanvasTexture(canvas);
+  return configureScreenPreviewTexture(texture, renderer);
+}
+
+function configureScreenPreviewTexture(
+  texture: THREE.Texture,
+  renderer: THREE.WebGLRenderer
+): THREE.Texture {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
@@ -882,9 +926,4 @@ function createScreenPreviewTexture(
   texture.needsUpdate = true;
 
   return texture;
-}
-
-function getInitialPreviewCaptureDelay(screenId: EmbeddedScreenId): number {
-  const screenIndex = initialPreviewCaptureOrder.indexOf(screenId);
-  return Math.max(screenIndex, 0) * initialPreviewCaptureIntervalMs;
 }

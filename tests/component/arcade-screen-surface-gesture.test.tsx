@@ -304,6 +304,42 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(scrollContainer.scrollTop).toBe(100);
   });
 
+  it('uses a static first-load preview instead of runtime screenshot capture', async () => {
+    harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
+    const staticTexture: THREE.Texture<HTMLImageElement> = new THREE.Texture(document.createElement('img'));
+    const loadSpy = vi
+      .spyOn(THREE.TextureLoader.prototype, 'load')
+      .mockImplementation((_url, onLoad, _onProgress, _onError) => {
+        onLoad?.(staticTexture);
+        return staticTexture;
+      });
+
+    render(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="pipeline"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+    expect(harness.runtime).toBeDefined();
+
+    await act(async () => { await Promise.resolve(); });
+
+    expect(loadSpy).toHaveBeenCalledWith(
+      '/portfolio-screen-previews/pipeline.webp',
+      expect.any(Function),
+      undefined,
+      expect.any(Function)
+    );
+    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
+    expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
+    expect(harness.screenLayer.setPreviewAvailable).toHaveBeenCalledWith(
+      harness.runtime,
+      true
+    );
+  });
+
   it('keeps the live frame visible but defers the return snapshot work off the camera transition', async () => {
     const snapshotCanvas = document.createElement('canvas');
     vi.mocked(captureEmbeddedScreenSnapshot).mockResolvedValue(snapshotCanvas);
