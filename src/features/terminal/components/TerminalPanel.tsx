@@ -159,7 +159,7 @@ export function TerminalPanel({
     <Panel className={`terminal-panel ${isScreenMode ? "terminal-panel-screen" : ""} overflow-hidden`}>
       <div className="terminal-header">
         <div>
-          <p className="mono text-sm text-[#55d7ff]">terminal.proof</p>
+          <p className="mono text-sm text-[#ffb000]">terminal.proof</p>
           <h1>Command Interface</h1>
           <p>
             Fast keyboard path into portfolio evidence: profile, architecture, API routes,
@@ -297,7 +297,7 @@ function lineClass(kind: TerminalLineKind): string {
     input: "text-[#eef5ff]",
     output: "text-[#b7c2d2]",
     error: "text-[#ff6f7d]",
-    system: "text-[#6ee7a8]"
+    system: "text-[#ffc24a]"
   };
 
   return classByKind[kind];

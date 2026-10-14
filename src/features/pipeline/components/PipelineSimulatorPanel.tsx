@@ -77,7 +77,7 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
     <div className={variant === "screen" ? "pipeline-simulator-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
       <Panel className="pipeline-controls p-5">
         {variant !== "screen" ? <>
-          <p className="mono text-sm text-[#55d7ff]">{pipelinePanelMetadata.eyebrow}</p>
+          <p className="mono text-sm text-[#ffb000]">{pipelinePanelMetadata.eyebrow}</p>
           <h1 className="mt-3 text-2xl font-semibold">{pipelinePanelMetadata.title}</h1>
           <p className="mt-3 text-sm leading-6 text-[#8a96a8]">{pipelinePanelMetadata.description}</p>
         </> : null}
@@ -101,7 +101,7 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
 
         <div className="pipeline-scenario-detail mt-4 border border-[var(--border)] bg-[#0b0f16] p-4">
           <div className="flex items-start gap-3">
-            <GitBranch aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
+            <GitBranch aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
             <div>
               <h2 className="font-semibold text-[#eef5ff]">{selectedScenario.label}</h2>
               <p className="mt-2 text-sm leading-6 text-[#8a96a8]">{selectedScenario.summary}</p>
@@ -142,7 +142,7 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
         <Panel className="pipeline-execution p-5 sm:p-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="mono text-sm text-[#55d7ff]">PIPELINE EXECUTION</p>
+              <p className="mono text-sm text-[#ffb000]">PIPELINE EXECUTION</p>
               <h2 className="mt-2 text-2xl font-semibold">Software Delivery Lifecycle</h2>
               <p className="mt-2 text-sm text-[#8a96a8]">
                 {pipelinePanelMetadata.flow.join(" | ")}
@@ -165,9 +165,9 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
         <div className="pipeline-reports grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Panel className="p-5">
             <div className="flex items-start gap-3">
-              <ShieldCheck aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
+            <ShieldCheck aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
               <div>
-                <p className="mono text-sm text-[#55d7ff]">QUALITY GATE</p>
+                <p className="mono text-sm text-[#ffb000]">QUALITY GATE</p>
                 <h2 className="mt-2 text-xl font-semibold">
                   {formatQualityGateStatus(snapshot.qualityGate)}
                 </h2>
@@ -183,9 +183,9 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
 
           <Panel className="p-5">
             <div className="flex items-start gap-3">
-              <Workflow aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
+            <Workflow aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
               <div>
-                <p className="mono text-sm text-[#55d7ff]">EXECUTION TRACE</p>
+              <p className="mono text-sm text-[#ffb000]">EXECUTION TRACE</p>
                 <h2 className="mt-2 text-xl font-semibold">Deterministic Events</h2>
               </div>
             </div>
@@ -258,8 +258,8 @@ function EventFeed({
 function PipelineEventLine({ event }: Readonly<{ event: PipelineEvent }>): React.ReactElement {
   const presentation = formatPipelineEvent(event);
   const toneClass = {
-    info: "text-[#55d7ff]",
-    success: "text-[#6ee7a8]",
+    info: "text-[#ffb000]",
+    success: "text-[#ffc24a]",
     warning: "text-[#ffd36e]",
     danger: "text-[#ff6f7d]"
   }[presentation.tone];
@@ -360,8 +360,8 @@ function formatQualityGateStatus(status: PipelineQualityGateStatus): string {
 function getStageDotClass(status: PipelineStageStatus): string {
   const classMap: Record<PipelineStageStatus, string> = {
     pending: "bg-[#293241]",
-    running: "bg-[#55d7ff]",
-    passed: "bg-[#6ee7a8]",
+    running: "bg-[#ffb000]",
+    passed: "bg-[#ffc24a]",
     failed: "bg-[#ff6f7d]",
     skipped: "bg-[#8a96a8]",
     blocked: "bg-[#ff6f7d]"

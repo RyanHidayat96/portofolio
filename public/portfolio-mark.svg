@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">Portfolio mark</title>
-  <desc id="desc">Square portfolio mark with an R monogram.</desc>
-  <rect width="64" height="64" fill="#06070a"/>
-  <rect x="6" y="6" width="52" height="52" fill="none" stroke="#37f2a5" stroke-width="4"/>
-  <path fill="#f4f7fb" d="M20 47V17h15c6.8 0 11 3.7 11 9.7 0 4.2-2.1 7.2-5.8 8.6L47 47h-8.5l-5.7-10.4h-5V47H20Zm7.8-17h6.5c2.5 0 4-1.2 4-3.3s-1.5-3.3-4-3.3h-6.5V30Z"/>
+  <title id="title">RyanOS terminal mark</title>
+  <desc id="desc">Amber CRT terminal prompt mark.</desc>
+  <rect width="64" height="64" fill="#0b0703"/>
+  <rect x="3" y="3" width="58" height="58" fill="#130b03" stroke="#ffb000" stroke-width="3"/>
+  <path d="M7 12H57" stroke="#6b4512" stroke-width="3"/>
+  <path d="m15 26 11 8-11 8" fill="none" stroke="#ffb000" stroke-linecap="square" stroke-linejoin="miter" stroke-width="5"/>
+  <path d="M33 42h17" stroke="#ffd24d" stroke-linecap="square" stroke-width="5"/>
+  <path d="M9 53h46" stroke="#3c2507" stroke-width="2"/>
 </svg>

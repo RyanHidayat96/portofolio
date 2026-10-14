@@ -82,7 +82,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
       }
     >
       <Panel className="api-playground-index p-4">
-        <p className="mono px-1 py-2 text-sm text-[#55d7ff]">api.full_cycle.demo</p>
+        <p className="mono px-1 py-2 text-sm text-[#ffb000]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
         <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
           Public portfolio route handlers for profile, career, projects, architecture, and contact
@@ -108,7 +108,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
         <Panel className="api-request-panel p-5 sm:p-7">
           <div className="api-request-header flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="mono text-sm text-[#55d7ff]">REQUEST</p>
+              <p className="mono text-sm text-[#ffb000]">REQUEST</p>
               <h2 className="mt-2 text-2xl font-semibold">{endpoint.title}</h2>
               <p className="api-request-description mt-3 text-sm leading-6 text-[#8a96a8]">{endpoint.description}</p>
             </div>
@@ -136,9 +136,9 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
         <div className="api-result-grid grid gap-5">
           <Panel className="api-contract-panel p-5">
             <div className="flex items-start gap-3">
-              <FileJson aria-hidden="true" className="mt-1 text-[#55d7ff]" size={18} />
+              <FileJson aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
               <div>
-                <p className="mono text-sm text-[#55d7ff]">API CONTRACT</p>
+                <p className="mono text-sm text-[#ffb000]">API CONTRACT</p>
                 <h2 className="mt-2 text-xl font-semibold">Expected Response Shape</h2>
               </div>
             </div>
@@ -164,7 +164,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
           <Panel className="api-response-panel p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="mono text-sm text-[#55d7ff]">RESPONSE</p>
+                <p className="mono text-sm text-[#ffb000]">RESPONSE</p>
                 <h2 className="mt-2 text-xl font-semibold">Route Handler Result</h2>
               </div>
               <Badge tone={error ? "danger" : response ? "success" : "neutral"}>
@@ -301,7 +301,7 @@ function EndpointButton({
       data-cursor-intent="button"
       data-cursor-label="ROUTE"
     >
-      <span className="mono block text-sm text-[#55d7ff]">
+      <span className="mono block text-sm text-[#ffb000]">
         {endpoint.method} {endpoint.path}
       </span>
       <span className="mt-2 block font-semibold">{endpoint.title}</span>
@@ -323,7 +323,7 @@ function RequestFact({
     <section className="api-fact-card">
       <p className="text-sm text-[#8a96a8]">{label}</p>
       <p
-        className={`mono mt-2 text-sm font-semibold ${tone === "info" ? "text-[#55d7ff]" : "text-[#eef5ff]"}`}
+        className={`mono mt-2 text-sm font-semibold ${tone === "info" ? "text-[#ffb000]" : "text-[#ffe4a3]"}`}
       >
         {value}
       </p>
@@ -344,7 +344,7 @@ function ResponseFact({
     <section className="api-fact-card">
       <p className="text-sm text-[#8a96a8]">{label}</p>
       <p
-        className={`mono mt-2 text-sm font-semibold ${tone === "success" ? "text-[#6ee7a8]" : "text-[#eef5ff]"}`}
+        className={`mono mt-2 text-sm font-semibold ${tone === "success" ? "text-[#ffc24a]" : "text-[#ffe4a3]"}`}
       >
         {value}
       </p>

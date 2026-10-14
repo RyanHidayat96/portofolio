@@ -105,7 +105,7 @@ export const portfolio3dScreenPreviews = [
     eyebrow: "backend",
     title: "API boundary",
     lines: apiEndpoints.slice(0, maxScreenLines).map((endpoint) => endpoint.path),
-    accent: "#a6e22e"
+    accent: "#ffc24a"
   },
   {
     sectionId: "performance",

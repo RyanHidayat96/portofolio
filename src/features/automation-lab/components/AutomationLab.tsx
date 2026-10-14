@@ -109,7 +109,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
     <div className={isScreen ? "automation-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
       <Panel className={isScreen ? "automation-screen-controls p-5" : "p-5"}>
         {!isScreen ? <>
-          <p className="mono text-sm text-[#55d7ff]">quality.engineering.demo</p>
+          <p className="mono text-sm text-[#ffb000]">quality.engineering.demo</p>
           <h1 className="mt-3 text-2xl font-semibold">Quality Automation Lab</h1>
           <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
             Deterministic workflow demo. Browser, API, failure inspection, and quality-gate impact are
@@ -147,7 +147,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
           <div className="mt-4 grid gap-2">
             {selectedStrategy.inspectorFocus.map((item) => (
               <div key={item} className="flex items-center gap-2 text-xs text-[#8a96a8]">
-                <span className="h-1.5 w-1.5 bg-[#55d7ff]" aria-hidden="true" />
+                <span className="h-1.5 w-1.5 bg-[#ffb000]" aria-hidden="true" />
                 <span>{item}</span>
               </div>
             ))}
@@ -195,7 +195,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
         <Panel className="p-5 sm:p-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="mono text-sm text-[#55d7ff]">TEST RUNNER</p>
+              <p className="mono text-sm text-[#ffb000]">TEST RUNNER</p>
               <h2 className="mt-2 text-2xl font-semibold">Approval Flow Regression</h2>
               <p className="mt-2 text-sm text-[#8a96a8]">
                 Environment: {defaultAutomationScenario.environment} | Browser:{" "}
@@ -285,9 +285,9 @@ function SectionHeading({
 }>): React.ReactElement {
   return (
     <div className="flex items-start gap-3">
-      <div className="mt-1 text-[#55d7ff]">{icon}</div>
+      <div className="mt-1 text-[#ffb000]">{icon}</div>
       <div>
-        <p className="mono text-sm text-[#55d7ff]">{kicker}</p>
+        <p className="mono text-sm text-[#ffb000]">{kicker}</p>
         <h2 className="mt-2 text-xl font-semibold">{title}</h2>
       </div>
     </div>
@@ -323,8 +323,8 @@ function AutomationEventLine({
 }: Readonly<{ event: TimedSimulationEvent }>): React.ReactElement {
   const presentation = formatEvent(event.event);
   const toneClass = {
-    info: "text-[#55d7ff]",
-    success: "text-[#6ee7a8]",
+    info: "text-[#ffb000]",
+    success: "text-[#ffc24a]",
     warning: "text-[#ffd36e]",
     danger: "text-[#ff6f7d]"
   }[presentation.tone];

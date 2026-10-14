@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["portfolio", "developer", "technology"],
     icons: [
       {
-        src: "/favicon.svg",
+        src: "/favicon.svg?v=retro-amber-1",
         sizes: "any",
         type: "image/svg+xml"
       },

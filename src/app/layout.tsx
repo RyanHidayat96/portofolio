@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/favicon.svg",
+        url: "/favicon.svg?v=retro-amber-1",
         type: "image/svg+xml"
       },
       {
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     other: [
       {
         rel: "mask-icon",
-        url: "/portfolio-mark.svg"
+        url: "/portfolio-mark.svg?v=retro-amber-1"
       }
     ]
   },

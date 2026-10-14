@@ -60,7 +60,7 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
   return (
     <div className={isScreenMode ? "performance-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
       <Panel className="p-5">
-        <p className="mono text-sm text-[#55d7ff]">k6.workflow.demo</p>
+        <p className="mono text-sm text-[#ffb000]">k6.workflow.demo</p>
         <h1 className="mt-3 text-2xl font-semibold">Performance Lab</h1>
         <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
           K6-inspired deterministic simulation for latency, reliability, and release-risk thinking.
@@ -68,7 +68,7 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
         </p>
 
         <div className="mt-6 flex items-center gap-3">
-          <SlidersHorizontal aria-hidden="true" className="text-[#55d7ff]" size={18} />
+          <SlidersHorizontal aria-hidden="true" className="text-[#ffb000]" size={18} />
           <h2 className="font-semibold text-[#eef5ff]">Load Controls</h2>
         </div>
 
@@ -130,7 +130,7 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
         <Panel className="p-5 sm:p-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="mono text-sm text-[#55d7ff]">
+              <p className="mono text-sm text-[#ffb000]">
                 VU: {result.metrics.virtualUsers} | Duration: {result.metrics.durationSeconds}s
               </p>
               <h2 className="mt-2 text-2xl font-semibold">{result.scenario.label}</h2>
@@ -161,9 +161,9 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
         <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
           <Panel className="p-5">
             <div className="flex items-center gap-3">
-              <Gauge aria-hidden="true" className="text-[#55d7ff]" size={18} />
+              <Gauge aria-hidden="true" className="text-[#ffb000]" size={18} />
               <div>
-                <p className="mono text-sm text-[#55d7ff]">LIGHTWEIGHT CHARTS</p>
+                <p className="mono text-sm text-[#ffb000]">LIGHTWEIGHT CHARTS</p>
                 <h2 className="mt-1 text-xl font-semibold">Latency & Reliability</h2>
               </div>
             </div>
@@ -189,7 +189,7 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
           </Panel>
 
           <Panel className="p-5">
-            <p className="mono text-sm text-[#55d7ff]">THRESHOLD ENGINE</p>
+            <p className="mono text-sm text-[#ffb000]">THRESHOLD ENGINE</p>
             <h2 className="mt-2 text-xl font-semibold">
               {failedThresholds.length === 0
                 ? "Release Thresholds Passed"
@@ -242,7 +242,7 @@ function K6ScenarioMap({
   return (
     <section className="performance-scenario-map" aria-label="K6 load profile comparison">
       <div>
-        <p className="mono text-sm text-[#55d7ff]">K6 LOAD SHAPE</p>
+        <p className="mono text-sm text-[#ffb000]">K6 LOAD SHAPE</p>
         <h3>Normal, peak, and stress profiles.</h3>
       </div>
       <div className="performance-scenario-grid">
@@ -314,7 +314,7 @@ function PerformanceControl({
       </div>
       <input
         id={id}
-        className="mt-3 w-full accent-[#55d7ff]"
+        className="mt-3 w-full accent-[#ffb000]"
         type="range"
         min={range.min}
         max={range.max}
@@ -385,7 +385,7 @@ function LatencyBar({
   dangerAt?: number;
 }>): React.ReactElement {
   const width = `${Math.min(100, Math.round((value / max) * 100))}%`;
-  const toneClass = dangerAt && value >= dangerAt ? "bg-[#ff6f7d]" : "bg-[#55d7ff]";
+  const toneClass = dangerAt && value >= dangerAt ? "bg-[#ff704d]" : "bg-[#ffb000]";
 
   return (
     <div>
@@ -413,7 +413,7 @@ function PercentBar({
 }>): React.ReactElement {
   const width = `${Math.min(100, Math.round((value / max) * 100))}%`;
   const isRisky = invert ? value >= 1 : value <= 95;
-  const toneClass = isRisky ? "bg-[#ff6f7d]" : "bg-[#6ee7a8]";
+  const toneClass = isRisky ? "bg-[#ff704d]" : "bg-[#ffc24a]";
 
   return (
     <div>

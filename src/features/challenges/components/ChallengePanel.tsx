@@ -19,7 +19,7 @@ export function ChallengePanel(): React.ReactElement {
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
       <Panel className="challenge-index-panel p-4">
-        <p className="mono px-1 py-2 text-sm text-[#55d7ff]">test.me</p>
+        <p className="mono px-1 py-2 text-sm text-[#ffb000]">test.me</p>
         <h1 className="px-1 pb-3 text-2xl font-semibold">Engineering Challenge</h1>
         <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
           Public-safe decision scenarios for build, quality, data, and delivery thinking.
@@ -53,7 +53,7 @@ export function ChallengePanel(): React.ReactElement {
                 </h2>
                 <p className="mt-5 text-lg leading-8 text-[#c8d4e6]">{scenario.prompt}</p>
               </div>
-              <Brain aria-hidden="true" className="hidden text-[#55d7ff] sm:block" size={28} />
+              <Brain aria-hidden="true" className="hidden text-[#ffb000] sm:block" size={28} />
             </div>
 
             <ChallengeDecisionTrace scenario={scenario} selectedChoice={selectedChoice} />
@@ -108,7 +108,7 @@ export function ChallengePanel(): React.ReactElement {
                 <ol className="mt-3 grid gap-2 text-sm leading-6 text-[#b7c2d2]">
                   {scenario.approach.map((step, index) => (
                     <li key={step} className="grid grid-cols-[28px_1fr] gap-3">
-                      <span className="mono text-[#55d7ff]">{index + 1}</span>
+                      <span className="mono text-[#ffb000]">{index + 1}</span>
                       <span>{step}</span>
                     </li>
                   ))}

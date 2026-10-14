@@ -9,7 +9,7 @@ RyanOS uses one visual language across standard portfolio and embedded room scre
 - Primary phosphor: `#ffb000`
 - Highlight phosphor: `#ffd24d`
 - Text: `#ffe4a3`, `#e5b85e`, `#b58332`
-- Status green: `#a6e22e`
+- Status: `#ffc24a` amber
 - Borders: low-opacity amber, rectangular 2-3px corners
 
 ## Rules
