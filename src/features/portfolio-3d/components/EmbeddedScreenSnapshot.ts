@@ -2,7 +2,7 @@
 
 const snapshotTextureScale = 1.8;
 const maximumSnapshotDimension = 1800;
-const snapshotBackgroundColor = '#0f1b29';
+const snapshotBackgroundColor = '#0b0703';
 const snapshotScrollAttribute = 'data-embedded-snapshot-scroll';
 
 interface EmbeddedScreenSnapshotOptions {
@@ -321,8 +321,8 @@ function getSnapshotScrollbarStyle(element: HTMLElement): ScrollSnapshotStyle {
   };
 
   return {
-    thumb: readColor('--embedded-screen-scrollbar-thumb', '#66ddff'),
-    track: readColor('--embedded-screen-scrollbar-track', '#081014'),
+    thumb: readColor('--embedded-screen-scrollbar-thumb', '#ffb000'),
+    track: readColor('--embedded-screen-scrollbar-track', '#0b0703'),
     thickness: readPixels('--embedded-screen-scrollbar-size', 5),
     thumbInset: readPixels('--embedded-screen-scrollbar-thumb-inset', 1),
     minimumThumbLength: readPixels('--embedded-screen-scrollbar-min-thumb', 28)
@@ -331,8 +331,8 @@ function getSnapshotScrollbarStyle(element: HTMLElement): ScrollSnapshotStyle {
 
 function getDefaultSnapshotScrollbarStyle(): ScrollSnapshotStyle {
   return {
-    thumb: '#66ddff',
-    track: '#081014',
+    thumb: '#ffb000',
+    track: '#0b0703',
     thickness: 5,
     thumbInset: 1,
     minimumThumbLength: 28

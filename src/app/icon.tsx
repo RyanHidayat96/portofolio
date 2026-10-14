@@ -12,9 +12,9 @@ export default function Icon(): ImageResponse {
     <div
       style={{
         alignItems: "center",
-        background: "#06070a",
-        border: "2px solid #37f2a5",
-        color: "#f4f7fb",
+        background: "#0b0703",
+        border: "2px solid #ffb000",
+        color: "#ffe4a3",
         display: "flex",
         fontSize: 18,
         fontWeight: 800,

@@ -2,37 +2,37 @@
 
 :root {
   color-scheme: dark;
-  --background: #05070a;
-  --background-soft: #080b12;
-  --surface: #10141d;
-  --surface-elevated: #151c28;
-  --surface-raised: #0b1018;
-  --surface-deep: #080a0f;
-  --surface-deep-96: rgba(8, 10, 15, 0.96);
-  --surface-deep-92: rgba(8, 10, 15, 0.92);
-  --surface-deeper: #05070b;
-  --surface-translucent: rgba(16, 20, 29, 0.7);
-  --surface-glass: rgba(13, 18, 27, 0.78);
-  --text-primary: #eef5ff;
-  --text-secondary: #c8d4e6;
-  --text-muted: #8a96a8;
-  --text-subtle: #556174;
-  --accent: #55d7ff;
-  --accent-secondary: #9bbcff;
-  --success: #6ee7a8;
-  --warning: #ffd36e;
-  --danger: #ff6f7d;
-  --border: rgba(145, 164, 191, 0.18);
-  --border-strong: rgba(145, 164, 191, 0.28);
-  --accent-soft: rgba(85, 215, 255, 0.12);
-  --accent-strong: rgba(85, 215, 255, 0.6);
-  --accent-contrast: #061018;
-  --accent-hover: #8be5ff;
-  --danger-soft: rgba(255, 111, 125, 0.12);
-  --danger-strong: rgba(255, 111, 125, 0.6);
-  --danger-text: #ff9aa4;
-  --danger-hover: rgba(255, 111, 125, 0.2);
-  --panel: rgba(16, 20, 29, 0.92);
+  --background: #070502;
+  --background-soft: #100a04;
+  --surface: #181006;
+  --surface-elevated: #241708;
+  --surface-raised: #211406;
+  --surface-deep: #0b0703;
+  --surface-deep-96: rgba(11, 7, 3, 0.96);
+  --surface-deep-92: rgba(11, 7, 3, 0.92);
+  --surface-deeper: #050301;
+  --surface-translucent: rgba(24, 16, 6, 0.86);
+  --surface-glass: rgba(18, 12, 4, 0.9);
+  --text-primary: #ffe4a3;
+  --text-secondary: #e5b85e;
+  --text-muted: #b58332;
+  --text-subtle: #765116;
+  --accent: #ffb000;
+  --accent-secondary: #ffd24d;
+  --success: #a6e22e;
+  --warning: #ffd24d;
+  --danger: #ff704d;
+  --border: rgba(224, 153, 42, 0.28);
+  --border-strong: rgba(255, 176, 0, 0.52);
+  --accent-soft: rgba(255, 176, 0, 0.14);
+  --accent-strong: rgba(255, 176, 0, 0.68);
+  --accent-contrast: #1a0d00;
+  --accent-hover: #ffe08a;
+  --danger-soft: rgba(255, 112, 77, 0.14);
+  --danger-strong: rgba(255, 112, 77, 0.64);
+  --danger-text: #ffad7f;
+  --danger-hover: rgba(255, 112, 77, 0.22);
+  --panel: rgba(22, 14, 5, 0.95);
   --panel-strong: var(--surface);
   --container-max: 1280px;
   --content-max: 1120px;
@@ -48,12 +48,12 @@
   --line-height-display: 0.95;
   --line-height-title: 1.1;
   --line-height-body: 1.7;
-  --radius-panel: 8px;
-  --radius-control: 6px;
-  --radius-badge: 999px;
-  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.22);
-  --shadow-panel-soft: 0 18px 54px rgba(0, 0, 0, 0.18);
-  --shadow-focus: 0 0 0 4px rgba(85, 215, 255, 0.14);
+  --radius-panel: 3px;
+  --radius-control: 2px;
+  --radius-badge: 2px;
+  --shadow-panel: 4px 5px 0 rgba(0, 0, 0, 0.58);
+  --shadow-panel-soft: 3px 4px 0 rgba(0, 0, 0, 0.46);
+  --shadow-focus: 0 0 0 3px rgba(255, 176, 0, 0.2);
   --touch-target: 44px;
   --motion-micro: 90ms;
   --motion-short: 160ms;
@@ -73,11 +73,19 @@
   --foreground: var(--text-primary);
   --muted: var(--text-muted);
   --cyan: var(--accent);
-  --blue: #6ea8ff;
-  --violet: #b18cff;
+  --blue: #e5b85e;
+  --violet: #ffd24d;
   --green: var(--success);
   --red: var(--danger);
   --yellow: var(--warning);
+  --crt-scanlines: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 176, 0, 0.06) 0,
+    rgba(255, 176, 0, 0.06) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  --crt-vignette: radial-gradient(circle, transparent 54%, rgba(0, 0, 0, 0.34) 100%);
 }
 
 @theme inline {
@@ -99,8 +107,8 @@ body {
   margin: 0;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 18% 12%, rgba(85, 215, 255, 0.12), transparent 32rem),
-    radial-gradient(circle at 86% 8%, rgba(155, 188, 255, 0.08), transparent 28rem),
+    radial-gradient(circle at 18% 12%, rgba(255, 176, 0, 0.09), transparent 32rem),
+    radial-gradient(circle at 86% 8%, rgba(126, 61, 12, 0.16), transparent 28rem),
     linear-gradient(180deg, var(--background-soft), var(--background) 32rem), var(--background);
   color: var(--text-primary);
   font-family:
@@ -128,7 +136,7 @@ a,
 select,
 input,
 textarea {
-  -webkit-tap-highlight-color: rgba(85, 215, 255, 0.18);
+  -webkit-tap-highlight-color: rgba(255, 176, 0, 0.18);
 }
 
 button:focus-visible,
@@ -143,13 +151,13 @@ textarea:focus-visible,
 }
 
 ::selection {
-  background: rgba(85, 215, 255, 0.32);
+  background: rgba(255, 176, 0, 0.32);
 }
 
 .engineering-grid {
   background-image:
-    linear-gradient(rgba(145, 164, 191, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(145, 164, 191, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(224, 153, 42, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 153, 42, 0.1) 1px, transparent 1px);
   background-size: 42px 42px;
   mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.72), transparent);
 }
@@ -9941,54 +9949,54 @@ textarea:focus-visible,
 
 /* CSS3D documents are portfolio pages, not part of the retro room chrome. */
 .arcade-screen-document {
-  --embedded-screen-scrollbar-thumb: #66ddff;
-  --embedded-screen-scrollbar-track: #081014;
-  --embedded-screen-scrollbar-ring: rgba(85, 215, 255, 0.38);
-  --embedded-screen-scrollbar-track-glow: rgba(85, 215, 255, 0.32);
-  --embedded-screen-scrollbar-thumb-glow: rgba(102, 221, 255, 0.88);
+  --embedded-screen-scrollbar-thumb: #ffb000;
+  --embedded-screen-scrollbar-track: #0b0703;
+  --embedded-screen-scrollbar-ring: rgba(255, 176, 0, 0.38);
+  --embedded-screen-scrollbar-track-glow: rgba(255, 176, 0, 0.24);
+  --embedded-screen-scrollbar-thumb-glow: rgba(255, 176, 0, 0.68);
   --embedded-screen-scrollbar-size: 5px;
   --embedded-screen-scrollbar-thumb-inset: 1px;
   --embedded-screen-mobile-scrollbar-gutter: 10px;
   --embedded-screen-scrollbar-min-thumb: 28px;
-  --background: #0a1520;
-  --background-soft: #101c2a;
-  --surface: #162536;
-  --surface-elevated: #1c2d40;
-  --surface-raised: #101d2b;
-  --surface-deep: #09121d;
-  --surface-deep-96: rgba(9, 18, 29, 0.96);
-  --surface-deep-92: rgba(9, 18, 29, 0.92);
-  --surface-deeper: #06101a;
-  --surface-translucent: rgba(20, 34, 49, 0.78);
-  --surface-glass: rgba(17, 30, 45, 0.84);
-  --text-primary: #f5f9ff;
-  --text-secondary: #d6e4f4;
-  --text-muted: #aabbd0;
-  --text-subtle: #72849b;
-  --accent: #67e2ff;
-  --accent-secondary: #b4cfff;
-  --accent-soft: rgba(103, 226, 255, 0.16);
-  --accent-strong: rgba(103, 226, 255, 0.68);
-  --accent-contrast: #061018;
-  --accent-hover: #a6edff;
-  --success: #82f0ba;
-  --warning: #ffe09a;
-  --danger: #ff8f9a;
-  --danger-soft: rgba(255, 143, 154, 0.15);
-  --danger-strong: rgba(255, 143, 154, 0.66);
-  --danger-text: #ffb4bc;
-  --danger-hover: rgba(255, 143, 154, 0.24);
-  --border: rgba(157, 195, 225, 0.3);
-  --border-strong: rgba(157, 195, 225, 0.46);
-  --panel: rgba(20, 34, 49, 0.95);
+  --background: #0b0703;
+  --background-soft: #160d04;
+  --surface: #211406;
+  --surface-elevated: #2b1a08;
+  --surface-raised: #1b1005;
+  --surface-deep: #0b0703;
+  --surface-deep-96: rgba(11, 7, 3, 0.96);
+  --surface-deep-92: rgba(11, 7, 3, 0.92);
+  --surface-deeper: #050301;
+  --surface-translucent: rgba(24, 16, 6, 0.86);
+  --surface-glass: rgba(18, 12, 4, 0.9);
+  --text-primary: #ffe4a3;
+  --text-secondary: #e5b85e;
+  --text-muted: #b58332;
+  --text-subtle: #765116;
+  --accent: #ffb000;
+  --accent-secondary: #ffd24d;
+  --accent-soft: rgba(255, 176, 0, 0.14);
+  --accent-strong: rgba(255, 176, 0, 0.68);
+  --accent-contrast: #1a0d00;
+  --accent-hover: #ffe08a;
+  --success: #a6e22e;
+  --warning: #ffd24d;
+  --danger: #ff704d;
+  --danger-soft: rgba(255, 112, 77, 0.14);
+  --danger-strong: rgba(255, 112, 77, 0.64);
+  --danger-text: #ffad7f;
+  --danger-hover: rgba(255, 112, 77, 0.22);
+  --border: rgba(224, 153, 42, 0.28);
+  --border-strong: rgba(255, 176, 0, 0.52);
+  --panel: rgba(22, 14, 5, 0.95);
   --panel-strong: var(--surface);
-  --shadow-panel: 0 20px 60px rgba(0, 0, 0, 0.18);
-  --shadow-focus: 0 0 0 4px rgba(103, 226, 255, 0.18);
-  --radius-panel: 8px;
-  --radius-control: 6px;
+  --shadow-panel: 4px 5px 0 rgba(0, 0, 0, 0.58);
+  --shadow-focus: 0 0 0 3px rgba(255, 176, 0, 0.2);
+  --radius-panel: 3px;
+  --radius-control: 2px;
 }
 
-/* Keep embedded portfolio pages legible from the room without changing their blue visual language. */
+/* Keep embedded portfolio pages legible from the room with one amber CRT language. */
 .arcade-pipeline-screen,
 .monitor-automation-screen,
 .monitor-performance-screen,
@@ -9998,7 +10006,7 @@ textarea:focus-visible,
 .experience-artwork-screen,
 .architecture-embedded-screen,
 .contact-book-screen {
-  background: #0f1b29;
+  background: #0b0703;
 }
 
 .arcade-pipeline-heading,
@@ -10016,8 +10024,8 @@ textarea:focus-visible,
   flex: 0 0 auto;
   min-height: 61px;
   padding: 16px 22px;
-  border-bottom: 1px solid #3c627c;
-  background: #1a2c3d;
+  border-bottom: 1px solid #8b5a13;
+  background: #211406;
   color: var(--accent);
   font-weight: 400;
   letter-spacing: 0;
@@ -10119,19 +10127,19 @@ textarea:focus-visible,
 }
 
 .profile-artwork-content {
-  background: #0f1b29;
+  background: #0b0703;
   scrollbar-color: var(--accent) var(--surface-deep);
 }
 
 .profile-artwork-content .panel-surface {
-  border-color: #3c627c;
-  background: #162536;
+  border-color: #8b5a13;
+  background: #211406;
 }
 
 .contact-book-content {
-  border-color: rgba(103, 226, 255, 0.82);
-  background: linear-gradient(135deg, rgba(103, 226, 255, 0.12), transparent 34%), #0f1b29;
-  box-shadow: inset 0 0 0 8px rgba(103, 226, 255, 0.06);
+  border-color: rgba(255, 176, 0, 0.82);
+  background: linear-gradient(135deg, rgba(255, 176, 0, 0.12), transparent 34%), #0b0703;
+  box-shadow: inset 0 0 0 8px rgba(255, 176, 0, 0.06);
 }
 
 .arcade-screen-document :is(
@@ -10565,5 +10573,252 @@ textarea:focus-visible,
   .portfolio-3d-navigation-panel {
     height: min(32svh, 13rem);
     max-height: min(32svh, 13rem);
+  }
+}
+
+/* RyanOS amber CRT language. Keep this override scoped to standard pages and embedded screens. */
+.workspace-root,
+.arcade-screen-document {
+  isolation: isolate;
+  color: var(--text-primary);
+}
+
+.workspace-root::before,
+.arcade-screen-document::after {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  content: "";
+  background-image: var(--crt-scanlines), var(--crt-vignette);
+  opacity: 0.1;
+}
+
+.workspace-root::before {
+  position: fixed;
+}
+
+.workspace-root .workspace-sidebar,
+.workspace-root .workspace-main,
+.workspace-root .workspace-header {
+  border-color: var(--border) !important;
+  background: var(--surface-deep-96) !important;
+  backdrop-filter: none;
+}
+
+.workspace-root .workspace-header {
+  box-shadow: 0 2px 0 rgba(255, 176, 0, 0.12);
+}
+
+.workspace-root .workspace-brand::after,
+.workspace-root .workspace-scene-transition span {
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.workspace-root .workspace-nav-button {
+  border-color: transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.workspace-root .workspace-nav-button:hover,
+.workspace-root .workspace-nav-button:focus-visible {
+  border-color: var(--border-strong);
+  background: rgba(255, 176, 0, 0.08);
+  color: var(--text-primary);
+}
+
+.workspace-root .workspace-nav-button-active {
+  border-color: var(--accent-strong);
+  background: linear-gradient(90deg, rgba(255, 176, 0, 0.18), transparent 72%);
+  color: var(--text-primary);
+}
+
+.workspace-root .workspace-nav-button-active .workspace-nav-icon {
+  border-color: var(--accent-strong);
+  background: rgba(255, 176, 0, 0.12);
+  color: var(--accent);
+}
+
+.workspace-root .workspace-nav-icon,
+.workspace-root .workspace-section-select,
+.workspace-root .button-base,
+.workspace-root .badge-base,
+.workspace-root .panel-surface {
+  border-radius: var(--radius-control);
+}
+
+.workspace-root .panel-surface {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow-panel-soft);
+}
+
+.workspace-root .button-base {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
+}
+
+.workspace-root .button-base:hover:not(:disabled),
+.workspace-root .button-base:focus-visible {
+  border-color: var(--accent);
+  background: rgba(255, 176, 0, 0.14);
+  color: var(--accent-hover);
+}
+
+.workspace-root :is(h1, h2, h3, .mono, button, select, input, textarea) {
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
+}
+
+.workspace-root :is(h1, h2, h3) {
+  letter-spacing: 0;
+}
+
+.workspace-root [class~="text-[#55d7ff]"],
+.workspace-root [class~="text-[#67e2ff]"],
+.workspace-root [class~="text-[#53e0ff]"],
+.workspace-root [class~="text-[#51d8ff]"],
+.workspace-root [class~="text-[#eef5ff]"],
+.workspace-root [class~="text-[#c8d4e6]"],
+.workspace-root [class~="text-[#b7c2d2]"] {
+  color: var(--text-primary) !important;
+}
+
+.workspace-root [class~="text-[#55d7ff]"],
+.workspace-root [class~="text-[#67e2ff]"],
+.workspace-root [class~="text-[#53e0ff]"],
+.workspace-root [class~="text-[#51d8ff]"] {
+  color: var(--accent) !important;
+}
+
+.workspace-root [class~="bg-[#111722]"],
+.workspace-root [class~="bg-[#0b0f16]"],
+.workspace-root [class~="bg-[#0b1018]"],
+.workspace-root [class~="bg-[#05070a]"] {
+  background: var(--surface-deep) !important;
+}
+
+.workspace-root [class~="bg-[#55d7ff]"] {
+  background: var(--accent) !important;
+}
+
+.workspace-root [class~="accent-[#55d7ff]"] {
+  accent-color: var(--accent) !important;
+}
+
+.arcade-screen-document {
+  position: relative;
+  background: var(--background) !important;
+  color: var(--text-primary);
+  font-family: var(--font-portfolio-sans), Arial, sans-serif;
+}
+
+.arcade-screen-document :is(h1, h2, h3, h4, .mono, button, select, input, textarea, code, pre) {
+  font-family: var(--font-portfolio-mono), Consolas, monospace;
+}
+
+.arcade-screen-document :is(.panel-surface, [class*="bg-[#111722]"], [class*="bg-[#0b0f16]"]) {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow-panel-soft);
+}
+
+.arcade-screen-document [class~="text-[#55d7ff]"],
+.arcade-screen-document [class~="text-[#67e2ff]"],
+.arcade-screen-document [class~="text-[#53e0ff]"],
+.arcade-screen-document [class~="text-[#51d8ff]"] {
+  color: var(--accent) !important;
+}
+
+.arcade-screen-document [class~="text-[#eef5ff]"],
+.arcade-screen-document [class~="text-[#c8d4e6]"],
+.arcade-screen-document [class~="text-[#b7c2d2]"] {
+  color: var(--text-primary) !important;
+}
+
+.arcade-screen-document [class~="bg-[#111722]"],
+.arcade-screen-document [class~="bg-[#0b0f16]"],
+.arcade-screen-document [class~="bg-[#0b1018]"] {
+  background: var(--surface-deep) !important;
+}
+
+.arcade-screen-document :is(button, select, input, textarea) {
+  border-radius: var(--radius-control);
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+.arcade-screen-document :is(button, select, input, textarea):focus-visible {
+  outline-color: var(--accent);
+  box-shadow: var(--shadow-focus);
+}
+
+/* Replace legacy per-screen navy/green surfaces inside embedded pages. */
+.arcade-screen-document :is(
+  .api-playground-screen,
+  .terminal-panel-screen,
+  .pipeline-simulator-screen,
+  .automation-lab-screen,
+  .performance-lab-screen,
+  .architecture-embedded-screen,
+  .architecture-artwork-screen,
+  .contact-book-screen,
+  .profile-artwork-screen,
+  .experience-artwork-screen
+) {
+  background: var(--background) !important;
+  color: var(--text-primary) !important;
+}
+
+.arcade-screen-document :is(
+  .api-playground-screen .panel-surface,
+  .api-playground-screen .api-endpoint-button,
+  .api-playground-screen .api-fact-card,
+  .api-playground-screen .api-contract-list > div,
+  .api-playground-screen .api-response-body,
+  .api-playground-screen .api-lifecycle-rail li,
+  .terminal-panel-screen .terminal-screen,
+  .terminal-panel-screen .terminal-command-rail,
+  .pipeline-simulator-screen .pipeline-stage-list > li,
+  .automation-lab-screen [role="log"] > *,
+  .performance-lab-screen .performance-scenario-node,
+  .performance-lab-screen .performance-chart,
+  .architecture-artwork-map,
+  .contact-book-content,
+  .profile-artwork-content,
+  .experience-artwork-content
+) {
+  border-color: var(--border) !important;
+  background-color: var(--surface-deep) !important;
+  color: var(--text-primary) !important;
+}
+
+.arcade-screen-document :is(
+  .architecture-artwork-heading,
+  .architecture-artwork-kicker,
+  .architecture-artwork-topology > header p,
+  .architecture-artwork-detail > p:first-child
+) {
+  color: var(--accent) !important;
+}
+
+.arcade-screen-document .architecture-artwork-map {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255, 176, 0, 0.08) 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(0deg, rgba(255, 176, 0, 0.06) 0 1px, transparent 1px 56px) !important;
+}
+
+.arcade-screen-document .architecture-artwork-map-edges line {
+  stroke: rgba(255, 176, 0, 0.52) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-root::before,
+  .arcade-screen-document::after {
+    opacity: 0.045;
   }
 }

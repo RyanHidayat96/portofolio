@@ -16,8 +16,8 @@ export default function OpenGraphImage(): ImageResponse {
   return new ImageResponse(
     <div
       style={{
-        background: "#06070a",
-        color: "#f4f7fb",
+        background: "#0b0703",
+        color: "#ffe4a3",
         display: "flex",
         flexDirection: "column",
         height: "100%",
@@ -36,7 +36,7 @@ export default function OpenGraphImage(): ImageResponse {
       >
         <div
           style={{
-            color: "#37f2a5",
+            color: "#ffb000",
             display: "flex",
             fontSize: 30,
             fontWeight: 800
@@ -46,8 +46,8 @@ export default function OpenGraphImage(): ImageResponse {
         </div>
         <div
           style={{
-            border: "1px solid #2a3442",
-            color: "#a7b3c4",
+            border: "1px solid #8b5a13",
+            color: "#d39b3a",
             display: "flex",
             fontSize: 24,
             padding: "12px 18px"
@@ -60,7 +60,7 @@ export default function OpenGraphImage(): ImageResponse {
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <div
           style={{
-            color: "#37f2a5",
+            color: "#ffb000",
             display: "flex",
             fontSize: 28,
             fontWeight: 700
@@ -70,7 +70,7 @@ export default function OpenGraphImage(): ImageResponse {
         </div>
         <div
           style={{
-            color: "#f4f7fb",
+            color: "#ffe4a3",
             display: "flex",
             fontSize: 86,
             fontWeight: 800,
@@ -81,7 +81,7 @@ export default function OpenGraphImage(): ImageResponse {
         </div>
         <div
           style={{
-            color: "#d9e2ee",
+            color: "#e5b85e",
             display: "flex",
             fontSize: 36,
             maxWidth: 900
@@ -96,9 +96,9 @@ export default function OpenGraphImage(): ImageResponse {
           <div
             key={highlight}
             style={{
-              background: "#111722",
-              border: "1px solid #2a3442",
-              color: "#f4f7fb",
+              background: "#211406",
+              border: "1px solid #8b5a13",
+              color: "#ffe4a3",
               display: "flex",
               fontSize: 24,
               padding: "12px 16px"

@@ -76,7 +76,7 @@ export const portfolio3dScreenPreviews = [
     eyebrow: "case studies",
     title: "Project systems",
     lines: projectTitleLines(projects),
-    accent: "#51d8ff"
+    accent: "#ffb000"
   },
   {
     sectionId: "architecture",
@@ -84,7 +84,7 @@ export const portfolio3dScreenPreviews = [
     eyebrow: "architecture",
     title: "System maps",
     lines: architecturePresets.slice(0, maxScreenLines).map((preset) => preset.title),
-    accent: "#8ff5c5"
+    accent: "#ffd24d"
   },
   {
     sectionId: "fullstack",
@@ -97,7 +97,7 @@ export const portfolio3dScreenPreviews = [
       backendNode?.label,
       dataNode?.label
     ]),
-    accent: "#7fc8ff"
+    accent: "#e5b85e"
   },
   {
     sectionId: "backend",
@@ -105,7 +105,7 @@ export const portfolio3dScreenPreviews = [
     eyebrow: "backend",
     title: "API boundary",
     lines: apiEndpoints.slice(0, maxScreenLines).map((endpoint) => endpoint.path),
-    accent: "#9df2d0"
+    accent: "#a6e22e"
   },
   {
     sectionId: "performance",
@@ -113,7 +113,7 @@ export const portfolio3dScreenPreviews = [
     eyebrow: "quality signal",
     title: "Performance gates",
     lines: performanceScenarios.slice(0, maxScreenLines).map((scenario) => scenario.label),
-    accent: "#ffd86b"
+    accent: "#ffcf5a"
   },
   {
     sectionId: "contact",
@@ -121,7 +121,7 @@ export const portfolio3dScreenPreviews = [
     eyebrow: "contact",
     title: profile.name,
     lines: primaryContactLinks.slice(0, 3).map((link) => link.label),
-    accent: "#53e0ff"
+    accent: "#ff9f1c"
   }
 ] as const satisfies readonly Portfolio3dScreenPreview[];
 

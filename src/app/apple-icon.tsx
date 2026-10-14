@@ -12,9 +12,9 @@ export default function AppleIcon(): ImageResponse {
     <div
       style={{
         alignItems: "center",
-        background: "#06070a",
-        border: "8px solid #37f2a5",
-        color: "#f4f7fb",
+        background: "#0b0703",
+        border: "8px solid #ffb000",
+        color: "#ffe4a3",
         display: "flex",
         fontSize: 96,
         fontWeight: 800,

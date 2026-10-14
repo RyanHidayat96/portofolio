@@ -172,9 +172,9 @@ function createPreviewTexture(preview: ScreenPreview): THREE.CanvasTexture {
 
 function drawPreviewCanvas(context: CanvasRenderingContext2D, preview: ScreenPreview): void {
   const gradient = context.createLinearGradient(0, 0, screenCanvasWidth, screenCanvasHeight);
-  gradient.addColorStop(0, '#07111a');
-  gradient.addColorStop(0.58, '#0b1721');
-  gradient.addColorStop(1, '#081018');
+  gradient.addColorStop(0, '#120a03');
+  gradient.addColorStop(0.58, '#1d1105');
+  gradient.addColorStop(1, '#0b0703');
   context.fillStyle = gradient;
   context.fillRect(0, 0, screenCanvasWidth, screenCanvasHeight);
 
@@ -188,7 +188,7 @@ function drawPreviewCanvas(context: CanvasRenderingContext2D, preview: ScreenPre
   context.font = '600 18px monospace';
   context.fillText(preview.eyebrow.toUpperCase(), 38, 52);
 
-  context.fillStyle = '#eaf2ff';
+  context.fillStyle = '#ffe4a3';
   context.font = '700 36px Inter, Arial, sans-serif';
   wrapCanvasText(context, preview.title, 38, 100, 420, 39, 2);
 
@@ -197,7 +197,7 @@ function drawPreviewCanvas(context: CanvasRenderingContext2D, preview: ScreenPre
     const y = lineStartY + index * 25;
     context.fillStyle = withAlpha(preview.accent, 0.92);
     context.fillRect(38, y - 8, 14, 2);
-    context.fillStyle = '#aeb9ca';
+    context.fillStyle = '#d39b3a';
     context.font = '500 16px Inter, Arial, sans-serif';
     context.fillText(truncateText(context, line, 398), 62, y);
   });
@@ -213,7 +213,7 @@ function drawPreviewCanvas(context: CanvasRenderingContext2D, preview: ScreenPre
 
 function drawGrid(context: CanvasRenderingContext2D): void {
   context.save();
-  context.strokeStyle = 'rgba(116, 155, 179, 0.12)';
+  context.strokeStyle = 'rgba(224, 153, 42, 0.13)';
   context.lineWidth = 1;
 
   for (let x = 0; x <= screenCanvasWidth; x += 64) {
