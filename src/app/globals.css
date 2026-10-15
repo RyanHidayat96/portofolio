@@ -44,34 +44,34 @@
   --font-size-display-sm: 3.5rem;
   --font-size-title: 2.25rem;
   --font-size-title-sm: 1.75rem;
-  --font-size-body: 1rem;
+  --font-size-body: 1.15rem;
   --line-height-display: 0.95;
   --line-height-title: 1.1;
-  --line-height-body: 1.7;
-  --radius-panel: 3px;
-  --radius-control: 2px;
-  --radius-badge: 2px;
-  --shadow-panel: 4px 5px 0 rgba(0, 0, 0, 0.58);
-  --shadow-panel-soft: 3px 4px 0 rgba(0, 0, 0, 0.46);
-  --shadow-soft: 0 12px 34px rgba(0, 0, 0, 0.44);
-  --shadow-focus: 0 0 0 3px rgba(255, 176, 0, 0.2);
+  --line-height-body: 1.6;
+  --radius-panel: 0px;
+  --radius-control: 0px;
+  --radius-badge: 0px;
+  --shadow-panel: 4px 4px 0 #000;
+  --shadow-panel-soft: 3px 3px 0 #000;
+  --shadow-soft: 4px 4px 0 #000;
+  --shadow-focus: 0 0 0 2px var(--accent);
   --touch-target: 44px;
   --terminal-caret-color: var(--accent);
-  --motion-micro: 90ms;
-  --motion-short: 160ms;
-  --motion-medium: 260ms;
-  --motion-scene: 640ms;
+  --motion-micro: 0ms;
+  --motion-short: 60ms;
+  --motion-medium: 120ms;
+  --motion-scene: 400ms;
   --motion-fast: var(--motion-short);
   --motion-base: var(--motion-medium);
   --motion-slow: var(--motion-scene);
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --hover-lift: -1px;
+  --ease-standard: steps(3, end);
+  --ease-emphasized: steps(4, end);
+  --ease-spring: steps(3, end);
+  --hover-lift: 0px;
   --magnetic-x: 0px;
   --magnetic-y: 0px;
-  --cursor-ring-size: 34px;
-  --cursor-dot-size: 5px;
+  --cursor-ring-size: 16px;
+  --cursor-dot-size: 4px;
   --foreground: var(--text-primary);
   --muted: var(--text-muted);
   --cyan: var(--accent);
@@ -82,17 +82,19 @@
   --yellow: var(--warning);
   --crt-scanlines: repeating-linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.34) 0,
-    rgba(0, 0, 0, 0.34) 1px,
+    rgba(0, 0, 0, 0.52) 0,
+    rgba(0, 0, 0, 0.52) 1px,
     transparent 1px,
     transparent 3px
   );
-  --crt-vignette: radial-gradient(circle, transparent 54%, rgba(0, 0, 0, 0.34) 100%);
-  --crt-scanline-opacity: 0.22;
-  --crt-vignette-opacity: 0.42;
-  --crt-surface-bow: perspective(1400px) rotateX(0.22deg) scale(1.002);
-  --crt-text-glow: 0 0 1px rgba(255, 176, 0, 0.42), 0 0 7px rgba(255, 176, 0, 0.16);
-  --crt-text-glow-strong: 0 0 1px rgba(255, 210, 77, 0.6), 0 0 12px rgba(255, 176, 0, 0.26);
+  --crt-vignette: radial-gradient(circle, transparent 52%, rgba(0, 0, 0, 0.45) 100%);
+  --crt-scanline-opacity: 0.32;
+  --crt-vignette-opacity: 0.55;
+  --crt-surface-bow: perspective(1200px) rotateX(0.35deg) scale(1.003);
+  --crt-text-glow: 0 0 1px rgba(255, 176, 0, 0.85), 0 0 6px rgba(255, 176, 0, 0.35);
+  --crt-text-glow-strong:
+    0 0 2px rgba(255, 210, 77, 0.95), 0 0 10px rgba(255, 176, 0, 0.6),
+    0 0 22px rgba(255, 176, 0, 0.3);
 }
 
 @theme inline {
@@ -119,16 +121,14 @@ body {
     linear-gradient(180deg, var(--background-soft), var(--background) 32rem), var(--background);
   color: var(--text-primary);
   font-family:
-    var(--font-portfolio-sans),
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+    var(--font-portfolio-mono), var(--font-portfolio-sans), "VT323", Consolas, "Courier New",
+    monospace;
   font-size: var(--font-size-body);
   line-height: var(--line-height-body);
-  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  letter-spacing: 0.035em;
 }
 
 button,
@@ -1840,10 +1840,11 @@ textarea:focus-visible,
 .professional-highlights article,
 .professional-skill {
   min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 0px;
   padding: 1.125rem;
-  background: #101316;
+  background: var(--surface-raised);
+  box-shadow: 3px 3px 0 #000;
 }
 
 .professional-highlights h3 {
@@ -4140,60 +4141,54 @@ textarea:focus-visible,
 .custom-cursor-ring {
   width: var(--cursor-ring-size);
   height: var(--cursor-ring-size);
-  border: 1px solid rgba(255, 176, 0, 0.64);
-  border-radius: 999px;
-  box-shadow: 0 0 26px rgba(255, 176, 0, 0.12);
+  border: 1px solid var(--accent);
+  border-radius: 0px;
+  background: rgba(255, 176, 0, 0.12);
+  box-shadow: 0 0 6px rgba(255, 176, 0, 0.45);
   transform: translate(-50%, -50%) scale(var(--cursor-scale));
   transition:
-    width var(--motion-short) var(--ease-emphasized),
-    height var(--motion-short) var(--ease-emphasized),
-    border-color var(--motion-short) var(--ease-standard),
-    background-color var(--motion-short) var(--ease-standard),
-    transform var(--motion-short) var(--ease-emphasized);
+    width var(--motion-short) steps(2, end),
+    height var(--motion-short) steps(2, end),
+    transform var(--motion-short) steps(2, end);
 }
 
 .custom-cursor-dot {
   width: var(--cursor-dot-size);
   height: var(--cursor-dot-size);
-  border-radius: 999px;
+  border-radius: 0px;
   background: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
   transform: translate(-50%, -50%);
 }
 
 .custom-cursor-label {
   min-width: max-content;
-  margin-left: 1.35rem;
+  margin-left: 1.1rem;
   margin-top: -0.65rem;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-badge);
-  background: rgba(5, 7, 10, 0.84);
-  padding: 0.12rem 0.45rem;
+  border-radius: 0px;
+  background: #070502;
+  box-shadow: 2px 2px 0 #000;
+  padding: 0.1rem 0.4rem;
   color: var(--accent);
   font-family: var(--font-portfolio-mono), Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.custom-cursor[data-intent="button"] {
-  --cursor-ring-size: 40px;
-  --cursor-scale: 1.04;
-}
-
+.custom-cursor[data-intent="button"],
 .custom-cursor[data-intent="link"],
-.custom-cursor[data-intent="project"] {
-  --cursor-ring-size: 46px;
-  --cursor-scale: 1.08;
-}
-
+.custom-cursor[data-intent="project"],
 .custom-cursor[data-intent="node"],
 .custom-cursor[data-intent="view"] {
-  --cursor-ring-size: 50px;
-  --cursor-scale: 1.1;
+  --cursor-ring-size: 20px;
+  --cursor-scale: 1;
 }
 
 .custom-cursor[data-pressed="true"] {
-  --cursor-scale: 0.86;
+  --cursor-scale: 0.8;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -10630,6 +10625,13 @@ textarea:focus-visible,
   color: var(--text-primary);
 }
 
+.workspace-root *,
+.landing-shell *,
+.system-awakening-shell *,
+.arcade-screen-document * {
+  border-radius: 0px !important;
+}
+
 /* CRT pass: dark inter-line gaps (a real scanline, not an amber tint),
    a stronger vignette, and a faint refresh ripple. Content stays above the
    overlays, so nothing here can block pointer input. */
@@ -10740,25 +10742,37 @@ textarea:focus-visible,
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--text-muted);
+  font-family: var(--font-portfolio-mono), monospace;
+  transition: none;
 }
 
 .workspace-root .workspace-nav-button:hover,
 .workspace-root .workspace-nav-button:focus-visible {
-  border-color: var(--border-strong);
-  background: rgba(255, 176, 0, 0.08);
-  color: var(--text-primary);
+  border-color: var(--accent);
+  background: var(--accent) !important;
+  color: var(--accent-contrast) !important;
+}
+
+.workspace-root .workspace-nav-button:hover :is(.workspace-nav-icon, .workspace-nav-label),
+.workspace-root .workspace-nav-button:focus-visible :is(.workspace-nav-icon, .workspace-nav-label) {
+  color: var(--accent-contrast) !important;
 }
 
 .workspace-root .workspace-nav-button-active {
-  border-color: var(--accent-strong);
-  background: linear-gradient(90deg, rgba(255, 176, 0, 0.18), transparent 72%);
-  color: var(--text-primary);
+  border-color: var(--accent);
+  background: var(--accent) !important;
+  color: var(--accent-contrast) !important;
+  box-shadow: 0 0 14px rgba(255, 176, 0, 0.45);
 }
 
-.workspace-root .workspace-nav-button-active .workspace-nav-icon {
-  border-color: var(--accent-strong);
-  background: rgba(255, 176, 0, 0.12);
-  color: var(--accent);
+.workspace-root .workspace-nav-button-active :is(.workspace-nav-icon, .workspace-nav-label) {
+  color: var(--accent-contrast) !important;
+}
+
+.workspace-root .workspace-nav-button-active .workspace-nav-indicator::before {
+  content: "► ";
+  color: var(--accent-contrast);
+  font-size: 0.8em;
 }
 
 .workspace-root .badge-info,
@@ -10792,23 +10806,34 @@ textarea:focus-visible,
 }
 
 .workspace-root .panel-surface {
-  border-color: var(--border) !important;
+  border-color: var(--border-strong) !important;
   background: var(--surface) !important;
   box-shadow: var(--shadow-panel-soft);
 }
 
 .workspace-root .button-base {
   border-color: var(--border-strong);
+  border-radius: var(--radius-control);
   background: var(--surface-raised);
   color: var(--text-primary);
-  font-family: var(--font-portfolio-mono), Consolas, monospace;
+  font-family: var(--font-portfolio-mono), monospace;
+  box-shadow: 2px 2px 0 #000;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: none;
 }
 
 .workspace-root .button-base:hover:not(:disabled),
 .workspace-root .button-base:focus-visible {
-  border-color: var(--accent);
-  background: rgba(255, 176, 0, 0.14);
-  color: var(--accent-hover);
+  border-color: var(--accent) !important;
+  background: var(--accent) !important;
+  color: var(--accent-contrast) !important;
+  box-shadow: 0 0 14px rgba(255, 176, 0, 0.55) !important;
+}
+
+.workspace-root .button-base:hover:not(:disabled) :is(span, svg),
+.workspace-root .button-base:focus-visible :is(span, svg) {
+  color: var(--accent-contrast) !important;
 }
 
 .workspace-root :is(h1, h2, h3, .mono, button, select, input, textarea) {

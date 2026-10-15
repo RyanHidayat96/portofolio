@@ -124,7 +124,7 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-3 backdrop-blur-sm sm:p-4"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-3 sm:p-4"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
@@ -134,7 +134,7 @@ export function CommandPalette({
     >
       <section
         ref={dialogRef}
-        className="palette-dialog mx-auto mt-4 w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-raised)] shadow-2xl sm:mt-20"
+        className="palette-dialog mx-auto mt-4 w-full max-w-2xl border-2 border-[var(--accent)] bg-[var(--surface-deep)] shadow-[6px_6px_0px_#000,0_0_24px_rgba(255,176,0,0.3)] sm:mt-20"
         role="dialog"
         aria-modal="true"
         aria-labelledby="command-palette-title"
@@ -146,8 +146,19 @@ export function CommandPalette({
         <p id={paletteDescriptionId} className="sr-only">
           Search actions. Use arrow keys to move through results, Enter to select, Escape to close.
         </p>
-        <div className="flex items-center gap-3 border-b border-[var(--border)] p-3 sm:p-4">
-          <Search aria-hidden="true" className="text-[var(--accent)]" size={20} />
+
+        <div className="flex items-center justify-between border-b-2 border-[var(--accent)] bg-[var(--surface-raised)] px-4 py-2 mono text-xs font-bold uppercase tracking-wider text-[var(--accent)]">
+          <span className="flex items-center gap-1">
+            <span className="text-[var(--accent-secondary)]">╔══</span>
+            <span>COMMAND_PALETTE.EXE</span>
+          </span>
+          <span className="text-xs text-[var(--text-muted)]">[ ESC: CLOSE ] ══╗</span>
+        </div>
+
+        <div className="flex items-center gap-3 border-b border-[var(--border)] bg-[var(--surface-deep)] p-3 sm:p-4">
+          <span className="mono text-xl font-black text-[var(--accent)]" aria-hidden="true">
+            &gt;
+          </span>
           <input
             ref={inputRef}
             value={query}
@@ -176,16 +187,16 @@ export function CommandPalette({
                 selectActiveAction();
               }
             }}
-            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-base text-[var(--text-primary)] outline-none placeholder:text-[var(--text-subtle)]"
-            placeholder="Search actions, labs, profile..."
+            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent mono text-lg text-[var(--text-primary)] outline-none placeholder:text-[var(--text-subtle)]"
+            placeholder="SEARCH ACTIONS, LABS, PROFILE..."
             aria-label="Search commands"
           />
-          <Command aria-hidden="true" className="text-[var(--text-muted)]" size={18} />
+          <span className="terminal-caret" aria-hidden="true" />
         </div>
 
         <div
           id={paletteListId}
-          className="max-h-[70vh] overflow-y-auto p-2 sm:max-h-[420px]"
+          className="max-h-[70vh] overflow-y-auto p-0 sm:max-h-[420px]"
           role="listbox"
           aria-label="Command palette actions"
         >
@@ -205,27 +216,49 @@ export function CommandPalette({
                   }}
                   onFocus={() => setActiveIndex(index)}
                   onMouseEnter={() => setActiveIndex(index)}
-                  className={`min-h-[var(--touch-target)] w-full rounded-[var(--radius-control)] border p-4 text-left transition ${
+                  className={`w-full border-b border-[var(--border)] p-3 sm:p-4 text-left mono transition-none ${
                     isActive
-                      ? "border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)]"
-                      : "border-transparent hover:border-[var(--accent-strong)] hover:bg-[var(--accent-soft)]"
+                      ? "bg-[var(--accent)] text-[var(--accent-contrast)]"
+                      : "bg-transparent text-[var(--text-primary)] hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)]"
                   }`}
                 >
-                  <span className="block font-semibold">{action.label}</span>
-                  <span className="mt-1 block text-sm text-[var(--text-muted)]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="block font-bold text-base">
+                      {isActive ? `► ${action.label}` : `  ${action.label}`}
+                    </span>
+                    {action.href ? (
+                      <span
+                        className={`mono text-xs ${
+                          isActive ? "text-[var(--accent-contrast)]" : "text-[var(--accent)]"
+                        }`}
+                      >
+                        [{action.isExternal ? "EXT" : "LINK"}]
+                      </span>
+                    ) : null}
+                  </div>
+                  <span
+                    className={`mt-1 block text-sm ${
+                      isActive
+                        ? "text-[var(--accent-contrast)] opacity-90"
+                        : "text-[var(--text-muted)]"
+                    }`}
+                  >
                     {action.description}
                   </span>
-                  {action.href ? (
-                    <span className="mono mt-2 block text-xs text-[var(--accent)]">
-                      {action.isExternal ? "external" : "link"} {action.href}
-                    </span>
-                  ) : null}
                 </button>
               );
             })
           ) : (
-            <p className="p-4 text-sm text-[var(--text-muted)]">No matching command.</p>
+            <p className="p-4 mono text-sm uppercase text-[var(--text-muted)]">
+              No matching command.
+            </p>
           )}
+        </div>
+
+        <div className="flex items-center justify-between border-t-2 border-[var(--border-strong)] bg-[var(--surface-raised)] px-4 py-2 mono text-xs text-[var(--text-muted)]">
+          <span>↑/↓ SELECT</span>
+          <span>[ENTER] EXECUTE</span>
+          <span>╚══[ {filteredActions.length} ACTIONS ]══╝</span>
         </div>
       </section>
     </div>

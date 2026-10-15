@@ -72,8 +72,8 @@ describe("amber CRT language", () => {
   it("keeps the design tokens on the amber palette", () => {
     expect(globalsCss).toContain("--accent: #ffb000");
     expect(globalsCss).toContain("--background: #070502");
-    expect(globalsCss).toContain("--radius-panel: 3px");
-    expect(globalsCss).toContain("--radius-control: 2px");
+    expect(globalsCss).toContain("--radius-panel: 0px");
+    expect(globalsCss).toContain("--radius-control: 0px");
   });
 
   it("defines the CRT overlay tokens instead of hard-coding opacity", () => {

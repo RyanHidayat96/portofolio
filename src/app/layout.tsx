@@ -5,17 +5,17 @@ import { StructuredData } from "./StructuredData";
 import "./globals.css";
 
 const portfolioSans = localFont({
-  src: "./fonts/geist-latin.woff2",
+  src: "./fonts/vt323-latin.woff2",
   variable: "--font-portfolio-sans",
   display: "swap",
-  fallback: ["ui-sans-serif", "system-ui", "Arial"]
+  fallback: ["VT323", "Courier New", "Courier", "monospace"]
 });
 
 const portfolioMono = localFont({
-  src: "./fonts/geist-mono-latin.woff2",
+  src: "./fonts/vt323-latin.woff2",
   variable: "--font-portfolio-mono",
   display: "swap",
-  fallback: ["Consolas", "Liberation Mono", "Menlo", "monospace"]
+  fallback: ["VT323", "Courier New", "Courier", "monospace"]
 });
 
 export const metadata: Metadata = {

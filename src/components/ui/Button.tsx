@@ -47,7 +47,12 @@ export function Button({
     <button
       ref={setMagneticElement}
       type={type}
-      className={cn("button-base", variantClass[variant], magnetic && "magnetic-surface", className)}
+      className={cn(
+        "button-base",
+        variantClass[variant],
+        magnetic && "magnetic-surface",
+        className
+      )}
       data-cursor-intent={cursorIntent}
       data-cursor-label={cursorLabel}
       onBlur={(event) => {
@@ -64,8 +69,14 @@ export function Button({
       }}
       {...props}
     >
+      <span className="mono text-[var(--accent)] opacity-60" aria-hidden="true">
+        [
+      </span>
       {icon}
       <span className="min-w-0 break-words text-center">{children}</span>
+      <span className="mono text-[var(--accent)] opacity-60" aria-hidden="true">
+        ]
+      </span>
     </button>
   );
 }
