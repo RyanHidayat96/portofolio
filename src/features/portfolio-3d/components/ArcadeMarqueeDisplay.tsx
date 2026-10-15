@@ -22,6 +22,16 @@ const marqueeMessageGap = 90;
 // are derived from these values to remain physically equal on the marquee.
 const marqueeBorderVerticalInset = 10;
 const marqueeContentVerticalInset = 15;
+const marqueeBorderLedPalette = {
+  glow: "255, 43, 35",
+  fill: "255, 54, 43",
+  highlight: "255, 211, 205"
+} as const;
+const marqueeTextLedPalette = {
+  glow: "255, 43, 35",
+  fill: "255, 54, 43",
+  highlight: "255, 211, 205"
+} as const;
 
 const ledGlyphs: Readonly<Record<string, readonly string[]>> = {
   A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
@@ -113,7 +123,7 @@ export function ArcadeMarqueeDisplay({
       <planeGeometry args={[marquee.width, marquee.height]} />
       <meshBasicMaterial
         map={texture}
-        color="#ffe4a3"
+        color="#ffffff"
         depthTest
         depthWrite
         fog={false}
@@ -138,6 +148,12 @@ interface MarqueeCanvasLayout {
   readonly borderVerticalInset: number;
   readonly contentHorizontalInset: number;
   readonly contentVerticalInset: number;
+}
+
+interface LedPalette {
+  readonly glow: string;
+  readonly fill: string;
+  readonly highlight: string;
 }
 
 function createMarqueeCanvasLayout(marquee: ArcadeScreenPlacement): MarqueeCanvasLayout {
@@ -253,10 +269,10 @@ function drawLedBorder(
   const right = marqueeCanvasWidth - layout.borderHorizontalInset;
   const top = layout.borderVerticalInset;
   const bottom = marqueeCanvasHeight - layout.borderVerticalInset;
-  drawLedLine(context, left, top, right, top, timestamp);
-  drawLedLine(context, right, top, right, bottom, timestamp);
-  drawLedLine(context, right, bottom, left, bottom, timestamp);
-  drawLedLine(context, left, bottom, left, top, timestamp);
+  drawLedLine(context, left, top, right, top, timestamp, marqueeBorderLedPalette);
+  drawLedLine(context, right, top, right, bottom, timestamp, marqueeBorderLedPalette);
+  drawLedLine(context, right, bottom, left, bottom, timestamp, marqueeBorderLedPalette);
+  drawLedLine(context, left, bottom, left, top, timestamp, marqueeBorderLedPalette);
 }
 
 function drawLedLine(
@@ -265,7 +281,8 @@ function drawLedLine(
   startY: number,
   endX: number,
   endY: number,
-  timestamp: number
+  timestamp: number,
+  palette: LedPalette
 ): void {
   const length = Math.hypot(endX - startX, endY - startY);
   const dotCount = Math.max(1, Math.round(length / 10));
@@ -277,7 +294,8 @@ function drawLedLine(
       THREE.MathUtils.lerp(startX, endX, progress),
       THREE.MathUtils.lerp(startY, endY, progress),
       timestamp,
-      0.86
+      0.86,
+      palette
     );
   }
 }
@@ -306,7 +324,8 @@ function drawLedMessage(
             glyphX + columnIndex * marqueeDotPitch + marqueeDotPitch / 2,
             startY + rowIndex * marqueeDotPitch + marqueeDotPitch / 2,
             timestamp + phase * 900,
-            0.94
+            0.94,
+            marqueeTextLedPalette
           );
         });
       });
@@ -318,21 +337,22 @@ function drawLedDot(
   x: number,
   y: number,
   timestamp: number,
-  intensity: number
+  intensity: number,
+  palette: LedPalette
 ): void {
   const flicker = 0.87 + Math.sin(timestamp / 170 + x * 0.03 + y * 0.08) * 0.13;
   const alpha = Math.max(0.25, Math.min(1, intensity * flicker));
   const radius = 3.1;
 
   context.save();
-  context.shadowColor = `rgba(255, 176, 0, ${alpha * 0.9})`;
+  context.shadowColor = `rgba(${palette.glow}, ${alpha * 0.9})`;
   context.shadowBlur = 7;
-  context.fillStyle = `rgba(255, 176, 0, ${alpha})`;
+  context.fillStyle = `rgba(${palette.fill}, ${alpha})`;
   context.beginPath();
   context.arc(x, y, radius, 0, Math.PI * 2);
   context.fill();
   context.shadowBlur = 0;
-  context.fillStyle = `rgba(255, 228, 163, ${alpha * 0.9})`;
+  context.fillStyle = `rgba(${palette.highlight}, ${alpha * 0.9})`;
   context.beginPath();
   context.arc(x - 0.65, y - 0.65, 0.95, 0, Math.PI * 2);
   context.fill();
