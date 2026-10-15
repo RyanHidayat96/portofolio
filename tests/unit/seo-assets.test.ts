@@ -43,8 +43,12 @@ describe("SEO and production asset configuration", () => {
   it("uses central site URL for robots and sitemap entries", () => {
     const sitemapEntries = sitemap();
     const firstProject = projects[0];
+    const sitemapPaths = sitemapEntries.map((entry) => new URL(entry.url).pathname);
 
     expect(robots().sitemap).toBe(`${siteConfig.siteUrl.origin}/sitemap.xml`);
+    expect(sitemapPaths).toContain("/");
+    expect(sitemapPaths).toContain("/labs");
+    expect(sitemapPaths).toContain("/workspace");
     expect(sitemapEntries).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -127,7 +131,11 @@ describe("portfolio JSON-LD", () => {
       }
     });
     expect(String(person?.description)).toContain(profile.headline);
-    expect(person?.sameAs).toEqual([profile.contact.linkedIn.href]);
+    expect(person?.sameAs).toEqual(
+      [profile.contact.linkedIn.href, profile.contact.github.href].filter((href) =>
+        isPortfolioValueConfigured(href)
+      )
+    );
   });
 
   it("serializes JSON-LD safely for inline script output", () => {

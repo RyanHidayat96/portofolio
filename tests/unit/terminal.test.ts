@@ -47,6 +47,7 @@ describe("portfolio command registry", () => {
 
     expect(commandNames).toEqual([
       "about",
+      "api",
       "architecture",
       "build",
       "career",
@@ -59,7 +60,6 @@ describe("portfolio command registry", () => {
       "history",
       "performance",
       "pipeline",
-      "projects",
       "quality",
       "skills",
       "stack",
@@ -89,11 +89,11 @@ describe("portfolio command registry", () => {
     const registry = createPortfolioCommandRegistry();
     const expectedRoutes = new Map([
       ["about", "profile"],
-      ["build", "projects"],
+      ["api", "api"],
+      ["build", "experience"],
       ["career", "experience"],
       ["skills", "profile"],
       ["experience", "experience"],
-      ["projects", "projects"],
       ["contact", "contact"],
       ["architecture", "architecture"],
       ["test", "automation"],

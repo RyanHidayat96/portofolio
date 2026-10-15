@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getStaticWorkspacePaths } from "@/features/workspace/routing";
+import { getStaticWorkspacePaths, workspaceEntryPath } from "@/features/workspace/routing";
 
-const workspacePaths = new Set(getStaticWorkspacePaths());
+const workspacePaths = new Set([...getStaticWorkspacePaths(), workspaceEntryPath]);
 const generatedAssetPaths = new Set([
   "/apple-icon",
   "/icon",

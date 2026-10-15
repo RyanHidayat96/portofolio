@@ -4,7 +4,7 @@ import type {
   Portfolio3dLightingMode,
   Portfolio3dQualityTier,
   Vector3Tuple
-} from './types';
+} from "./types";
 
 export type Portfolio3dTierValue = Readonly<Record<Portfolio3dQualityTier, number>>;
 
@@ -84,16 +84,16 @@ export const portfolio3dShadowSettings = {
 
 export const portfolio3dLightingProfiles = {
   studio: {
-    background: '#05070b',
-    fogColor: '#05070b',
+    background: "#070502",
+    fogColor: "#070502",
     fogNear: 7.5,
     fogFar: 18,
-    ambientColor: '#dce8ff',
+    ambientColor: "#ffe4c0",
     ambientIntensity: tier(1.38, 1.3, 1.24),
-    hemisphereSkyColor: '#dce8ff',
-    hemisphereGroundColor: '#101923',
+    hemisphereSkyColor: "#ffd9a3",
+    hemisphereGroundColor: "#2a1a08",
     hemisphereIntensity: tier(0.92, 0.84, 0.78),
-    fallbackKeyColor: '#fff7e8',
+    fallbackKeyColor: "#fff7e8",
     fallbackKeyPosition: [2.4, 3.1, 3.6],
     fallbackKeyIntensity: tier(2.6, 2.35, 2.15),
     importedIntensityMultiplier: 1.55,
@@ -102,16 +102,16 @@ export const portfolio3dLightingProfiles = {
     exposure: 1.85
   },
   focus: {
-    background: '#04060a',
-    fogColor: '#04060a',
+    background: "#070502",
+    fogColor: "#070502",
     fogNear: 6.2,
     fogFar: 15.5,
-    ambientColor: '#c9dcff',
+    ambientColor: "#ffdcae",
     ambientIntensity: tier(0.86, 0.76, 0.68),
-    hemisphereSkyColor: '#cfe3ff',
-    hemisphereGroundColor: '#0b121b',
+    hemisphereSkyColor: "#ffd49a",
+    hemisphereGroundColor: "#231506",
     hemisphereIntensity: tier(0.4, 0.35, 0.32),
-    fallbackKeyColor: '#fff1d5',
+    fallbackKeyColor: "#fff1d5",
     fallbackKeyPosition: [2.2, 3.35, 2.65],
     fallbackKeyIntensity: tier(1.34, 1.1, 0.92),
     importedIntensityMultiplier: 1.02,
@@ -120,16 +120,16 @@ export const portfolio3dLightingProfiles = {
     exposure: 1.12
   },
   ambient: {
-    background: '#06090e',
-    fogColor: '#06090e',
+    background: "#070502",
+    fogColor: "#070502",
     fogNear: 6,
     fogFar: 15,
-    ambientColor: '#d8e6ff',
+    ambientColor: "#ffe0b8",
     ambientIntensity: tier(0.76, 0.66, 0.6),
-    hemisphereSkyColor: '#dce9ff',
-    hemisphereGroundColor: '#152234',
+    hemisphereSkyColor: "#ffd7a0",
+    hemisphereGroundColor: "#2c1c0a",
     hemisphereIntensity: tier(0.48, 0.42, 0.38),
-    fallbackKeyColor: '#fff8eb',
+    fallbackKeyColor: "#fff8eb",
     fallbackKeyPosition: [2.8, 3.4, 3.1],
     fallbackKeyIntensity: tier(0.96, 0.78, 0.64),
     importedIntensityMultiplier: 0.82,
@@ -140,70 +140,70 @@ export const portfolio3dLightingProfiles = {
 } satisfies Readonly<Record<Portfolio3dLightingMode, Portfolio3dLightingProfile>>;
 export const portfolio3dImportedLightConfigs = [
   {
-    assetId: 'room-shell',
-    nodeName: 'Cove_WallWash_1',
-    group: 'ambient-cove',
-    color: '#8ccfff',
+    assetId: "room-shell",
+    nodeName: "Cove_WallWash_1",
+    group: "ambient-cove",
+    color: "#ffb45c",
     intensity: tier(0.18, 0.26, 0.32),
     castShadowIn: [],
     distance: 4.2,
     decay: 2
   },
   {
-    assetId: 'room-shell',
-    nodeName: 'Cove_WallWash_2',
-    group: 'ambient-cove',
-    color: '#7fbef1',
+    assetId: "room-shell",
+    nodeName: "Cove_WallWash_2",
+    group: "ambient-cove",
+    color: "#ffa53f",
     intensity: tier(0.16, 0.24, 0.3),
     castShadowIn: [],
     distance: 4,
     decay: 2
   },
   {
-    assetId: 'room-shell',
-    nodeName: 'Cove_WallWash_3',
-    group: 'ambient-cove',
-    color: '#b8d7ff',
+    assetId: "room-shell",
+    nodeName: "Cove_WallWash_3",
+    group: "ambient-cove",
+    color: "#ffd08a",
     intensity: tier(0.16, 0.22, 0.28),
     castShadowIn: [],
     distance: 4,
     decay: 2
   },
   {
-    assetId: 'room-shell',
-    nodeName: 'Cove_WallWash_4',
-    group: 'ambient-cove',
-    color: '#9bd7ff',
+    assetId: "room-shell",
+    nodeName: "Cove_WallWash_4",
+    group: "ambient-cove",
+    color: "#ffbf66",
     intensity: tier(0.16, 0.23, 0.28),
     castShadowIn: [],
     distance: 4,
     decay: 2
   },
   {
-    assetId: 'ceiling-lights',
-    nodeName: 'Pendant_Light_02',
-    group: 'key-pendant',
-    color: '#fff1d6',
+    assetId: "ceiling-lights",
+    nodeName: "Pendant_Light_02",
+    group: "key-pendant",
+    color: "#fff1d6",
     intensity: tier(0.42, 0.82, 1),
-    castShadowIn: ['medium', 'high'],
+    castShadowIn: ["medium", "high"],
     distance: 4.8,
     decay: 2
   },
   {
-    assetId: 'ceiling-lights',
-    nodeName: 'Pendant_Light_03',
-    group: 'key-pendant',
-    color: '#f7fbff',
+    assetId: "ceiling-lights",
+    nodeName: "Pendant_Light_03",
+    group: "key-pendant",
+    color: "#f7fbff",
     intensity: tier(0.3, 0.56, 0.68),
     castShadowIn: [],
     distance: 4.4,
     decay: 2
   },
   {
-    assetId: 'ceiling-lights',
-    nodeName: 'Spot_02_Light',
-    group: 'rail-spot',
-    color: '#cdefff',
+    assetId: "ceiling-lights",
+    nodeName: "Spot_02_Light",
+    group: "rail-spot",
+    color: "#ffd9a3",
     intensity: tier(0.18, 0.46, 0.58),
     castShadowIn: [],
     angle: 0.58,
@@ -212,22 +212,22 @@ export const portfolio3dImportedLightConfigs = [
     decay: 2
   },
   {
-    assetId: 'ceiling-lights',
-    nodeName: 'Spot_04_Light',
-    group: 'rail-spot',
-    color: '#fff5df',
+    assetId: "ceiling-lights",
+    nodeName: "Spot_04_Light",
+    group: "rail-spot",
+    color: "#fff5df",
     intensity: tier(0.16, 0.42, 0.54),
-    castShadowIn: ['high'],
+    castShadowIn: ["high"],
     angle: 0.54,
     penumbra: 0.78,
     distance: 4.4,
     decay: 2
   },
   {
-    assetId: 'ceiling-lights',
-    nodeName: 'Spot_05_Light',
-    group: 'rail-spot',
-    color: '#bfe8ff',
+    assetId: "ceiling-lights",
+    nodeName: "Spot_05_Light",
+    group: "rail-spot",
+    color: "#ffcf94",
     intensity: tier(0.14, 0.36, 0.48),
     castShadowIn: [],
     angle: 0.5,
@@ -238,21 +238,84 @@ export const portfolio3dImportedLightConfigs = [
 ] satisfies readonly Portfolio3dImportedLightConfig[];
 
 export const portfolio3dScreenAccentLights = [
-  { assetId: 'main-monitor', anchorNodeName: 'Anchor_DisplayCenter', group: 'screen-accent', color: '#48d5ff', intensity: tier(0.14, 0.2, 0.24), offset: [0, 0.02, 0.14], distance: 1.25, decay: 2 },
-  { assetId: 'architecture-screen', anchorNodeName: 'Anchor_DisplayCenter', group: 'screen-accent', color: '#5edcff', intensity: tier(0.08, 0.16, 0.2), offset: [0, 0.02, 0.12], distance: 1.15, decay: 2 },
-  { assetId: 'laptop', anchorNodeName: 'Anchor_DisplayCenter', group: 'screen-accent', color: '#63dfff', intensity: tier(0.06, 0.12, 0.16), offset: [0, 0.04, 0.08], distance: 0.85, decay: 2 },
-  { assetId: 'server-rack', anchorNodeName: 'Anchor_DisplayCenter', group: 'screen-accent', color: '#59d7ff', intensity: tier(0.06, 0.14, 0.18), offset: [0, 0.03, 0.1], distance: 1.05, decay: 2 },
-  { assetId: 'hologram-projector', anchorNodeName: 'Anchor_HologramCenter', group: 'screen-accent', color: '#72ffd5', intensity: tier(0.05, 0.12, 0.18), offset: [0, 0.14, 0], distance: 1.05, decay: 2 },
-  { assetId: 'pipeline-console', anchorNodeName: 'Anchor_DisplayCenter', group: 'screen-accent', color: '#52d9ff', intensity: tier(0.04, 0.1, 0.14), offset: [0, 0.04, 0.08], distance: 0.9, decay: 2 },
-  { assetId: 'desk-accessories', anchorNodeName: 'Anchor_Phone', group: 'screen-accent', color: '#49d8ff', intensity: tier(0.03, 0.08, 0.1), offset: [0, 0.1, 0.04], distance: 0.65, decay: 2 }
+  {
+    assetId: "main-monitor",
+    anchorNodeName: "Anchor_DisplayCenter",
+    group: "screen-accent",
+    color: "#ffb000",
+    intensity: tier(0.14, 0.2, 0.24),
+    offset: [0, 0.02, 0.14],
+    distance: 1.25,
+    decay: 2
+  },
+  {
+    assetId: "architecture-screen",
+    anchorNodeName: "Anchor_DisplayCenter",
+    group: "screen-accent",
+    color: "#ffbe33",
+    intensity: tier(0.08, 0.16, 0.2),
+    offset: [0, 0.02, 0.12],
+    distance: 1.15,
+    decay: 2
+  },
+  {
+    assetId: "laptop",
+    anchorNodeName: "Anchor_DisplayCenter",
+    group: "screen-accent",
+    color: "#ffc24a",
+    intensity: tier(0.06, 0.12, 0.16),
+    offset: [0, 0.04, 0.08],
+    distance: 0.85,
+    decay: 2
+  },
+  {
+    assetId: "server-rack",
+    anchorNodeName: "Anchor_DisplayCenter",
+    group: "screen-accent",
+    color: "#ffb83d",
+    intensity: tier(0.06, 0.14, 0.18),
+    offset: [0, 0.03, 0.1],
+    distance: 1.05,
+    decay: 2
+  },
+  {
+    assetId: "hologram-projector",
+    anchorNodeName: "Anchor_HologramCenter",
+    group: "screen-accent",
+    color: "#ffd24d",
+    intensity: tier(0.05, 0.12, 0.18),
+    offset: [0, 0.14, 0],
+    distance: 1.05,
+    decay: 2
+  },
+  {
+    assetId: "pipeline-console",
+    anchorNodeName: "Anchor_DisplayCenter",
+    group: "screen-accent",
+    color: "#ffae1f",
+    intensity: tier(0.04, 0.1, 0.14),
+    offset: [0, 0.04, 0.08],
+    distance: 0.9,
+    decay: 2
+  },
+  {
+    assetId: "desk-accessories",
+    anchorNodeName: "Anchor_Phone",
+    group: "screen-accent",
+    color: "#ffb347",
+    intensity: tier(0.03, 0.08, 0.1),
+    offset: [0, 0.1, 0.04],
+    distance: 0.65,
+    decay: 2
+  }
 ] satisfies readonly Portfolio3dScreenAccentLightConfig[];
 
 export const portfolio3dDeskTaskLight = {
-  assetId: 'desk-lamp',
-  sourceAnchorNodeName: 'Anchor_SpotLight',
-  targetAnchorNodeName: 'Anchor_LightTarget',
-  group: 'desk-task',
-  color: '#ffe0a3',
+  assetId: "desk-lamp",
+  sourceAnchorNodeName: "Anchor_SpotLight",
+  targetAnchorNodeName: "Anchor_LightTarget",
+  group: "desk-task",
+  color: "#ffe0a3",
   intensity: tier(0.24, 0.52, 0.82),
   fallbackPosition: [0.68, 1.42, 0.24],
   fallbackTarget: [0.34, 0.76, 0.24],
@@ -260,7 +323,7 @@ export const portfolio3dDeskTaskLight = {
   penumbra: 0.55,
   distance: 3,
   decay: 2,
-  castShadowIn: ['high']
+  castShadowIn: ["high"]
 } satisfies Portfolio3dDeskTaskLightConfig;
 
 export function getPortfolio3dTierValue(

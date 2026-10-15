@@ -84,7 +84,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
       <Panel className="api-playground-index p-4">
         <p className="mono px-1 py-2 text-sm text-[#ffb000]">api.full_cycle.demo</p>
         <h1 className="px-1 pb-4 text-2xl font-semibold">API Playground</h1>
-        <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
+        <p className="px-1 pb-4 text-sm leading-6 text-[var(--text-muted)]">
           Public portfolio route handlers for profile, career, projects, architecture, and contact
           data.
         </p>
@@ -110,7 +110,9 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
             <div>
               <p className="mono text-sm text-[#ffb000]">REQUEST</p>
               <h2 className="mt-2 text-2xl font-semibold">{endpoint.title}</h2>
-              <p className="api-request-description mt-3 text-sm leading-6 text-[#8a96a8]">{endpoint.description}</p>
+              <p className="api-request-description mt-3 text-sm leading-6 text-[var(--text-muted)]">
+                {endpoint.description}
+              </p>
             </div>
             <Button
               variant="primary"
@@ -145,7 +147,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
 
             <div className="api-contract-list mt-5 grid gap-2">
               {endpoint.responseShape.map((field) => (
-                <div key={field} className="mono text-sm text-[#c8d4e6]">
+                <div key={field} className="mono text-sm text-[var(--text-secondary)]">
                   <ShieldCheck aria-hidden="true" size={14} />
                   <span>{field}</span>
                 </div>
@@ -197,7 +199,7 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
 
             <pre
               aria-label="API response body"
-              className="api-response-body mono mt-4 min-h-[520px] overflow-auto text-sm leading-6 text-[#c8d4e6]"
+              className="api-response-body mono mt-4 min-h-[520px] overflow-auto text-sm leading-6 text-[var(--text-secondary)]"
             >
               {error ??
                 (response ? JSON.stringify(response.body, null, 2) : "// Response appears here")}
@@ -305,7 +307,7 @@ function EndpointButton({
         {endpoint.method} {endpoint.path}
       </span>
       <span className="mt-2 block font-semibold">{endpoint.title}</span>
-      <span className="mt-1 block text-xs text-[#8a96a8]">{endpoint.description}</span>
+      <span className="mt-1 block text-xs text-[var(--text-muted)]">{endpoint.description}</span>
     </button>
   );
 }
@@ -321,7 +323,7 @@ function RequestFact({
 }>): React.ReactElement {
   return (
     <section className="api-fact-card">
-      <p className="text-sm text-[#8a96a8]">{label}</p>
+      <p className="text-sm text-[var(--text-muted)]">{label}</p>
       <p
         className={`mono mt-2 text-sm font-semibold ${tone === "info" ? "text-[#ffb000]" : "text-[#ffe4a3]"}`}
       >
@@ -342,7 +344,7 @@ function ResponseFact({
 }>): React.ReactElement {
   return (
     <section className="api-fact-card">
-      <p className="text-sm text-[#8a96a8]">{label}</p>
+      <p className="text-sm text-[var(--text-muted)]">{label}</p>
       <p
         className={`mono mt-2 text-sm font-semibold ${tone === "success" ? "text-[#ffc24a]" : "text-[#ffe4a3]"}`}
       >

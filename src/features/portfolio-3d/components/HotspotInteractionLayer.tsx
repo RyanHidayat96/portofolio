@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useFrame, useThree } from '@react-three/fiber';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { useFrame, useThree } from "@react-three/fiber";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import * as THREE from "three";
 import {
   PORTFOLIO_3D_HOTSPOT_NODE_USER_DATA_KEY,
   PORTFOLIO_3D_INTERACTION_LAYER
-} from '../interaction-layer';
-import { portfolio3dHotspots } from '../scene-manifest';
-import { usePortfolio3dState } from '../state/Portfolio3dState';
+} from "../interaction-layer";
+import { portfolio3dHotspots } from "../scene-manifest";
+import { usePortfolio3dState } from "../state/Portfolio3dState";
 import type {
   Portfolio3dAssetId,
   Portfolio3dHotspotDefinition,
   Portfolio3dHotspotId
-} from '../types';
-import type { AssetRuntimeNodeMap } from './SceneAsset';
+} from "../types";
+import type { AssetRuntimeNodeMap } from "./SceneAsset";
 
 type RuntimeNodesByAsset = Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>;
 
@@ -45,11 +45,7 @@ export function HotspotInteractionLayer({
   runtimeNodesByAsset: RuntimeNodesByAsset;
 }>): React.ReactElement | null {
   const { camera, gl, raycaster, invalidate } = useThree();
-  const {
-    state,
-    setHoveredHotspot,
-    activateHotspot
-  } = usePortfolio3dState();
+  const { state, setHoveredHotspot, activateHotspot } = usePortfolio3dState();
   const pointer = useMemo(() => new THREE.Vector2(), []);
   const intersections = useMemo<THREE.Intersection[]>(() => [], []);
   const pointerDownRef = useRef<PointerDownState | null>(null);
@@ -108,7 +104,7 @@ export function HotspotInteractionLayer({
       }
 
       hoveredHotspotRef.current = hotspotId;
-      setHoveredHotspot(hotspotId, 'pointer');
+      setHoveredHotspot(hotspotId, "pointer");
       invalidate();
     },
     [invalidate, setHoveredHotspot]
@@ -131,14 +127,14 @@ export function HotspotInteractionLayer({
         const movedPx = Math.hypot(sample.x - pointerDown.x, sample.y - pointerDown.y);
         if (movedPx > pointerClickThresholdPx) {
           updateHoveredHotspot(undefined);
-          canvas.style.cursor = '';
+          canvas.style.cursor = "";
         }
         return;
       }
 
       const hit = findPointerHitAt(sample.x, sample.y);
       updateHoveredHotspot(hit?.definition.id);
-      canvas.style.cursor = hit ? 'pointer' : '';
+      canvas.style.cursor = hit ? "pointer" : "";
     };
 
     const schedulePointerMove = (): void => {
@@ -186,7 +182,9 @@ export function HotspotInteractionLayer({
         }
       }
 
-      const movedPx = pointerDown ? Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) : Infinity;
+      const movedPx = pointerDown
+        ? Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y)
+        : Infinity;
       const elapsedMs = pointerDown ? performance.now() - pointerDown.startedAt : Infinity;
       const isCleanClick =
         pointerDown &&
@@ -201,7 +199,7 @@ export function HotspotInteractionLayer({
       }
 
       event.preventDefault();
-      activateHotspot(hit.definition, 'pointer');
+      activateHotspot(hit.definition, "pointer");
       invalidate();
     };
 
@@ -209,26 +207,26 @@ export function HotspotInteractionLayer({
       pointerDownRef.current = null;
       pendingPointerMoveRef.current = null;
       updateHoveredHotspot(undefined);
-      canvas.style.cursor = '';
+      canvas.style.cursor = "";
     };
 
-    canvas.addEventListener('pointermove', onPointerMove, { passive: true });
-    canvas.addEventListener('pointerdown', onPointerDown, { passive: true });
-    canvas.addEventListener('pointerup', onPointerUp);
-    canvas.addEventListener('pointerleave', onPointerLeave, { passive: true });
-    canvas.addEventListener('pointercancel', onPointerLeave, { passive: true });
+    canvas.addEventListener("pointermove", onPointerMove, { passive: true });
+    canvas.addEventListener("pointerdown", onPointerDown, { passive: true });
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointerleave", onPointerLeave, { passive: true });
+    canvas.addEventListener("pointercancel", onPointerLeave, { passive: true });
 
     return () => {
       if (pointerMoveFrameRef.current !== null) {
         window.cancelAnimationFrame(pointerMoveFrameRef.current);
       }
 
-      canvas.removeEventListener('pointermove', onPointerMove);
-      canvas.removeEventListener('pointerdown', onPointerDown);
-      canvas.removeEventListener('pointerup', onPointerUp);
-      canvas.removeEventListener('pointerleave', onPointerLeave);
-      canvas.removeEventListener('pointercancel', onPointerLeave);
-      canvas.style.cursor = '';
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointerleave", onPointerLeave);
+      canvas.removeEventListener("pointercancel", onPointerLeave);
+      canvas.style.cursor = "";
     };
   }, [activateHotspot, findPointerHitAt, gl.domElement, invalidate, updateHoveredHotspot]);
 
@@ -270,8 +268,11 @@ function HotspotMarker({
 }>): React.ReactElement {
   const groupRef = useRef<THREE.Group | null>(null);
   const worldPosition = useMemo(() => new THREE.Vector3(), []);
-  const offset = useMemo(() => new THREE.Vector3(0, getHotspotVerticalOffset(definition), 0), [definition]);
-  const color = isActive ? '#66f2ff' : isHighlighted ? '#46dfff' : '#8fb5c3';
+  const offset = useMemo(
+    () => new THREE.Vector3(0, getHotspotVerticalOffset(definition), 0),
+    [definition]
+  );
+  const color = isActive ? "#ffd24d" : isHighlighted ? "#ffb000" : "#b58332";
   const opacity = isActive ? 0.9 : isHighlighted ? 0.78 : 0.46;
 
   useFrame(({ camera }) => {
@@ -319,7 +320,7 @@ function findHotspotNodeName(object: THREE.Object3D): string | undefined {
 
   while (current) {
     const nodeName = current.userData[PORTFOLIO_3D_HOTSPOT_NODE_USER_DATA_KEY];
-    if (typeof nodeName === 'string') {
+    if (typeof nodeName === "string") {
       return nodeName;
     }
 
@@ -330,7 +331,7 @@ function findHotspotNodeName(object: THREE.Object3D): string | undefined {
 }
 
 function getHotspotVerticalOffset(definition: Portfolio3dHotspotDefinition): number {
-  return definition.interactionKind === 'open-section' ? 0.065 : 0.045;
+  return definition.interactionKind === "open-section" ? 0.065 : 0.045;
 }
 
 function isHotspotActive(

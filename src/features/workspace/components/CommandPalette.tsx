@@ -176,7 +176,7 @@ export function CommandPalette({
                 selectActiveAction();
               }
             }}
-            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-base text-[var(--text-primary)] outline-none placeholder:text-[#6d788a]"
+            className="min-h-[var(--touch-target)] min-w-0 flex-1 bg-transparent text-base text-[var(--text-primary)] outline-none placeholder:text-[var(--text-subtle)]"
             placeholder="Search actions, labs, profile..."
             aria-label="Search commands"
           />

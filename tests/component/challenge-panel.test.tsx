@@ -34,7 +34,9 @@ describe("ChallengePanel", () => {
     await user.click(
       screen.getByRole("button", { name: new RegExp(escapeRegExp(scenario.title)) })
     );
-    await user.click(screen.getByRole("button", { name: preferredChoice.label }));
+    await user.click(
+      screen.getByRole("button", { name: new RegExp(escapeRegExp(preferredChoice.label)) })
+    );
 
     expect(screen.getByText("preferred path")).toBeInTheDocument();
     expect(screen.getByText(scenario.approach[0] ?? "")).toBeInTheDocument();

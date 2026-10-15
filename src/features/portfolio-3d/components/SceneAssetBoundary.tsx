@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Component, Suspense } from 'react';
-import type { SceneAssetDefinition } from '../types';
+import { Component, Suspense } from "react";
+import type { SceneAssetDefinition } from "../types";
 
 interface SceneAssetErrorBoundaryProps {
   readonly asset: SceneAssetDefinition;
   readonly children: React.ReactNode;
-  readonly onError?: (assetId: SceneAssetDefinition['id'], error: unknown) => void;
+  readonly onError?: (assetId: SceneAssetDefinition["id"], error: unknown) => void;
 }
 
 interface SceneAssetErrorBoundaryState {
@@ -20,11 +20,12 @@ export function SceneAssetBoundary({
 }: Readonly<{
   asset: SceneAssetDefinition;
   children: React.ReactNode;
-  onError?: (assetId: SceneAssetDefinition['id'], error: unknown) => void;
+  onError?: (assetId: SceneAssetDefinition["id"], error: unknown) => void;
 }>): React.ReactElement {
-  const loadingPlaceholder = asset.loadingTier === 'critical' ? (
-    <SceneAssetPlaceholder asset={asset} state="loading" />
-  ) : null;
+  const loadingPlaceholder =
+    asset.loadingTier === "critical" ? (
+      <SceneAssetPlaceholder asset={asset} state="loading" />
+    ) : null;
 
   return (
     <SceneAssetErrorBoundary asset={asset} onError={onError}>
@@ -46,7 +47,7 @@ class SceneAssetErrorBoundary extends Component<
   componentDidCatch(error: unknown): void {
     this.props.onError?.(this.props.asset.id, error);
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.error(`[portfolio-3d] Asset failed: ${this.props.asset.id}`, error);
     }
   }
@@ -59,7 +60,7 @@ class SceneAssetErrorBoundary extends Component<
 
   render(): React.ReactNode {
     if (this.state.hasError) {
-      return this.props.asset.loadingTier === 'critical' ? (
+      return this.props.asset.loadingTier === "critical" ? (
         <SceneAssetPlaceholder asset={this.props.asset} state="error" />
       ) : null;
     }
@@ -73,10 +74,10 @@ function SceneAssetPlaceholder({
   state
 }: Readonly<{
   asset: SceneAssetDefinition;
-  state: 'loading' | 'error';
+  state: "loading" | "error";
 }>): React.ReactElement {
-  const color = state === 'error' ? '#ff6b6b' : '#4bd8ff';
-  const opacity = state === 'error' ? 0.32 : 0.18;
+  const color = state === "error" ? "#ff704d" : "#ffb000";
+  const opacity = state === "error" ? 0.32 : 0.18;
   const [width, height, depth] = getPlaceholderSize(asset);
 
   return (

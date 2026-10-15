@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import * as THREE from "three";
 import {
   getPortfolio3dTierValue,
   portfolio3dDeskTaskLight,
@@ -10,15 +10,15 @@ import {
   portfolio3dLightingProfiles,
   portfolio3dScreenAccentLights,
   portfolio3dShadowSettings
-} from '../lighting-config';
+} from "../lighting-config";
 import type {
   Portfolio3dAssetId,
   Portfolio3dCeilingLightAim,
   Portfolio3dLightingMode,
   Portfolio3dQualityTier,
   Vector3Tuple
-} from '../types';
-import type { AssetRuntimeNodeMap } from './SceneAsset';
+} from "../types";
+import type { AssetRuntimeNodeMap } from "./SceneAsset";
 
 type RuntimeNodesByAsset = Readonly<Partial<Record<Portfolio3dAssetId, AssetRuntimeNodeMap>>>;
 type MutableVector3Tuple = [number, number, number];
@@ -108,28 +108,34 @@ export function PortfolioLightingRig({
       {/* Keep the WebGL clear color transparent so display openings reveal their CSS3D pages. */}
       <fog attach="fog" args={[profile.fogColor, profile.fogNear, profile.fogFar]} />
       <ambientLight
-        intensity={getPortfolio3dTierValue(profile.ambientIntensity, qualityTier) * clampedLightingLevel}
+        intensity={
+          getPortfolio3dTierValue(profile.ambientIntensity, qualityTier) * clampedLightingLevel
+        }
         color={profile.ambientColor}
       />
       <hemisphereLight
         color={profile.hemisphereSkyColor}
         groundColor={profile.hemisphereGroundColor}
-        intensity={getPortfolio3dTierValue(profile.hemisphereIntensity, qualityTier) * clampedLightingLevel}
+        intensity={
+          getPortfolio3dTierValue(profile.hemisphereIntensity, qualityTier) * clampedLightingLevel
+        }
       />
       <directionalLight
         position={profile.fallbackKeyPosition}
-        intensity={getPortfolio3dTierValue(profile.fallbackKeyIntensity, qualityTier) * clampedLightingLevel}
+        intensity={
+          getPortfolio3dTierValue(profile.fallbackKeyIntensity, qualityTier) * clampedLightingLevel
+        }
         color={profile.fallbackKeyColor}
       />
       <directionalLight
         position={[-3.2, 2.4, 3.1]}
         intensity={0.52 * clampedLightingLevel}
-        color="#95d9ff"
+        color="#ffb000"
       />
       <pointLight
         position={[0, 1.34, 1.35]}
         intensity={0.78 * clampedLightingLevel}
-        color="#9feaff"
+        color="#ffd24d"
         distance={4.8}
         decay={2}
       />
@@ -146,7 +152,9 @@ export function PortfolioLightingRig({
       <DeskTaskLight
         runtimeNodesByAsset={runtimeNodesByAsset}
         qualityTier={qualityTier}
-        intensityMultiplier={profile.deskTaskMultiplier * clampedLightingLevel * clampedDeskTaskLightingLevel}
+        intensityMultiplier={
+          profile.deskTaskMultiplier * clampedLightingLevel * clampedDeskTaskLightingLevel
+        }
       />
     </>
   );
@@ -171,7 +179,7 @@ function configureImportedLights(
     }
 
     configuredLightKeys.add(getImportedLightKey(config.assetId, config.nodeName));
-    const groupLightingLevel = config.assetId === 'ceiling-lights' ? ceilingLightingLevel : 1;
+    const groupLightingLevel = config.assetId === "ceiling-lights" ? ceilingLightingLevel : 1;
     const intensity =
       getPortfolio3dTierValue(config.intensity, qualityTier) *
       importedIntensityMultiplier *
@@ -187,7 +195,7 @@ function configureImportedLights(
       light.angle = config.angle ?? light.angle;
       light.penumbra = config.penumbra ?? light.penumbra;
 
-      if (config.group === 'rail-spot') {
+      if (config.group === "rail-spot") {
         aimTargets.push(configureCeilingSpotAim(light, ceilingAimTarget, scene));
       }
     }
@@ -248,9 +256,10 @@ function resolveCeilingAimTarget(
   aim: Portfolio3dCeilingLightAim
 ): THREE.Vector3 {
   const config = ceilingAimTargets[aim];
-  const anchor = config.assetId && config.anchorNodeName
-    ? runtimeNodesByAsset[config.assetId]?.anchors.get(config.anchorNodeName)
-    : undefined;
+  const anchor =
+    config.assetId && config.anchorNodeName
+      ? runtimeNodesByAsset[config.assetId]?.anchors.get(config.anchorNodeName)
+      : undefined;
   const target = new THREE.Vector3(...config.fallbackTarget);
 
   if (anchor) {
@@ -307,8 +316,12 @@ function DeskTaskLight({
   }
 
   const target = targetRef.current;
-  const placement = useMemo(() => resolveDeskTaskPlacement(runtimeNodesByAsset), [runtimeNodesByAsset]);
-  const intensity = getPortfolio3dTierValue(portfolio3dDeskTaskLight.intensity, qualityTier) * intensityMultiplier;
+  const placement = useMemo(
+    () => resolveDeskTaskPlacement(runtimeNodesByAsset),
+    [runtimeNodesByAsset]
+  );
+  const intensity =
+    getPortfolio3dTierValue(portfolio3dDeskTaskLight.intensity, qualityTier) * intensityMultiplier;
   const castShadow = false;
 
   useEffect(() => {
@@ -350,9 +363,10 @@ function DeskTaskLight({
   );
 }
 
-function resolveDeskTaskPlacement(
-  runtimeNodesByAsset: RuntimeNodesByAsset
-): { readonly position: MutableVector3Tuple; readonly target: MutableVector3Tuple } {
+function resolveDeskTaskPlacement(runtimeNodesByAsset: RuntimeNodesByAsset): {
+  readonly position: MutableVector3Tuple;
+  readonly target: MutableVector3Tuple;
+} {
   const nodes = runtimeNodesByAsset[portfolio3dDeskTaskLight.assetId];
   const sourceAnchor = nodes?.anchors.get(portfolio3dDeskTaskLight.sourceAnchorNodeName);
   const targetAnchor = nodes?.anchors.get(portfolio3dDeskTaskLight.targetAnchorNodeName);
@@ -416,13 +430,13 @@ function clamp01(value: number): number {
 
 const ceilingAimTargets: Readonly<Record<Portfolio3dCeilingLightAim, CeilingAimConfig>> = {
   desk: {
-    assetId: 'main-monitor',
-    anchorNodeName: 'Anchor_DisplayCenter',
+    assetId: "main-monitor",
+    anchorNodeName: "Anchor_DisplayCenter",
     fallbackTarget: [0, 1.08, 0.06]
   },
   rack: {
-    assetId: 'server-rack',
-    anchorNodeName: 'Anchor_DisplayCenter',
+    assetId: "server-rack",
+    anchorNodeName: "Anchor_DisplayCenter",
     fallbackTarget: [2.05, 1.12, -0.88]
   },
   wide: {

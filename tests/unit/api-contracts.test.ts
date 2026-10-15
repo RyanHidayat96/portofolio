@@ -82,21 +82,30 @@ describe("portfolio API contracts", () => {
     };
     const careerResponse = getCareer();
     const career = (await careerResponse.json()) as {
-      readonly journey: readonly { readonly role: string; readonly period: string }[];
-      readonly currentRole: string;
+      readonly journey: readonly { readonly role: string; readonly summary: string }[];
+      readonly currentFocus: string;
       readonly engineeringProfile: string;
+      readonly focusAreas: readonly string[];
+      readonly detailSource: string;
     };
 
     expect(architectureResponse.status).toBe(200);
     expect(architecture.defaultPresetId).toBe(architecturePresets[0]?.id ?? null);
     expect(architecture.architecture).toHaveLength(architecturePresets.length);
     expect(careerResponse.status).toBe(200);
-    expect(career.currentRole).toBe(profile.role);
+    // The career route is timeline-safe: it exposes focus labels, not dates or employers.
+    expect(career.currentFocus).toBe(profile.role);
     expect(career.engineeringProfile).toBe(profile.headline);
+    expect(career.focusAreas).toEqual(profile.focusAreas);
     expect(career.journey[0]).toMatchObject({
-      role: "Full Stack Developer",
-      period: "Mar 2026 - Present"
+      role: publicExperience[0]?.role,
+      summary: publicExperience[0]?.summary
     });
+    // Timeline-safe: no employer, date range, or location fields on the journey entries.
+    expect(Object.keys(career.journey[0] ?? {})).toEqual(
+      expect.not.arrayContaining(["company", "period", "location", "startDate", "endDate"])
+    );
+    expect(career.detailSource).toContain("CV");
   });
 
   it("returns skills API contract with grouped skill metadata", async () => {
@@ -131,15 +140,16 @@ describe("portfolio API contracts", () => {
     expect(body.experience).toHaveLength(publicExperience.length);
     expect(firstRole).toMatchObject({
       id: expect.any(String),
-      company: expect.any(String),
       role: expect.any(String),
-      period: expect.any(String),
-      location: expect.any(String),
       summary: expect.any(String),
       technologies: expect.any(Array)
     });
+    // The public contract deliberately stays timeline-safe.
     expect(firstRole).not.toHaveProperty("responsibilities");
     expect(firstRole).not.toHaveProperty("impact");
+    expect(firstRole).not.toHaveProperty("company");
+    expect(firstRole).not.toHaveProperty("period");
+    expect(firstRole).not.toHaveProperty("location");
   });
 
   it("returns project API contract with portfolio-safe case studies", async () => {
@@ -179,8 +189,13 @@ describe("portfolio API contracts", () => {
         .map((link) => link.id)
     );
     expect(body.contact.every((link) => link.href && link.value)).toBe(true);
-    expect(body.contact).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: "github" })])
-    );
+    // The route serves whatever profile data is configured, so assert the
+    // filtering rule rather than a fixed exclusion list.
+    const expectedIds = Object.values(profile.contact)
+      .filter(
+        (link) => isPortfolioValueConfigured(link.value) && isPortfolioValueConfigured(link.href)
+      )
+      .map((link) => link.id);
+    expect(body.contact.map((link) => link.id)).toEqual(expectedIds);
   });
 });

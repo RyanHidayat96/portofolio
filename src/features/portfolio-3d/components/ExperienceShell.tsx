@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { withPortfolio3dBasePath } from '../asset-url';
-import type { WebGLSupportStatus } from '../hooks/useWebGLSupport';
-import type { Portfolio3dLoadingProgress } from '../types';
+import { withPortfolio3dBasePath } from "../asset-url";
+import type { WebGLSupportStatus } from "../hooks/useWebGLSupport";
+import type { Portfolio3dLoadingProgress } from "../types";
 
 export function ExperienceShell({
   webglStatus,
@@ -26,39 +26,39 @@ export function ExperienceShell({
   onRoomReset: () => void;
 }>): React.ReactElement {
   const isLoadingCritical =
-    webglStatus === 'supported' ? (!assetProgress || !assetProgress.isCriticalComplete) : false;
-  const isWaitingForRuntime = webglStatus === 'checking' || isLoadingCritical;
+    webglStatus === "supported" ? !assetProgress || !assetProgress.isCriticalComplete : false;
+  const isWaitingForRuntime = webglStatus === "checking" || isLoadingCritical;
   const hasCriticalAssetFailure = Boolean(
     assetProgress && assetProgress.isCriticalComplete && assetProgress.failedCriticalAssets > 0
   );
-  const loadingLabel = webglStatus === 'checking' ? 'checking webgl' : 'loading critical assets';
+  const loadingLabel = webglStatus === "checking" ? "checking webgl" : "loading critical assets";
   const loadingDetail = assetProgress
     ? `${assetProgress.loadedCriticalAssets}/${assetProgress.totalCriticalAssets} critical assets ready${
-        assetProgress.failedCriticalAssets > 0 ? `, ${assetProgress.failedCriticalAssets} failed` : ''
+        assetProgress.failedCriticalAssets > 0
+          ? `, ${assetProgress.failedCriticalAssets} failed`
+          : ""
       }.`
-    : 'Preparing the progressive 3D runtime.';
+    : "Preparing the progressive 3D runtime.";
   const navigationPanel = (
     <aside
       id="portfolio-3d-panel"
       inert={isScreenFocusView}
       aria-hidden={isScreenFocusView}
-      className={`portfolio-3d-shell portfolio-3d-glass-panel portfolio-3d-navigation-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-hidden p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-[opacity,transform] duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none -translate-x-10' : 'opacity-100 translate-x-0'}`}
+      className={`portfolio-3d-shell portfolio-3d-glass-panel portfolio-3d-navigation-panel pointer-events-auto absolute bottom-5 left-5 z-20 max-h-[50dvh] w-[min(19rem,calc(100vw-2.5rem))] overflow-hidden p-3 sm:bottom-8 sm:left-8 sm:max-h-[56dvh] sm:w-[19rem] lg:left-10 transition-[opacity,transform] duration-500 ${isScreenFocusView ? "opacity-0 pointer-events-none -translate-x-10" : "opacity-100 translate-x-0"}`}
       aria-label="3D portfolio controls and section content"
     >
-      <div className="portfolio-3d-navigation-scroll">
-        {navigationSlot}
-      </div>
+      <div className="portfolio-3d-navigation-scroll">{navigationSlot}</div>
     </aside>
   );
 
-  if (webglStatus === 'unsupported') {
+  if (webglStatus === "unsupported") {
     return <>{fallbackSlot}</>;
   }
 
   return (
     <main
-      className="portfolio-3d-shell relative min-h-screen overflow-x-hidden bg-[#03060a] text-[var(--text-primary)]"
-      style={{ minHeight: '100dvh' }}
+      className="portfolio-3d-shell relative min-h-screen overflow-x-hidden bg-[var(--background)] text-[var(--text-primary)]"
+      style={{ minHeight: "100dvh" }}
     >
       <a href="#portfolio-3d-panel" className="skip-link">
         Skip to portfolio controls
@@ -67,26 +67,32 @@ export function ExperienceShell({
       <section
         id="portfolio-3d-content"
         className="relative min-h-screen overflow-x-hidden"
-        style={{ minHeight: '100dvh' }}
+        style={{ minHeight: "100dvh" }}
         aria-busy={isWaitingForRuntime}
       >
         <div
-          className="absolute inset-0 z-0 bg-[#03060a]"
+          className="absolute inset-0 z-0 bg-[var(--background)]"
           aria-labelledby="portfolio-3d-scene-title"
           aria-describedby={
             isWaitingForRuntime
-              ? 'portfolio-3d-canvas-description portfolio-3d-loading-status'
-              : 'portfolio-3d-canvas-description'
+              ? "portfolio-3d-canvas-description portfolio-3d-loading-status"
+              : "portfolio-3d-canvas-description"
           }
         >
           <p id="portfolio-3d-canvas-description" className="sr-only">
-            The 3D canvas is visual navigation. Equivalent keyboard controls and readable content are available in the portfolio controls panel.
+            The 3D canvas is visual navigation. Equivalent keyboard controls and readable content
+            are available in the portfolio controls panel.
           </p>
           {canvasSlot}
 
           {isWaitingForRuntime ? (
-            <div className="absolute inset-0 z-30 grid place-items-center bg-[rgba(3,6,10,0.66)] px-6 text-center backdrop-blur-sm">
-              <div id="portfolio-3d-loading-status" role="status" aria-live="polite" aria-atomic="true">
+            <div className="absolute inset-0 z-30 grid place-items-center bg-[var(--surface-deep-92)] px-6 text-center backdrop-blur-sm">
+              <div
+                id="portfolio-3d-loading-status"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
                 <p className="mono text-xs uppercase tracking-[0.24em] text-[var(--accent)]">
                   {loadingLabel}
                 </p>
@@ -107,7 +113,7 @@ export function ExperienceShell({
                 </a>
                 <a
                   className="mono inline-flex text-[10px] uppercase tracking-[0.18em] text-[var(--accent)]"
-                  href={withPortfolio3dBasePath('/overview')}
+                  href={withPortfolio3dBasePath("/overview")}
                 >
                   HTML portfolio
                 </a>
@@ -116,13 +122,17 @@ export function ExperienceShell({
           ) : null}
         </div>
 
-        <header inert={isScreenFocusView} aria-hidden={isScreenFocusView} className={`portfolio-3d-scene-header pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <header
+          inert={isScreenFocusView}
+          aria-hidden={isScreenFocusView}
+          className={`portfolio-3d-scene-header pointer-events-none absolute left-0 top-0 z-20 w-full px-5 pt-6 sm:px-8 sm:pt-8 lg:px-10 lg:pt-10 transition-opacity duration-500 ${isScreenFocusView ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+        >
           <div className="flex items-start justify-between gap-4">
             <div className="portfolio-3d-top-actions pointer-events-auto flex max-w-[390px] flex-wrap justify-start gap-2">
               <button
                 id="portfolio-3d-scene-title"
                 type="button"
-                className="button-base button-secondary bg-[rgba(14,23,35,0.72)] uppercase backdrop-blur-md"
+                className="button-base button-secondary bg-[var(--surface-glass)] uppercase backdrop-blur-md"
                 onClick={onRoomReset}
               >
                 Ryan Hidayat
@@ -131,8 +141,8 @@ export function ExperienceShell({
 
             <div className="portfolio-3d-top-actions pointer-events-auto flex flex-wrap justify-end gap-2">
               <a
-                className="button-base button-secondary bg-[rgba(14,23,35,0.72)] backdrop-blur-md"
-                href={withPortfolio3dBasePath('/overview')}
+                className="button-base button-secondary bg-[var(--surface-glass)] backdrop-blur-md"
+                href={withPortfolio3dBasePath("/overview")}
               >
                 Standard portfolio
               </a>
@@ -145,9 +155,9 @@ export function ExperienceShell({
         {focusControlsSlot}
 
         {sectionPanelSlot ? (
-            <section className="portfolio-3d-section-popover pointer-events-auto relative z-20 mx-4 mt-[100dvh] p-4 lg:absolute lg:bottom-5 lg:right-5 lg:mx-0 lg:mt-0 lg:max-h-[42dvh] lg:w-[min(28rem,calc(100vw-2.5rem))] lg:overflow-y-auto">
-              {sectionPanelSlot}
-            </section>
+          <section className="portfolio-3d-section-popover pointer-events-auto relative z-20 mx-4 mt-[100dvh] p-4 lg:absolute lg:bottom-5 lg:right-5 lg:mx-0 lg:mt-0 lg:max-h-[42dvh] lg:w-[min(28rem,calc(100vw-2.5rem))] lg:overflow-y-auto">
+            {sectionPanelSlot}
+          </section>
         ) : null}
       </section>
     </main>

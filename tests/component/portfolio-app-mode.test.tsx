@@ -1,7 +1,7 @@
 import { PortfolioApp } from "@/features/workspace/components/PortfolioApp";
 import { resolveWorkspaceRouteFromPathname } from "@/features/workspace/routing";
 import { projects } from "@/data/projects";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -26,30 +26,32 @@ describe("PortfolioApp mode switching", () => {
     expect(html).not.toContain("ENTER WORKSPACE");
   });
 
-  it("uses recruiter and engineer mode defaults from one mode state", async () => {
-    const user = userEvent.setup();
+  it("renders the recruiter overview and switches to the engineer playground", async () => {
+    window.history.replaceState(null, "", "/overview");
 
-    render(<PortfolioApp />);
+    const view = render(
+      <PortfolioApp initialRoute={resolveWorkspaceRouteFromPathname(window.location.pathname)} />
+    );
 
-    await user.click(screen.getByRole("button", { name: "Recruiter Mode" }));
     expect(
-      screen.getByRole("heading", { name: /60-second overview for hiring teams/i })
+      await screen.findByRole("heading", { level: 1, name: "Ryan Hidayat" })
     ).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/overview");
+    expect(screen.getByText("Professional Summary")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /^Engineer\b/i }));
+    view.unmount();
+
+    // The mode switch is expressed through routing now: engineer mode lives at /labs.
+    window.history.replaceState(null, "", "/labs");
+
+    render(
+      <PortfolioApp initialRoute={resolveWorkspaceRouteFromPathname(window.location.pathname)} />
+    );
+
     expect(
       await screen.findByRole("heading", {
         name: /Developer playground for the full portfolio system/i
       })
     ).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/labs");
-
-    await user.click(screen.getByRole("button", { name: /^Recruiter\b/i }));
-    expect(
-      await screen.findByRole("heading", { name: /60-second overview for hiring teams/i })
-    ).toBeInTheDocument();
-    expect(window.location.pathname).toBe("/overview");
   }, 10_000);
 
   it("opens known deep links directly into the workspace", async () => {
@@ -60,10 +62,7 @@ describe("PortfolioApp mode switching", () => {
     );
 
     expect(await screen.findByText("Performance Lab")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Engineer\b/i })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
+    expect(window.location.pathname).toBe("/labs/performance");
   });
 
   it("syncs project slugs into browser history", async () => {
@@ -87,6 +86,8 @@ describe("PortfolioApp mode switching", () => {
       screen.getByRole("button", { name: new RegExp(escapeRegExp(nextProject.title)) })
     );
 
-    expect(window.location.pathname).toBe(`/projects/${nextProject.slug}`);
+    // Section changes run through the scene transition timers, so the URL is
+    // written a frame later rather than synchronously.
+    await waitFor(() => expect(window.location.pathname).toBe(`/projects/${nextProject.slug}`));
   });
 });

@@ -16,3 +16,13 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => false
   })
 });
+
+// jsdom does not implement layout scrolling, so components that call
+// scrollIntoView on a focused option crash in component tests.
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => undefined;
+}
+
+if (typeof Element !== "undefined" && !Element.prototype.scrollTo) {
+  Element.prototype.scrollTo = () => undefined;
+}

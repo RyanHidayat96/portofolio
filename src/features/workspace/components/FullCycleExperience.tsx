@@ -123,13 +123,17 @@ export function FullCycleExperience(): React.ReactElement {
           <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
             Full-cycle engineering shape.
           </h2>
-          <p className="mt-4 text-base leading-7 text-[#b7c2d2]">
+          <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
             Interactive overview of how build, quality, data, and delivery connect. Deeper role
             detail stays in the CV so the portfolio remains easy to scan.
           </p>
         </div>
 
-        <div role="tablist" aria-label="Engineering mode" className="grid gap-2 sm:grid-cols-3 lg:w-[520px]">
+        <div
+          role="tablist"
+          aria-label="Engineering mode"
+          className="grid gap-2 sm:grid-cols-3 lg:w-[520px]"
+        >
           {modeOptions.map((option) => {
             const isSelected = mode === option.id;
             return (
@@ -168,9 +172,12 @@ export function FullCycleExperience(): React.ReactElement {
       >
         <section
           aria-label="Interactive full-cycle lifecycle"
-          className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border)] bg-[#080d14] p-4"
+          className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[var(--border)] bg-[var(--surface-deep)] p-4"
         >
-          <div aria-hidden="true" className="full-cycle-flow-line absolute left-8 right-8 top-10 hidden h-px lg:block" />
+          <div
+            aria-hidden="true"
+            className="full-cycle-flow-line absolute left-8 right-8 top-10 hidden h-px lg:block"
+          />
           <ol className="relative grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {visibleNodes.map((node, index) => {
               const isActive = node.id === activeNode.id;
@@ -185,7 +192,7 @@ export function FullCycleExperience(): React.ReactElement {
                     className={cn(
                       "group flex min-h-40 w-full flex-col justify-between rounded-[var(--radius-control)] border p-4 text-left transition",
                       isActive
-                        ? "border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-[0_0_32px_rgba(85,215,255,0.12)]"
+                        ? "border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-[0_0_32px_rgba(255,176,0,0.14)]"
                         : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--accent-strong)] hover:bg-[var(--accent-soft)]"
                     )}
                   >
@@ -229,7 +236,7 @@ export function FullCycleExperience(): React.ReactElement {
               </div>
             </section>
 
-            <p className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[#0b1018] p-3 text-sm leading-6 text-[var(--text-muted)]">
+            <p className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] p-3 text-sm leading-6 text-[var(--text-muted)]">
               Full company timeline and responsibility detail are available in the CV.
             </p>
           </div>
@@ -248,7 +255,7 @@ function SignalBlock({
       <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
         {title}
       </h4>
-      <p className="mt-3 text-sm leading-6 text-[#c8d4e6]">{value}</p>
+      <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{value}</p>
     </section>
   );
 }

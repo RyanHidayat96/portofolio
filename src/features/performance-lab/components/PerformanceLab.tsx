@@ -58,29 +58,31 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
   };
 
   return (
-    <div className={isScreenMode ? "performance-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
+    <div
+      className={isScreenMode ? "performance-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}
+    >
       <Panel className="p-5">
         <p className="mono text-sm text-[#ffb000]">k6.workflow.demo</p>
         <h1 className="mt-3 text-2xl font-semibold">Performance Lab</h1>
-        <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
+        <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
           K6-inspired deterministic simulation for latency, reliability, and release-risk thinking.
           No live load is generated from this portfolio.
         </p>
 
         <div className="mt-6 flex items-center gap-3">
           <SlidersHorizontal aria-hidden="true" className="text-[#ffb000]" size={18} />
-          <h2 className="font-semibold text-[#eef5ff]">Load Controls</h2>
+          <h2 className="font-semibold text-[var(--text-primary)]">Load Controls</h2>
         </div>
 
         <label
-          className="mt-5 block text-sm font-semibold text-[#c8d4e6]"
+          className="mt-5 block text-sm font-semibold text-[var(--text-secondary)]"
           htmlFor="performance-scenario"
         >
           Scenario
         </label>
         <select
           id="performance-scenario"
-          className="mt-2 min-h-11 w-full border border-[var(--border)] bg-[#111722] px-3 text-sm text-[#eef5ff]"
+          className="mt-2 min-h-11 w-full border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)]"
           value={config.scenarioId}
           onChange={(event) => updateScenario(event.target.value as PerformanceScenarioId)}
         >
@@ -120,9 +122,9 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
 
         <PerformancePostureCard posture={releasePosture} />
 
-        <div className="mt-5 border border-[var(--border)] bg-[#0b0f16] p-4">
-          <p className="text-sm font-semibold text-[#eef5ff]">{scenario.label}</p>
-          <p className="mt-2 text-sm leading-6 text-[#8a96a8]">{scenario.description}</p>
+        <div className="mt-5 border border-[var(--border)] bg-[var(--surface-deep)] p-4">
+          <p className="text-sm font-semibold text-[var(--text-primary)]">{scenario.label}</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{scenario.description}</p>
         </div>
       </Panel>
 
@@ -134,7 +136,7 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
                 VU: {result.metrics.virtualUsers} | Duration: {result.metrics.durationSeconds}s
               </p>
               <h2 className="mt-2 text-2xl font-semibold">{result.scenario.label}</h2>
-              <p className="mt-2 text-sm text-[#8a96a8]">
+              <p className="mt-2 text-sm text-[var(--text-muted)]">
                 Requests, latency, errors, checks, and threshold outcomes become delivery signals,
                 computed deterministically.
               </p>
@@ -199,11 +201,11 @@ export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): 
               {result.thresholds.map((threshold) => (
                 <div
                   key={threshold.id}
-                  className="flex items-center justify-between gap-4 border border-[var(--border)] bg-[#0b0f16] p-3"
+                  className="flex items-center justify-between gap-4 border border-[var(--border)] bg-[var(--surface-deep)] p-3"
                 >
                   <div>
                     <p className="font-medium">{threshold.label}</p>
-                    <p className="mt-1 text-xs text-[#8a96a8]">
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">
                       {threshold.observed} / {threshold.target}
                     </p>
                   </div>
@@ -296,14 +298,20 @@ function PerformanceControl({
   return (
     <div className="mt-5">
       <div className="flex items-center justify-between gap-3">
-        <label id={labelId} className="text-sm font-semibold text-[#c8d4e6]" htmlFor={id}>
+        <label
+          id={labelId}
+          className="text-sm font-semibold text-[var(--text-secondary)]"
+          htmlFor={id}
+        >
           {label}
+        </label>
+        <label htmlFor={valueInputId} className="sr-only">
+          {label} value
         </label>
         <input
           id={valueInputId}
-          aria-labelledby={labelId}
           aria-describedby={hintId}
-          className="mono w-24 border border-[var(--border)] bg-[#111722] px-2 py-1 text-right text-sm text-[#eef5ff]"
+          className="mono w-24 border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-1 text-right text-sm text-[var(--text-primary)]"
           type="number"
           min={range.min}
           max={range.max}
@@ -314,7 +322,7 @@ function PerformanceControl({
       </div>
       <input
         id={id}
-        className="mt-3 w-full accent-[#ffb000]"
+        className="mt-3 w-full accent-[var(--accent)]"
         type="range"
         min={range.min}
         max={range.max}
@@ -324,12 +332,12 @@ function PerformanceControl({
         aria-describedby={hintId}
         onChange={(event) => onChange(Number(event.target.value))}
       />
-      <div id={hintId} className="mt-2 flex justify-between text-xs text-[#8a96a8]">
+      <div id={hintId} className="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
         <span>
           {range.min}
           {suffix}
         </span>
-        <span className="mono text-[#c8d4e6]">
+        <span className="mono text-[var(--text-secondary)]">
           {value}
           {suffix}
         </span>
@@ -366,9 +374,9 @@ function getScenarioPressure(scenario: PerformanceScenario): number {
 }
 function Metric({ label, value }: Readonly<{ label: string; value: string }>): React.ReactElement {
   return (
-    <section className="border border-[var(--border)] bg-[#10141d] p-4">
-      <p className="text-sm text-[#8a96a8]">{label}</p>
-      <p className="mono mt-2 text-2xl font-semibold text-[#eef5ff]">{value}</p>
+    <section className="border border-[var(--border)] bg-[var(--surface)] p-4">
+      <p className="text-sm text-[var(--text-muted)]">{label}</p>
+      <p className="mono mt-2 text-2xl font-semibold text-[var(--text-primary)]">{value}</p>
     </section>
   );
 }
@@ -385,15 +393,15 @@ function LatencyBar({
   dangerAt?: number;
 }>): React.ReactElement {
   const width = `${Math.min(100, Math.round((value / max) * 100))}%`;
-  const toneClass = dangerAt && value >= dangerAt ? "bg-[#ff704d]" : "bg-[#ffb000]";
+  const toneClass = dangerAt && value >= dangerAt ? "bg-[var(--danger)]" : "bg-[#ffb000]";
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span>{label}</span>
-        <span className="mono text-[#8a96a8]">{value} ms</span>
+        <span className="mono text-[var(--text-muted)]">{value} ms</span>
       </div>
-      <div className="h-3 border border-[var(--border)] bg-[#0b0f16]">
+      <div className="h-3 border border-[var(--border)] bg-[var(--surface-deep)]">
         <div className={`h-full ${toneClass}`} style={{ width }} />
       </div>
     </div>
@@ -413,15 +421,15 @@ function PercentBar({
 }>): React.ReactElement {
   const width = `${Math.min(100, Math.round((value / max) * 100))}%`;
   const isRisky = invert ? value >= 1 : value <= 95;
-  const toneClass = isRisky ? "bg-[#ff704d]" : "bg-[#ffc24a]";
+  const toneClass = isRisky ? "bg-[var(--danger)]" : "bg-[#ffc24a]";
 
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
         <span>{label}</span>
-        <span className="mono text-[#8a96a8]">{value.toFixed(1)}%</span>
+        <span className="mono text-[var(--text-muted)]">{value.toFixed(1)}%</span>
       </div>
-      <div className="h-3 border border-[var(--border)] bg-[#0b0f16]">
+      <div className="h-3 border border-[var(--border)] bg-[var(--surface-deep)]">
         <div className={`h-full ${toneClass}`} style={{ width }} />
       </div>
     </div>

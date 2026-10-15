@@ -69,8 +69,15 @@ describe("verified portfolio data", () => {
     ]);
   });
 
-  it("keeps unverified GitHub hidden and validates CV when configured", () => {
-    expect(isPortfolioValueConfigured(profile.contact.github.href)).toBe(false);
+  it("keeps unverified contact links out of the published set", () => {
+    // GitHub was published deliberately (portfolio-content.ts), so the
+    // "hidden when unconfigured" rule is asserted on the filtering rule itself.
+    const unconfigured = Object.values(profile.contact).filter(
+      (link) => !isPortfolioValueConfigured(link.href)
+    );
+
+    expect(unconfigured.every((link) => link.href.trim().length === 0)).toBe(true);
+    expect(profile.contact.github.href).toBe("https://github.com/RyanHidayat96");
 
     if (isPortfolioValueConfigured(profile.contact.cv.href)) {
       expect(profile.contact.cv.href).toBe("/cv.pdf");

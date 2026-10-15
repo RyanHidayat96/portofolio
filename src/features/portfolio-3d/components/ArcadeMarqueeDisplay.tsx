@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useThree } from '@react-three/fiber';
-import { useLayoutEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import type { ArcadeScreenPlacement } from '../arcade-screen';
+import { useThree } from "@react-three/fiber";
+import { useLayoutEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import type { ArcadeScreenPlacement } from "../arcade-screen";
 
-const marqueeMessage = 'Ryan Hidayat - 087775009393';
+const marqueeMessage = "Ryan Hidayat - 087775009393";
 const marqueeCanvasWidth = 640;
 const marqueeCanvasHeight = 144;
 const marqueeDotPitch = 15;
@@ -24,25 +24,27 @@ const marqueeBorderVerticalInset = 10;
 const marqueeContentVerticalInset = 15;
 
 const ledGlyphs: Readonly<Record<string, readonly string[]>> = {
-  A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
-  D: ['11110', '10001', '10001', '10001', '10001', '10001', '11110'],
-  H: ['10001', '10001', '10001', '11111', '10001', '10001', '10001'],
-  I: ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
-  N: ['10001', '11001', '10101', '10011', '10001', '10001', '10001'],
-  R: ['11110', '10001', '10001', '11110', '10100', '10010', '10001'],
-  T: ['11111', '00100', '00100', '00100', '00100', '00100', '00100'],
-  Y: ['10001', '10001', '01010', '00100', '00100', '00100', '00100'],
-  '0': ['01110', '10001', '10011', '10101', '11001', '10001', '01110'],
-  '3': ['11110', '00001', '00001', '01110', '00001', '00001', '11110'],
-  '5': ['11111', '10000', '10000', '11110', '00001', '00001', '11110'],
-  '7': ['11111', '00001', '00010', '00100', '01000', '01000', '01000'],
-  '8': ['01110', '10001', '10001', '01110', '10001', '10001', '01110'],
-  '9': ['01110', '10001', '10001', '01111', '00001', '00010', '11100'],
-  '-': ['00000', '00000', '00000', '11111', '00000', '00000', '00000'],
-  ' ': ['00000', '00000', '00000', '00000', '00000', '00000', '00000']
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  "0": ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
+  "3": ["11110", "00001", "00001", "01110", "00001", "00001", "11110"],
+  "5": ["11111", "10000", "10000", "11110", "00001", "00001", "11110"],
+  "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+  "8": ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+  "9": ["01110", "10001", "10001", "01111", "00001", "00010", "11100"],
+  "-": ["00000", "00000", "00000", "11111", "00000", "00000", "00000"],
+  " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"]
 };
 
-export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
+export function ArcadeMarqueeDisplay({
+  marquee
+}: Readonly<{
   marquee: ArcadeScreenPlacement;
 }>): React.ReactElement | null {
   const { camera, invalidate, gl } = useThree();
@@ -50,11 +52,11 @@ export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
   useLayoutEffect(() => {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = marqueeCanvasWidth;
     canvas.height = marqueeCanvasHeight;
-    canvas.className = 'arcade-marquee-display-canvas';
-    const context = canvas.getContext('2d');
+    canvas.className = "arcade-marquee-display-canvas";
+    const context = canvas.getContext("2d");
     if (!context) return;
 
     const layout = createMarqueeCanvasLayout(marquee);
@@ -96,26 +98,22 @@ export function ArcadeMarqueeDisplay({ marquee }: Readonly<{
     const onVisibilityChange = (): void => {
       if (!document.hidden) paint();
     };
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       window.clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [camera, invalidate, marquee, texture]);
 
   if (!texture) return null;
 
   return (
-    <mesh
-      name="Arcade_Marquee_Display"
-      position={marquee.position}
-      quaternion={marquee.quaternion}
-    >
+    <mesh name="Arcade_Marquee_Display" position={marquee.position} quaternion={marquee.quaternion}>
       <planeGeometry args={[marquee.width, marquee.height]} />
       <meshBasicMaterial
         map={texture}
-        color="#ffffff"
+        color="#ffe4a3"
         depthTest
         depthWrite
         fog={false}
@@ -145,10 +143,9 @@ interface MarqueeCanvasLayout {
 function createMarqueeCanvasLayout(marquee: ArcadeScreenPlacement): MarqueeCanvasLayout {
   // Vertical values are the master controls. Deriving the horizontal values
   // from the actual 3D plane gives all four margins the same physical size.
-  const toHorizontalInset = (verticalInset: number): number => (
-    marqueeCanvasWidth * marquee.height * verticalInset /
-    (marqueeCanvasHeight * Math.max(marquee.width, Number.EPSILON))
-  );
+  const toHorizontalInset = (verticalInset: number): number =>
+    (marqueeCanvasWidth * marquee.height * verticalInset) /
+    (marqueeCanvasHeight * Math.max(marquee.width, Number.EPSILON));
 
   return {
     borderHorizontalInset: toHorizontalInset(marqueeBorderVerticalInset),
@@ -159,20 +156,20 @@ function createMarqueeCanvasLayout(marquee: ArcadeScreenPlacement): MarqueeCanva
 }
 
 function createMarqueeBackground(layout: MarqueeCanvasLayout): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = marqueeCanvasWidth;
   canvas.height = marqueeCanvasHeight;
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (!context) return canvas;
 
   const background = context.createLinearGradient(0, 0, marqueeCanvasWidth, marqueeCanvasHeight);
-  background.addColorStop(0, '#180302');
-  background.addColorStop(0.5, '#050101');
-  background.addColorStop(1, '#210402');
+  background.addColorStop(0, "#1a0c02");
+  background.addColorStop(0.5, "#070502");
+  background.addColorStop(1, "#221202");
   context.fillStyle = background;
   context.fillRect(0, 0, marqueeCanvasWidth, marqueeCanvasHeight);
 
-  context.fillStyle = 'rgba(255, 76, 24, 0.09)';
+  context.fillStyle = "rgba(255, 176, 0, 0.09)";
   for (let y = 7; y < marqueeCanvasHeight; y += 8) {
     context.fillRect(0, y, marqueeCanvasWidth, 1);
   }
@@ -182,10 +179,10 @@ function createMarqueeBackground(layout: MarqueeCanvasLayout): HTMLCanvasElement
 }
 
 function createMarqueeMessage(): HTMLCanvasElement {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = marqueeMessageWidth;
   canvas.height = marqueeGlyphHeight * marqueeDotPitch;
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
   if (context) drawLedMessage(context, marqueeMessage, 0, 0, 0);
   return canvas;
 }
@@ -212,7 +209,7 @@ function drawMarquee(runtime: MarqueeRuntime, timestamp: number): void {
   // Repeat only over the message and its separator. Including the display
   // width here created a full blank lap before the next copy entered.
   const messageCycleWidth = marqueeMessageWidth + marqueeMessageGap;
-  const messageOffset = (timestamp / 1000 * marqueeScrollPixelsPerSecond) % messageCycleWidth;
+  const messageOffset = ((timestamp / 1000) * marqueeScrollPixelsPerSecond) % messageCycleWidth;
   const startX = -messageOffset;
   const baselineY = Math.round((marqueeCanvasHeight - marqueeGlyphHeight * marqueeDotPitch) / 2);
   context.save();
@@ -237,9 +234,14 @@ function isMarqueeVisible(
 ): boolean {
   camera.updateMatrixWorld();
   projection.copy(marquee.position).project(camera);
-  return projection.z >= -1 && projection.z <= 1 &&
-    projection.x >= -1.08 && projection.x <= 1.08 &&
-    projection.y >= -1.08 && projection.y <= 1.08;
+  return (
+    projection.z >= -1 &&
+    projection.z <= 1 &&
+    projection.x >= -1.08 &&
+    projection.x <= 1.08 &&
+    projection.y >= -1.08 &&
+    projection.y <= 1.08
+  );
 }
 
 function drawLedBorder(
@@ -287,25 +289,28 @@ function drawLedMessage(
   startY: number,
   timestamp: number
 ): void {
-  message.toUpperCase().split('').forEach((character, characterIndex) => {
-    const glyph = ledGlyphs[character] ?? ledGlyphs[' '];
-    const glyphX = startX + characterIndex * marqueeCharacterAdvance;
-    if (glyphX > context.canvas.width || glyphX + marqueeCharacterAdvance < 0) return;
+  message
+    .toUpperCase()
+    .split("")
+    .forEach((character, characterIndex) => {
+      const glyph = ledGlyphs[character] ?? ledGlyphs[" "];
+      const glyphX = startX + characterIndex * marqueeCharacterAdvance;
+      if (glyphX > context.canvas.width || glyphX + marqueeCharacterAdvance < 0) return;
 
-    glyph.forEach((row, rowIndex) => {
-      row.split('').forEach((pixel, columnIndex) => {
-        if (pixel !== '1') return;
-        const phase = characterIndex * 0.73 + rowIndex * 0.37 + columnIndex * 0.19;
-        drawLedDot(
-          context,
-          glyphX + columnIndex * marqueeDotPitch + marqueeDotPitch / 2,
-          startY + rowIndex * marqueeDotPitch + marqueeDotPitch / 2,
-          timestamp + phase * 900,
-          0.94
-        );
+      glyph.forEach((row, rowIndex) => {
+        row.split("").forEach((pixel, columnIndex) => {
+          if (pixel !== "1") return;
+          const phase = characterIndex * 0.73 + rowIndex * 0.37 + columnIndex * 0.19;
+          drawLedDot(
+            context,
+            glyphX + columnIndex * marqueeDotPitch + marqueeDotPitch / 2,
+            startY + rowIndex * marqueeDotPitch + marqueeDotPitch / 2,
+            timestamp + phase * 900,
+            0.94
+          );
+        });
       });
     });
-  });
 }
 
 function drawLedDot(
@@ -320,14 +325,14 @@ function drawLedDot(
   const radius = 3.1;
 
   context.save();
-  context.shadowColor = `rgba(255, 39, 8, ${alpha * 0.9})`;
+  context.shadowColor = `rgba(255, 176, 0, ${alpha * 0.9})`;
   context.shadowBlur = 7;
-  context.fillStyle = `rgba(255, 58, 18, ${alpha})`;
+  context.fillStyle = `rgba(255, 176, 0, ${alpha})`;
   context.beginPath();
   context.arc(x, y, radius, 0, Math.PI * 2);
   context.fill();
   context.shadowBlur = 0;
-  context.fillStyle = `rgba(255, 239, 190, ${alpha * 0.9})`;
+  context.fillStyle = `rgba(255, 228, 163, ${alpha * 0.9})`;
   context.beginPath();
   context.arc(x - 0.65, y - 0.65, 0.95, 0, Math.PI * 2);
   context.fill();

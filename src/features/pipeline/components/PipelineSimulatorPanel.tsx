@@ -22,7 +22,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const playbackDelayMs = 120;
 
-export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
+export function PipelineSimulatorPanel({
+  variant = "workspace"
+}: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
   const simulator = useMemo(() => new PipelineSimulator(), []);
   const [scenarioId, setScenarioId] = useState<PipelineScenarioId>("success");
   const [currentRun, setCurrentRun] = useState<PipelineRunResult | null>(null);
@@ -74,20 +76,31 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
   useEffect(() => clearTimers, [clearTimers]);
 
   return (
-    <div className={variant === "screen" ? "pipeline-simulator-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
+    <div
+      className={
+        variant === "screen" ? "pipeline-simulator-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"
+      }
+    >
       <Panel className="pipeline-controls p-5">
-        {variant !== "screen" ? <>
-          <p className="mono text-sm text-[#ffb000]">{pipelinePanelMetadata.eyebrow}</p>
-          <h1 className="mt-3 text-2xl font-semibold">{pipelinePanelMetadata.title}</h1>
-          <p className="mt-3 text-sm leading-6 text-[#8a96a8]">{pipelinePanelMetadata.description}</p>
-        </> : null}
+        {variant !== "screen" ? (
+          <>
+            <p className="mono text-sm text-[#ffb000]">{pipelinePanelMetadata.eyebrow}</p>
+            <h1 className="mt-3 text-2xl font-semibold">{pipelinePanelMetadata.title}</h1>
+            <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
+              {pipelinePanelMetadata.description}
+            </p>
+          </>
+        ) : null}
 
-        <label className="mt-6 block text-sm font-semibold text-[#c8d4e6]" htmlFor="pipeline-mode">
+        <label
+          className="mt-6 block text-sm font-semibold text-[var(--text-secondary)]"
+          htmlFor="pipeline-mode"
+        >
           Pipeline Scenario
         </label>
         <select
           id="pipeline-mode"
-          className="mt-2 min-h-11 w-full border border-[var(--border)] bg-[#111722] px-3 text-sm text-[#eef5ff]"
+          className="mt-2 min-h-11 w-full border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)]"
           value={scenarioId}
           onChange={(event) => setScenarioId(event.target.value as PipelineScenarioId)}
           disabled={isRunning}
@@ -99,12 +112,14 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
           ))}
         </select>
 
-        <div className="pipeline-scenario-detail mt-4 border border-[var(--border)] bg-[#0b0f16] p-4">
+        <div className="pipeline-scenario-detail mt-4 border border-[var(--border)] bg-[var(--surface-deep)] p-4">
           <div className="flex items-start gap-3">
             <GitBranch aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
             <div>
-              <h2 className="font-semibold text-[#eef5ff]">{selectedScenario.label}</h2>
-              <p className="mt-2 text-sm leading-6 text-[#8a96a8]">{selectedScenario.summary}</p>
+              <h2 className="font-semibold text-[var(--text-primary)]">{selectedScenario.label}</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                {selectedScenario.summary}
+              </p>
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
@@ -144,7 +159,7 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
             <div>
               <p className="mono text-sm text-[#ffb000]">PIPELINE EXECUTION</p>
               <h2 className="mt-2 text-2xl font-semibold">Software Delivery Lifecycle</h2>
-              <p className="mt-2 text-sm text-[#8a96a8]">
+              <p className="mt-2 text-sm text-[var(--text-muted)]">
                 {pipelinePanelMetadata.flow.join(" | ")}
               </p>
             </div>
@@ -165,7 +180,7 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
         <div className="pipeline-reports grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Panel className="p-5">
             <div className="flex items-start gap-3">
-            <ShieldCheck aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
+              <ShieldCheck aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
               <div>
                 <p className="mono text-sm text-[#ffb000]">QUALITY GATE</p>
                 <h2 className="mt-2 text-xl font-semibold">
@@ -173,19 +188,19 @@ export function PipelineSimulatorPanel({ variant = "workspace" }: Readonly<{ var
                 </h2>
               </div>
             </div>
-            <p className="mt-4 border border-[var(--border)] bg-[#0b0f16] p-4 text-sm leading-6 text-[#c8d4e6]">
+            <p className="mt-4 border border-[var(--border)] bg-[var(--surface-deep)] p-4 text-sm leading-6 text-[var(--text-secondary)]">
               {snapshot.summary}
             </p>
-            <p className="mt-3 text-sm text-[#8a96a8]">
+            <p className="mt-3 text-sm text-[var(--text-muted)]">
               Stages resolved: {completedStageCount} / {snapshot.stages.length}
             </p>
           </Panel>
 
           <Panel className="p-5">
             <div className="flex items-start gap-3">
-            <Workflow aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
+              <Workflow aria-hidden="true" className="mt-1 text-[#ffb000]" size={18} />
               <div>
-              <p className="mono text-sm text-[#ffb000]">EXECUTION TRACE</p>
+                <p className="mono text-sm text-[#ffb000]">EXECUTION TRACE</p>
                 <h2 className="mt-2 text-xl font-semibold">Deterministic Events</h2>
               </div>
             </div>
@@ -221,8 +236,8 @@ function PipelineStageItem({
   stage: PipelineStage;
 }>): React.ReactElement {
   return (
-    <li className="grid gap-3 border border-[var(--border)] bg-[#10141d] p-4 sm:grid-cols-[40px_1fr_auto] sm:items-center">
-      <div className="mono flex h-9 w-9 items-center justify-center border border-[var(--border)] text-sm text-[#8a96a8]">
+    <li className="grid gap-3 border border-[var(--border)] bg-[var(--surface)] p-4 sm:grid-cols-[40px_1fr_auto] sm:items-center">
+      <div className="mono flex h-9 w-9 items-center justify-center border border-[var(--border)] text-sm text-[var(--text-muted)]">
         {index + 1}
       </div>
       <div>
@@ -230,7 +245,7 @@ function PipelineStageItem({
           <span className={`h-2.5 w-2.5 ${getStageDotClass(stage.status)}`} aria-hidden="true" />
           <h3 className="font-semibold">{stage.label}</h3>
         </div>
-        <p className="mt-1 text-sm leading-6 text-[#8a96a8]">{stage.summary}</p>
+        <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">{stage.summary}</p>
       </div>
       <StageBadge status={stage.status} />
     </li>
@@ -243,7 +258,7 @@ function EventFeed({
   return (
     <div className="mt-5 grid gap-3" role="log" aria-live="polite" aria-label="Pipeline event log">
       {events.length === 0 ? (
-        <p className="border border-dashed border-[var(--border)] p-4 text-sm text-[#8a96a8]">
+        <p className="border border-dashed border-[var(--border)] p-4 text-sm text-[var(--text-muted)]">
           Run pipeline to stream stage events.
         </p>
       ) : (
@@ -260,15 +275,15 @@ function PipelineEventLine({ event }: Readonly<{ event: PipelineEvent }>): React
   const toneClass = {
     info: "text-[#ffb000]",
     success: "text-[#ffc24a]",
-    warning: "text-[#ffd36e]",
-    danger: "text-[#ff6f7d]"
+    warning: "text-[var(--accent-secondary)]",
+    danger: "text-[var(--danger-text)]"
   }[presentation.tone];
 
   return (
-    <div className="mono border border-[var(--border)] bg-[#0b0f16] p-3 text-sm">
+    <div className="mono border border-[var(--border)] bg-[var(--surface-deep)] p-3 text-sm">
       <span className={toneClass}>{presentation.text}</span>
       {presentation.detail ? (
-        <p className="mt-2 whitespace-normal font-sans text-xs leading-5 text-[#8a96a8]">
+        <p className="mt-2 whitespace-normal font-sans text-xs leading-5 text-[var(--text-muted)]">
           {presentation.detail}
         </p>
       ) : null}
@@ -359,12 +374,12 @@ function formatQualityGateStatus(status: PipelineQualityGateStatus): string {
 
 function getStageDotClass(status: PipelineStageStatus): string {
   const classMap: Record<PipelineStageStatus, string> = {
-    pending: "bg-[#293241]",
+    pending: "bg-[var(--surface-raised)]",
     running: "bg-[#ffb000]",
     passed: "bg-[#ffc24a]",
-    failed: "bg-[#ff6f7d]",
-    skipped: "bg-[#8a96a8]",
-    blocked: "bg-[#ff6f7d]"
+    failed: "bg-[var(--danger-strong)]",
+    skipped: "bg-[var(--text-subtle)]",
+    blocked: "bg-[var(--danger-strong)]"
   };
 
   return classMap[status];

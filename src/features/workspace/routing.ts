@@ -57,6 +57,11 @@ export const homeWorkspaceRoute: WorkspaceRouteState = {
   isKnownRoute: true
 };
 
+const workspaceEntrySegment = "workspace";
+
+/** Route that serves the standard-portfolio landing phase (`src/app/workspace/page.tsx`). */
+export const workspaceEntryPath = "/workspace";
+
 export function resolveWorkspaceRouteFromPathname(pathname: string): WorkspaceRouteState {
   const segments = pathname
     .split("/")
@@ -104,6 +109,12 @@ export function resolveWorkspaceRouteFromSegments(
     if (standaloneSection) {
       return createKnownRoute(standaloneSection, preferredModeForSection(standaloneSection));
     }
+  }
+
+  // `/workspace` is the standard-portfolio entry: it opens on the landing phase
+  // (BootSequence runs on initialize) instead of deep-linking into a section.
+  if (segments.length === 1 && firstSegment === workspaceEntrySegment) {
+    return { ...homeWorkspaceRoute, isDeepLink: false };
   }
 
   return {

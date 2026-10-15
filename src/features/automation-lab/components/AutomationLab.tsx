@@ -43,7 +43,9 @@ interface AutomationSignal {
   readonly tone: AutomationSignalTone;
 }
 
-export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
+export function AutomationLab({
+  variant = "workspace"
+}: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
   const engine = useMemo(() => new AutomationSimulationEngine(), []);
   const [failureType, setFailureType] = useState<FailureType>("none");
   const [events, setEvents] = useState<readonly TimedSimulationEvent[]>([]);
@@ -108,21 +110,26 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
   return (
     <div className={isScreen ? "automation-lab-screen" : "grid gap-5 xl:grid-cols-[360px_1fr]"}>
       <Panel className={isScreen ? "automation-screen-controls p-5" : "p-5"}>
-        {!isScreen ? <>
-          <p className="mono text-sm text-[#ffb000]">quality.engineering.demo</p>
-          <h1 className="mt-3 text-2xl font-semibold">Quality Automation Lab</h1>
-          <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
-            Deterministic workflow demo. Browser, API, failure inspection, and quality-gate impact are
-            simulated.
-          </p>
-        </> : null}
+        {!isScreen ? (
+          <>
+            <p className="mono text-sm text-[#ffb000]">quality.engineering.demo</p>
+            <h1 className="mt-3 text-2xl font-semibold">Quality Automation Lab</h1>
+            <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
+              Deterministic workflow demo. Browser, API, failure inspection, and quality-gate impact
+              are simulated.
+            </p>
+          </>
+        ) : null}
 
-        <label className="mt-6 block text-sm font-semibold text-[#c8d4e6]" htmlFor="failure-type">
+        <label
+          className="mt-6 block text-sm font-semibold text-[var(--text-secondary)]"
+          htmlFor="failure-type"
+        >
           Failure Scenario
         </label>
         <select
           id="failure-type"
-          className="mt-2 min-h-11 w-full border border-[var(--border)] bg-[#111722] px-3 text-sm text-[#eef5ff]"
+          className="mt-2 min-h-11 w-full border border-[var(--border)] bg-[var(--surface-raised)] px-3 text-sm text-[var(--text-primary)]"
           value={failureType}
           onChange={(event) => setFailureType(event.target.value as FailureType)}
           disabled={isRunning}
@@ -134,7 +141,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
           ))}
         </select>
 
-        <div className="mt-4 border border-[var(--border)] bg-[#0b0f16] p-4">
+        <div className="mt-4 border border-[var(--border)] bg-[var(--surface-deep)] p-4">
           <div className="flex flex-wrap gap-2">
             <Badge tone={getRecoveryTone(selectedStrategy.recoveryMode)}>
               {formatRecoveryMode(selectedStrategy.recoveryMode)}
@@ -143,10 +150,12 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
               gate {formatGateImpact(selectedStrategy.qualityGateImpact).toLowerCase()}
             </Badge>
           </div>
-          <p className="mt-3 text-sm leading-6 text-[#b7c2d2]">{selectedStrategy.summary}</p>
+          <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+            {selectedStrategy.summary}
+          </p>
           <div className="mt-4 grid gap-2">
             {selectedStrategy.inspectorFocus.map((item) => (
-              <div key={item} className="flex items-center gap-2 text-xs text-[#8a96a8]">
+              <div key={item} className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                 <span className="h-1.5 w-1.5 bg-[#ffb000]" aria-hidden="true" />
                 <span>{item}</span>
               </div>
@@ -177,7 +186,11 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
           >
             Stop
           </Button>
-          <Button icon={<RotateCcw aria-hidden="true" size={17} />} onClick={resetSimulation} magnetic={!isScreen}>
+          <Button
+            icon={<RotateCcw aria-hidden="true" size={17} />}
+            onClick={resetSimulation}
+            magnetic={!isScreen}
+          >
             Reset
           </Button>
           <Button
@@ -197,7 +210,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
             <div>
               <p className="mono text-sm text-[#ffb000]">TEST RUNNER</p>
               <h2 className="mt-2 text-2xl font-semibold">Approval Flow Regression</h2>
-              <p className="mt-2 text-sm text-[#8a96a8]">
+              <p className="mt-2 text-sm text-[var(--text-muted)]">
                 Environment: {defaultAutomationScenario.environment} | Browser:{" "}
                 {defaultAutomationScenario.browser} | Steps: {passedSteps} /{" "}
                 {defaultAutomationScenario.steps.length}
@@ -220,7 +233,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
               kicker="FAILURE INSPECTOR"
               title={selectedStrategy.label}
             />
-            <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
+            <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
               {selectedStrategy.failureReason || "No failure injected for this run."}
             </p>
             <EventFeed
@@ -244,7 +257,7 @@ export function AutomationLab({ variant = "workspace" }: Readonly<{ variant?: "w
               kicker="HEALING ENGINE"
               title={getHealingTitle(selectedStrategy.recoveryMode)}
             />
-            <p className="mt-3 text-sm leading-6 text-[#8a96a8]">
+            <p className="mt-3 text-sm leading-6 text-[var(--text-muted)]">
               {getHealingSummary(selectedStrategy.recoveryMode)}
             </p>
             <EventFeed
@@ -306,7 +319,7 @@ function EventFeed({
   return (
     <div className="mt-5 grid gap-3" role="log" aria-live="polite" aria-label={ariaLabel}>
       {events.length === 0 ? (
-        <p className="border border-dashed border-[var(--border)] p-4 text-sm text-[#8a96a8]">
+        <p className="border border-dashed border-[var(--border)] p-4 text-sm text-[var(--text-muted)]">
           {emptyText}
         </p>
       ) : (
@@ -325,15 +338,15 @@ function AutomationEventLine({
   const toneClass = {
     info: "text-[#ffb000]",
     success: "text-[#ffc24a]",
-    warning: "text-[#ffd36e]",
-    danger: "text-[#ff6f7d]"
+    warning: "text-[var(--accent-secondary)]",
+    danger: "text-[var(--danger-text)]"
   }[presentation.tone];
 
   return (
-    <div className="mono border border-[var(--border)] bg-[#0b0f16] p-3 text-sm">
+    <div className="mono border border-[var(--border)] bg-[var(--surface-deep)] p-3 text-sm">
       <span className={toneClass}>{presentation.text}</span>
       {presentation.detail ? (
-        <p className="mt-2 whitespace-normal font-sans text-xs leading-5 text-[#8a96a8]">
+        <p className="mt-2 whitespace-normal font-sans text-xs leading-5 text-[var(--text-muted)]">
           {presentation.detail}
         </p>
       ) : null}

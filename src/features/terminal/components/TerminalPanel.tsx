@@ -9,7 +9,11 @@ import { projects } from "@/data/projects";
 import { skillGroups } from "@/data/skills";
 import { createPortfolioCommandRegistry } from "@/features/terminal/domain/commands";
 import { parseTerminalInput } from "@/features/terminal/domain/parser";
-import type { TerminalCommand, TerminalLine, TerminalLineKind } from "@/features/terminal/domain/types";
+import type {
+  TerminalCommand,
+  TerminalLine,
+  TerminalLineKind
+} from "@/features/terminal/domain/types";
 import type { WorkspaceSection } from "@/features/workspace/types";
 import { useMemo, useRef, useState, type Ref, type UIEventHandler } from "react";
 
@@ -156,7 +160,9 @@ export function TerminalPanel({
   const visibleSuggestedCommands = isScreenMode ? suggestedCommands.slice(0, 6) : suggestedCommands;
 
   return (
-    <Panel className={`terminal-panel ${isScreenMode ? "terminal-panel-screen" : ""} overflow-hidden`}>
+    <Panel
+      className={`terminal-panel ${isScreenMode ? "terminal-panel-screen" : ""} overflow-hidden`}
+    >
       <div className="terminal-header">
         <div>
           <p className="mono text-sm text-[#ffb000]">terminal.proof</p>
@@ -226,7 +232,8 @@ export function TerminalPanel({
           }}
         >
           <label className="terminal-prompt" htmlFor="terminal-input">
-            $
+            <span>$</span>
+            <span className="terminal-caret" aria-hidden="true" />
           </label>
           <div className="terminal-input-stack">
             <input
@@ -294,9 +301,9 @@ function getAutocompleteMatch(
 
 function lineClass(kind: TerminalLineKind): string {
   const classByKind: Record<TerminalLineKind, string> = {
-    input: "text-[#eef5ff]",
-    output: "text-[#b7c2d2]",
-    error: "text-[#ff6f7d]",
+    input: "text-[var(--text-primary)]",
+    output: "text-[var(--text-secondary)]",
+    error: "text-[var(--danger-text)]",
     system: "text-[#ffc24a]"
   };
 

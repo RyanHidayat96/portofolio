@@ -88,7 +88,7 @@ export function WorkspaceShell({
           <nav aria-label="Workspace sections" className="workspace-navigation space-y-5">
             {navGroups.map((group) => (
               <div key={group.label} className="workspace-nav-group">
-                <p className="mono mb-2 px-3 text-[10px] uppercase tracking-[0.2em] text-[#556174]">
+                <p className="mono mb-2 px-3 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
                   {group.label}
                 </p>
                 <div className="space-y-1">

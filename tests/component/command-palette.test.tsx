@@ -111,7 +111,9 @@ describe("CommandPalette", () => {
     await user.type(screen.getByRole("combobox", { name: "Search commands" }), "architecture");
     await user.keyboard("{Enter}");
 
-    expect(await screen.findByText("Full Stack Application")).toBeInTheDocument();
+    // The architecture view renders this preset label more than once (diagram +
+    // detail panel), so assert presence rather than uniqueness.
+    expect(await screen.findAllByText("Full Stack Application")).not.toHaveLength(0);
     expect(window.location.pathname).toBe("/labs/architecture");
   });
 });

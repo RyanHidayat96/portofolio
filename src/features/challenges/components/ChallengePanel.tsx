@@ -21,7 +21,7 @@ export function ChallengePanel(): React.ReactElement {
       <Panel className="challenge-index-panel p-4">
         <p className="mono px-1 py-2 text-sm text-[#ffb000]">test.me</p>
         <h1 className="px-1 pb-3 text-2xl font-semibold">Engineering Challenge</h1>
-        <p className="px-1 pb-4 text-sm leading-6 text-[#8a96a8]">
+        <p className="px-1 pb-4 text-sm leading-6 text-[var(--text-muted)]">
           Public-safe decision scenarios for build, quality, data, and delivery thinking.
         </p>
         <div className="space-y-2">
@@ -51,7 +51,9 @@ export function ChallengePanel(): React.ReactElement {
                 <h2 className="mt-4 text-3xl font-semibold">
                   You know I test software. Now test how I think.
                 </h2>
-                <p className="mt-5 text-lg leading-8 text-[#c8d4e6]">{scenario.prompt}</p>
+                <p className="mt-5 text-lg leading-8 text-[var(--text-secondary)]">
+                  {scenario.prompt}
+                </p>
               </div>
               <Brain aria-hidden="true" className="hidden text-[#ffb000] sm:block" size={28} />
             </div>
@@ -59,12 +61,12 @@ export function ChallengePanel(): React.ReactElement {
             <ChallengeDecisionTrace scenario={scenario} selectedChoice={selectedChoice} />
 
             <section className="mt-6">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a96a8]">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
                 Signals
               </h3>
               <div className="challenge-signal-grid mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {scenario.metrics.map((metric) => (
-                  <div key={metric} className="mono text-sm text-[#c8d4e6]">
+                  <div key={metric} className="mono text-sm text-[var(--text-secondary)]">
                     {metric}
                   </div>
                 ))}
@@ -72,7 +74,7 @@ export function ChallengePanel(): React.ReactElement {
             </section>
 
             <section className="mt-7">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#8a96a8]">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
                 Decision
               </h3>
               <div className="mt-3 grid gap-3">
@@ -84,6 +86,7 @@ export function ChallengePanel(): React.ReactElement {
                     onClick={() => setChoiceId(choice.id)}
                     className="challenge-choice-button"
                     data-selected={choiceId === choice.id}
+                    aria-label={`${String(index + 1).padStart(2, "0")} ${choice.label}`}
                     data-cursor-intent="button"
                     data-cursor-label="DECIDE"
                   >
@@ -103,9 +106,11 @@ export function ChallengePanel(): React.ReactElement {
                 <Badge tone={selectedChoice.isPreferred ? "success" : "warning"}>
                   {selectedChoice.isPreferred ? "preferred path" : "useful signal, not first"}
                 </Badge>
-                <p className="mt-4 leading-7 text-[#c8d4e6]">{selectedChoice.feedback}</p>
+                <p className="mt-4 leading-7 text-[var(--text-secondary)]">
+                  {selectedChoice.feedback}
+                </p>
                 <h3 className="mt-6 font-semibold">{profile.name}&apos;s Approach</h3>
-                <ol className="mt-3 grid gap-2 text-sm leading-6 text-[#b7c2d2]">
+                <ol className="mt-3 grid gap-2 text-sm leading-6 text-[var(--text-secondary)]">
                   {scenario.approach.map((step, index) => (
                     <li key={step} className="grid grid-cols-[28px_1fr] gap-3">
                       <span className="mono text-[#ffb000]">{index + 1}</span>
@@ -161,14 +166,18 @@ function ChallengeDecisionTrace({
         <span>Decision</span>
         <strong>{selectedChoice ? selectedChoice.label : "waiting"}</strong>
       </article>
-      <article data-status={selectedChoice?.isPreferred ? "complete" : selectedChoice ? "warning" : "idle"}>
+      <article
+        data-status={selectedChoice?.isPreferred ? "complete" : selectedChoice ? "warning" : "idle"}
+      >
         {selectedChoice?.isPreferred ? (
           <CheckCircle2 aria-hidden="true" size={16} />
         ) : (
           <XCircle aria-hidden="true" size={16} />
         )}
         <span>Path</span>
-        <strong>{selectedChoice?.isPreferred ? "preferred" : selectedChoice ? "reconsider" : "pending"}</strong>
+        <strong>
+          {selectedChoice?.isPreferred ? "preferred" : selectedChoice ? "reconsider" : "pending"}
+        </strong>
       </article>
     </section>
   );

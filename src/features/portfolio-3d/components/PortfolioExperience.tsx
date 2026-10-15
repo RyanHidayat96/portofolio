@@ -1,55 +1,82 @@
-'use client';
+"use client";
 
-import { Canvas, useThree } from '@react-three/fiber';
-import { Activity, ArrowLeft, Briefcase, ExternalLink, FolderKanban, Gauge, GitBranch, House, Mail, Monitor, Network, Server, ShieldCheck, Terminal, UserRound, Workflow, type LucideIcon } from 'lucide-react';
-import { Component, Suspense, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
-import { ArchitectureExplorer } from '@/features/architecture/components/ArchitectureExplorer';
-import { ContactPanel } from '@/features/workspace/components/ContactPanel';
-import { withPortfolio3dBasePath } from '../asset-url';
-import type { EmbeddedScreenId } from '../arcade-screen';
+import { Canvas, useThree } from "@react-three/fiber";
+import {
+  Activity,
+  ArrowLeft,
+  Briefcase,
+  ExternalLink,
+  FolderKanban,
+  Gauge,
+  GitBranch,
+  House,
+  Mail,
+  Monitor,
+  Network,
+  Server,
+  ShieldCheck,
+  Terminal,
+  UserRound,
+  Workflow,
+  type LucideIcon
+} from "lucide-react";
+import {
+  Component,
+  Suspense,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
+import { createPortal } from "react-dom";
+import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { ArchitectureExplorer } from "@/features/architecture/components/ArchitectureExplorer";
+import { ContactPanel } from "@/features/workspace/components/ContactPanel";
+import { withPortfolio3dBasePath } from "../asset-url";
+import type { EmbeddedScreenId } from "../arcade-screen";
 import type {
   Portfolio3dHotspotDefinition,
   Portfolio3dHotspotId,
   Portfolio3dLoadingProgress,
   Portfolio3dQualityTier,
   Portfolio3dSectionId
-} from '../types';
+} from "../types";
 import {
   getInitialPortfolio3dDpr,
   portfolio3dDefaultCamera,
   portfolio3dRendererOptions,
   portfolio3dRendererPerformance
-} from '../renderer-config';
+} from "../renderer-config";
 import {
   createPortfolio3dLocationPath,
   isPortfolio3dRouteQueryValue,
   portfolio3dSectionQueryParam,
   resolvePortfolio3dSectionFromLocation
-} from '../route-map';
-import { portfolio3dHotspots } from '../scene-manifest';
-import { portfolio3dSectionContracts } from '../section-contracts';
+} from "../route-map";
+import { portfolio3dHotspots } from "../scene-manifest";
+import { portfolio3dSectionContracts } from "../section-contracts";
 import {
   getPortfolio3dPanelContent,
   isPortfolio3dSafeHref,
   type Portfolio3dPanelBlock
-} from '../screen-content';
-import { ArcadePipelineControls, ArcadePipelineScreen } from './ArcadePipelineScreen';
-import { ApiMonitorControls, ApiMonitorScreen } from './ApiMonitorScreen';
-import { AutomationMonitorControls, AutomationMonitorScreen } from './AutomationMonitorScreen';
-import { ExperienceArtworkControls, ExperienceArtworkScreen } from './ExperienceArtworkScreen';
-import { PerformanceMonitorControls, PerformanceMonitorScreen } from './PerformanceMonitorScreen';
-import { ProfileArtworkControls, ProfileArtworkScreen } from './ProfileArtworkScreen';
-import { TerminalMonitorControls, TerminalMonitorScreen } from './TerminalMonitorScreen';
-import { ExperienceShell } from './ExperienceShell';
-import { Portfolio3dHtmlFallback } from './Portfolio3dHtmlFallback';
-import { useDocumentVisibility } from '../hooks/useDocumentVisibility';
-import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
-import { useWebGLSupport } from '../hooks/useWebGLSupport';
-import { Portfolio3dProvider, usePortfolio3dState } from '../state/Portfolio3dState';
-import { RoomShellStage } from './RoomShellStage';
+} from "../screen-content";
+import { ArcadePipelineControls, ArcadePipelineScreen } from "./ArcadePipelineScreen";
+import { ApiMonitorControls, ApiMonitorScreen } from "./ApiMonitorScreen";
+import { AutomationMonitorControls, AutomationMonitorScreen } from "./AutomationMonitorScreen";
+import { ExperienceArtworkControls, ExperienceArtworkScreen } from "./ExperienceArtworkScreen";
+import { PerformanceMonitorControls, PerformanceMonitorScreen } from "./PerformanceMonitorScreen";
+import { ProfileArtworkControls, ProfileArtworkScreen } from "./ProfileArtworkScreen";
+import { TerminalMonitorControls, TerminalMonitorScreen } from "./TerminalMonitorScreen";
+import { ExperienceShell } from "./ExperienceShell";
+import { Portfolio3dHtmlFallback } from "./Portfolio3dHtmlFallback";
+import { useDocumentVisibility } from "../hooks/useDocumentVisibility";
+import { useEmbeddedScreenScrollSession } from "../hooks/useEmbeddedScreenScrollSession";
+import { useWebGLSupport } from "../hooks/useWebGLSupport";
+import { Portfolio3dProvider, usePortfolio3dState } from "../state/Portfolio3dState";
+import { RoomShellStage } from "./RoomShellStage";
 
 // Keep each document mounted with its own state. Navigation only re-renders
 // the screen whose interactive prop changes, not all nine lab/page trees.
@@ -68,18 +95,18 @@ interface Portfolio3dErrorBoundaryState {
 }
 
 const portfolio3dAreaLabels = {
-  overview: 'Overview',
-  profile: 'Profile',
-  experience: 'Experience',
-  projects: 'Projects',
-  fullstack: 'Full Stack',
-  backend: 'Backend/API',
-  architecture: 'Architecture',
-  automation: 'Automation',
-  performance: 'Performance Lab',
-  pipeline: 'CI/CD Pipeline',
-  terminal: 'Terminal',
-  contact: 'Contact'
+  overview: "Overview",
+  profile: "Profile",
+  experience: "Experience",
+  projects: "Projects",
+  fullstack: "Full Stack",
+  backend: "Backend/API",
+  architecture: "Architecture",
+  automation: "Automation",
+  performance: "Performance Lab",
+  pipeline: "CI/CD Pipeline",
+  terminal: "Terminal",
+  contact: "Contact"
 } satisfies Partial<Record<Portfolio3dSectionId, string>>;
 
 const portfolio3dAreaIcons = {
@@ -98,16 +125,16 @@ const portfolio3dAreaIcons = {
 } satisfies Partial<Record<Portfolio3dSectionId, LucideIcon>>;
 
 const portfolio3dNavigationContractIds = [
-  'overview',
-  'profile',
-  'contact',
-  'experience',
-  'backend',
-  'architecture',
-  'automation',
-  'performance',
-  'pipeline',
-  'terminal'
+  "overview",
+  "profile",
+  "contact",
+  "experience",
+  "backend",
+  "architecture",
+  "automation",
+  "performance",
+  "pipeline",
+  "terminal"
 ] as const satisfies readonly Portfolio3dSectionId[];
 
 const portfolio3dNavigationContracts = portfolio3dNavigationContractIds.flatMap((id) =>
@@ -134,27 +161,24 @@ function PortfolioExperienceContent({
   const webglStatus = useWebGLSupport();
   const { state, setActiveSection } = usePortfolio3dState();
   const [assetProgress, setAssetProgress] = useState<Portfolio3dLoadingProgress>();
-  const [embeddedScreenElements, setEmbeddedScreenElements] = useState<Partial<Record<EmbeddedScreenId, HTMLElement>>>({});
-  const isPipelineActive = state.activeSectionId === 'pipeline';
-  const isAutomationActive = state.activeSectionId === 'automation';
-  const isPerformanceActive = state.activeSectionId === 'performance';
-  const isBackendActive = state.activeSectionId === 'backend';
-  const isTerminalActive = state.activeSectionId === 'terminal';
-  const isProfileActive = state.activeSectionId === 'profile';
-  const isExperienceActive = state.activeSectionId === 'experience';
-  const isArchitectureActive = state.activeSectionId === 'architecture';
-  const isContactActive = state.activeSectionId === 'contact';
-  const isSettledAtSection = state.navigationState === 'section-open';
+  const [embeddedScreenElements, setEmbeddedScreenElements] = useState<
+    Partial<Record<EmbeddedScreenId, HTMLElement>>
+  >({});
+  const isPipelineActive = state.activeSectionId === "pipeline";
+  const isAutomationActive = state.activeSectionId === "automation";
+  const isPerformanceActive = state.activeSectionId === "performance";
+  const isBackendActive = state.activeSectionId === "backend";
+  const isTerminalActive = state.activeSectionId === "terminal";
+  const isProfileActive = state.activeSectionId === "profile";
+  const isExperienceActive = state.activeSectionId === "experience";
+  const isArchitectureActive = state.activeSectionId === "architecture";
+  const isContactActive = state.activeSectionId === "contact";
+  const isSettledAtSection = state.navigationState === "section-open";
   const activeEmbeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
   const isScreenFocusView = Boolean(
-    activeEmbeddedScreenId &&
-    embeddedScreenElements[activeEmbeddedScreenId] &&
-    isSettledAtSection
+    activeEmbeddedScreenId && embeddedScreenElements[activeEmbeddedScreenId] && isSettledAtSection
   );
-  const isScreenApproach = Boolean(
-    activeEmbeddedScreenId &&
-    state.navigationState === 'focusing'
-  );
+  const isScreenApproach = Boolean(activeEmbeddedScreenId && state.navigationState === "focusing");
   const handleEmbeddedScreenReady = useCallback(
     (screenId: EmbeddedScreenId, element: HTMLElement | null): void => {
       setEmbeddedScreenElements((current) => {
@@ -179,7 +203,7 @@ function PortfolioExperienceContent({
         webglStatus={webglStatus}
         fallbackSlot={fallback}
         canvasSlot={
-          webglStatus === 'supported' ? (
+          webglStatus === "supported" ? (
             <FoundationCanvas
               qualityTier={state.qualityTier}
               onCriticalProgressChange={setAssetProgress}
@@ -189,99 +213,131 @@ function PortfolioExperienceContent({
         }
         navigationSlot={<Portfolio3dNavigation />}
         sectionPanelSlot={
-          state.activeSectionId === 'overview'
-            ? null
-            : isScreenFocusView || isScreenApproach
-              ? null
-              : <Portfolio3dSectionPanel />
+          state.activeSectionId === "overview" ? null : isScreenFocusView ||
+            isScreenApproach ? null : (
+            <Portfolio3dSectionPanel />
+          )
         }
         focusControlsSlot={
-          isScreenFocusView
-              ? isProfileActive
-              ? <ProfileArtworkControls />
-              : isExperienceActive
-                ? <ExperienceArtworkControls />
-                : isArchitectureActive
-                  ? (
-                    <nav className="arcade-focus-controls" aria-label="Architecture view controls">
-                      <button type="button" className="button-base button-secondary" onClick={() => setActiveSection('overview')}>
-                        <ArrowLeft size={18} aria-hidden="true" />
-                        Back to Room
-                      </button>
-                      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/labs/architecture')}>
-                        <ExternalLink size={18} aria-hidden="true" />
-                        Full Page
-                      </a>
-                    </nav>
-                  )
-                : isContactActive
-                  ? (
-                    <nav className="arcade-focus-controls" aria-label="Contact view controls">
-                      <button type="button" className="button-base button-secondary" onClick={() => setActiveSection('overview')}>
-                        <ArrowLeft size={18} aria-hidden="true" />
-                        Back to Room
-                      </button>
-                      <a className="button-base button-secondary" href={withPortfolio3dBasePath('/contact')}>
-                        <ExternalLink size={18} aria-hidden="true" />
-                        Full Page
-                      </a>
-                    </nav>
-                  )
-                : isPipelineActive
-                  ? <ArcadePipelineControls />
-                  : isAutomationActive
-                    ? <AutomationMonitorControls />
-                    : isPerformanceActive
-                      ? <PerformanceMonitorControls />
-                      : isBackendActive
-                        ? <ApiMonitorControls />
-                        : isTerminalActive
-                          ? <TerminalMonitorControls />
-                          : null
-            : null
+          isScreenFocusView ? (
+            isProfileActive ? (
+              <ProfileArtworkControls />
+            ) : isExperienceActive ? (
+              <ExperienceArtworkControls />
+            ) : isArchitectureActive ? (
+              <nav className="arcade-focus-controls" aria-label="Architecture view controls">
+                <button
+                  type="button"
+                  className="button-base button-secondary"
+                  onClick={() => setActiveSection("overview")}
+                >
+                  <ArrowLeft size={18} aria-hidden="true" />
+                  Back to Room
+                </button>
+                <a
+                  className="button-base button-secondary"
+                  href={withPortfolio3dBasePath("/labs/architecture")}
+                >
+                  <ExternalLink size={18} aria-hidden="true" />
+                  Full Page
+                </a>
+              </nav>
+            ) : isContactActive ? (
+              <nav className="arcade-focus-controls" aria-label="Contact view controls">
+                <button
+                  type="button"
+                  className="button-base button-secondary"
+                  onClick={() => setActiveSection("overview")}
+                >
+                  <ArrowLeft size={18} aria-hidden="true" />
+                  Back to Room
+                </button>
+                <a
+                  className="button-base button-secondary"
+                  href={withPortfolio3dBasePath("/contact")}
+                >
+                  <ExternalLink size={18} aria-hidden="true" />
+                  Full Page
+                </a>
+              </nav>
+            ) : isPipelineActive ? (
+              <ArcadePipelineControls />
+            ) : isAutomationActive ? (
+              <AutomationMonitorControls />
+            ) : isPerformanceActive ? (
+              <PerformanceMonitorControls />
+            ) : isBackendActive ? (
+              <ApiMonitorControls />
+            ) : isTerminalActive ? (
+              <TerminalMonitorControls />
+            ) : null
+          ) : null
         }
         assetProgress={assetProgress}
         isScreenFocusView={isScreenFocusView || isScreenApproach}
-        onRoomReset={() => setActiveSection('overview')}
+        onRoomReset={() => setActiveSection("overview")}
       />
       {embeddedScreenElements.pipeline
-        ? createPortal(<MemoizedPipelineScreen interactive={isScreenFocusView && isPipelineActive} />, embeddedScreenElements.pipeline)
+        ? createPortal(
+            <MemoizedPipelineScreen interactive={isScreenFocusView && isPipelineActive} />,
+            embeddedScreenElements.pipeline
+          )
         : null}
       {embeddedScreenElements.automation
-        ? createPortal(<MemoizedAutomationScreen interactive={isScreenFocusView && isAutomationActive} />, embeddedScreenElements.automation)
+        ? createPortal(
+            <MemoizedAutomationScreen interactive={isScreenFocusView && isAutomationActive} />,
+            embeddedScreenElements.automation
+          )
         : null}
       {embeddedScreenElements.performance
-        ? createPortal(<MemoizedPerformanceScreen interactive={isScreenFocusView && isPerformanceActive} />, embeddedScreenElements.performance)
+        ? createPortal(
+            <MemoizedPerformanceScreen interactive={isScreenFocusView && isPerformanceActive} />,
+            embeddedScreenElements.performance
+          )
         : null}
       {embeddedScreenElements.backend
-        ? createPortal(<MemoizedApiScreen interactive={isScreenFocusView && isBackendActive} />, embeddedScreenElements.backend)
+        ? createPortal(
+            <MemoizedApiScreen interactive={isScreenFocusView && isBackendActive} />,
+            embeddedScreenElements.backend
+          )
         : null}
       {embeddedScreenElements.terminal
-        ? createPortal(<MemoizedTerminalScreen interactive={isScreenFocusView && isTerminalActive} />, embeddedScreenElements.terminal)
+        ? createPortal(
+            <MemoizedTerminalScreen interactive={isScreenFocusView && isTerminalActive} />,
+            embeddedScreenElements.terminal
+          )
         : null}
       {embeddedScreenElements.profile
-        ? createPortal(<MemoizedProfileScreen interactive={isScreenFocusView && isProfileActive} />, embeddedScreenElements.profile)
+        ? createPortal(
+            <MemoizedProfileScreen interactive={isScreenFocusView && isProfileActive} />,
+            embeddedScreenElements.profile
+          )
         : null}
       {embeddedScreenElements.experience
-        ? createPortal(<MemoizedExperienceScreen interactive={isScreenFocusView && isExperienceActive} />, embeddedScreenElements.experience)
+        ? createPortal(
+            <MemoizedExperienceScreen interactive={isScreenFocusView && isExperienceActive} />,
+            embeddedScreenElements.experience
+          )
         : null}
       {embeddedScreenElements.architecture
         ? createPortal(
-          <MemoizedArchitectureScreen interactive={isScreenFocusView && isArchitectureActive} />,
-          embeddedScreenElements.architecture
-        )
+            <MemoizedArchitectureScreen interactive={isScreenFocusView && isArchitectureActive} />,
+            embeddedScreenElements.architecture
+          )
         : null}
       {embeddedScreenElements.contact
         ? createPortal(
-          <MemoizedContactScreen interactive={isScreenFocusView && isContactActive} />,
-          embeddedScreenElements.contact
-        )
+            <MemoizedContactScreen interactive={isScreenFocusView && isContactActive} />,
+            embeddedScreenElements.contact
+          )
         : null}
     </>
   );
 }
 
-export function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+export function ArchitectureEmbeddedScreen({
+  interactive
+}: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
@@ -293,7 +349,9 @@ export function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interacti
     <section className="architecture-embedded-screen" aria-label="Architecture">
       <header className="architecture-embedded-heading">
         <Network size={22} aria-hidden="true" />
-        <h2 ref={headingRef} tabIndex={-1}>Architecture</h2>
+        <h2 ref={headingRef} tabIndex={-1}>
+          Architecture
+        </h2>
         <span className="architecture-embedded-label">System topology</span>
       </header>
       <div
@@ -309,7 +367,9 @@ export function ArchitectureEmbeddedScreen({ interactive }: Readonly<{ interacti
   );
 }
 
-export function ContactEmbeddedScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+export function ContactEmbeddedScreen({
+  interactive
+}: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
@@ -321,7 +381,9 @@ export function ContactEmbeddedScreen({ interactive }: Readonly<{ interactive: b
     <section className="contact-book-screen" aria-label="Contact">
       <header className="contact-book-heading">
         <Mail size={22} aria-hidden="true" />
-        <h2 ref={headingRef} tabIndex={-1}>Contact</h2>
+        <h2 ref={headingRef} tabIndex={-1}>
+          Contact
+        </h2>
         <span className="contact-book-label">CV &amp; channels</span>
       </header>
       <div
@@ -346,13 +408,16 @@ function Portfolio3dRouteController(): null {
     const syncFromLocation = (): void => {
       const searchParams = new URLSearchParams(window.location.search);
       const queryValue = searchParams.get(portfolio3dSectionQueryParam)?.trim();
-      const hashValue = window.location.hash.replace(/^#/, '').trim();
+      const hashValue = window.location.hash.replace(/^#/, "").trim();
 
       if (!queryValue && hashValue && !isPortfolio3dRouteQueryValue(hashValue)) {
         return;
       }
 
-      const sectionId = resolvePortfolio3dSectionFromLocation(window.location.search, window.location.hash);
+      const sectionId = resolvePortfolio3dSectionFromLocation(
+        window.location.search,
+        window.location.hash
+      );
       historySyncRef.current = true;
       setActiveSection(sectionId);
       window.setTimeout(() => {
@@ -365,12 +430,12 @@ function Portfolio3dRouteController(): null {
       initialLocationSyncedRef.current = true;
     });
 
-    window.addEventListener('popstate', syncFromLocation);
-    window.addEventListener('hashchange', syncFromLocation);
+    window.addEventListener("popstate", syncFromLocation);
+    window.addEventListener("hashchange", syncFromLocation);
 
     return () => {
-      window.removeEventListener('popstate', syncFromLocation);
-      window.removeEventListener('hashchange', syncFromLocation);
+      window.removeEventListener("popstate", syncFromLocation);
+      window.removeEventListener("hashchange", syncFromLocation);
     };
   }, [setActiveSection]);
 
@@ -394,23 +459,23 @@ function Portfolio3dRouteController(): null {
       ...(window.history.state ?? {}),
       portfolio3dSection: state.activeSectionId
     };
-    const method = historySyncRef.current ? 'replaceState' : 'pushState';
-    window.history[method](nextState, '', nextPath);
+    const method = historySyncRef.current ? "replaceState" : "pushState";
+    window.history[method](nextState, "", nextPath);
     historySyncRef.current = false;
   }, [state.activeSectionId]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape' || state.activeSectionId === 'overview') {
+      if (event.key !== "Escape" || state.activeSectionId === "overview") {
         return;
       }
 
       event.preventDefault();
-      setActiveSection('overview');
+      setActiveSection("overview");
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [setActiveSection, state.activeSectionId]);
 
   return null;
@@ -432,14 +497,14 @@ function FoundationCanvas({
     <Canvas
       className="absolute inset-0 h-full w-full"
       dpr={dpr}
-      frameloop={isDocumentVisible ? 'demand' : 'never'}
+      frameloop={isDocumentVisible ? "demand" : "never"}
       camera={portfolio3dDefaultCamera}
       gl={portfolio3dRendererOptions}
       performance={portfolio3dRendererPerformance}
       resize={{ scroll: false }}
       onCreated={({ gl }) => {
         configurePortfolio3dRenderer(gl);
-        gl.domElement.setAttribute('aria-hidden', 'true');
+        gl.domElement.setAttribute("aria-hidden", "true");
         gl.domElement.tabIndex = -1;
       }}
     >
@@ -542,7 +607,15 @@ function FoundationScene({
 }
 
 function getEmbeddedScreenId(sectionId: Portfolio3dSectionId): EmbeddedScreenId | undefined {
-  return sectionId === 'profile' || sectionId === 'experience' || sectionId === 'architecture' || sectionId === 'pipeline' || sectionId === 'automation' || sectionId === 'performance' || sectionId === 'backend' || sectionId === 'terminal' || sectionId === 'contact'
+  return sectionId === "profile" ||
+    sectionId === "experience" ||
+    sectionId === "architecture" ||
+    sectionId === "pipeline" ||
+    sectionId === "automation" ||
+    sectionId === "performance" ||
+    sectionId === "backend" ||
+    sectionId === "terminal" ||
+    sectionId === "contact"
     ? sectionId
     : undefined;
 }
@@ -550,30 +623,30 @@ function getEmbeddedScreenId(sectionId: Portfolio3dSectionId): EmbeddedScreenId 
 function Portfolio3dNavigation(): React.ReactElement {
   const navigationRef = useRef<HTMLElement | null>(null);
   const restoreEmbeddedScreenFocusRef = useRef<EmbeddedScreenId | undefined>(undefined);
-  const {
-    state,
-    setActiveSection,
-    setFocusedHotspot,
-    activateHotspot
-  } = usePortfolio3dState();
-  const isTransitioning = state.navigationState === 'focusing' || state.navigationState === 'returning';
+  const { state, setActiveSection, setFocusedHotspot, activateHotspot } = usePortfolio3dState();
+  const isTransitioning =
+    state.navigationState === "focusing" || state.navigationState === "returning";
 
   useEffect(() => {
     const embeddedScreenId = getEmbeddedScreenId(state.activeSectionId);
     if (embeddedScreenId) restoreEmbeddedScreenFocusRef.current = embeddedScreenId;
 
-    if (!restoreEmbeddedScreenFocusRef.current || state.navigationState !== 'overview') return;
+    if (!restoreEmbeddedScreenFocusRef.current || state.navigationState !== "overview") return;
 
     const sectionId = restoreEmbeddedScreenFocusRef.current;
     restoreEmbeddedScreenFocusRef.current = undefined;
-    const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
+    const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
 
     if (!isMobileViewport) {
-      navigationRef.current?.querySelector<HTMLButtonElement>(`[data-portfolio-section="${sectionId}"]`)?.focus({ preventScroll: true });
+      navigationRef.current
+        ?.querySelector<HTMLButtonElement>(`[data-portfolio-section="${sectionId}"]`)
+        ?.focus({ preventScroll: true });
       return;
     }
 
-    const navigationScroller = navigationRef.current?.closest<HTMLElement>('.portfolio-3d-navigation-scroll');
+    const navigationScroller = navigationRef.current?.closest<HTMLElement>(
+      ".portfolio-3d-navigation-scroll"
+    );
     if (!navigationScroller) return;
 
     // Mobile Chrome can scroll the menu to the previously focused
@@ -601,8 +674,10 @@ function Portfolio3dNavigation(): React.ReactElement {
         <div className="grid gap-1.5">
           {portfolio3dNavigationContracts.map((contract) => {
             const isActive = state.activeSectionId === contract.id;
-            const isLocked = isTransitioning && !isActive && contract.id !== 'overview';
-            const hotspot = getHotspotById('hotspotId' in contract ? contract.hotspotId : undefined);
+            const isLocked = isTransitioning && !isActive && contract.id !== "overview";
+            const hotspot = getHotspotById(
+              "hotspotId" in contract ? contract.hotspotId : undefined
+            );
             const Icon = portfolio3dAreaIcons[contract.id] ?? Monitor;
 
             return (
@@ -614,7 +689,7 @@ function Portfolio3dNavigation(): React.ReactElement {
                 data-portfolio-section={contract.id}
                 aria-pressed={isActive}
                 disabled={isLocked}
-                onFocus={() => setFocusedHotspot(hotspot?.id, 'keyboard')}
+                onFocus={() => setFocusedHotspot(hotspot?.id, "keyboard")}
                 onBlur={() => setFocusedHotspot(undefined)}
                 onClick={() => {
                   if (isLocked) {
@@ -622,7 +697,7 @@ function Portfolio3dNavigation(): React.ReactElement {
                   }
 
                   if (hotspot) {
-                    activateHotspot(hotspot, 'keyboard');
+                    activateHotspot(hotspot, "keyboard");
                     return;
                   }
 
@@ -648,8 +723,8 @@ function Portfolio3dSectionPanel(): React.ReactElement {
     portfolio3dSectionContracts.find((contract) => contract.id === state.activeSectionId) ??
     portfolio3dSectionContracts[0];
   const content =
-    getPortfolio3dPanelContent(state.activeSectionId) ?? getPortfolio3dPanelContent('overview');
-  const isOverview = state.activeSectionId === 'overview';
+    getPortfolio3dPanelContent(state.activeSectionId) ?? getPortfolio3dPanelContent("overview");
+  const isOverview = state.activeSectionId === "overview";
 
   useEffect(() => {
     const handle = window.setTimeout(() => headingRef.current?.focus({ preventScroll: true }), 0);
@@ -659,9 +734,7 @@ function Portfolio3dSectionPanel(): React.ReactElement {
   if (!content) {
     return (
       <section className="portfolio-3d-detail-card">
-        <p className="mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]">
-          Content
-        </p>
+        <p className="mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]">Content</p>
         <h2 className="mt-2 text-lg font-semibold">Content unavailable</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
           No public portfolio data is mapped for this section yet.
@@ -676,7 +749,7 @@ function Portfolio3dSectionPanel(): React.ReactElement {
         <p className="mono text-[10px] uppercase tracking-[0.22em] text-[var(--accent)]">
           {content.eyebrow}
         </p>
-        <span className="mono rounded-full border border-[rgba(83,216,255,0.35)] bg-[rgba(83,216,255,0.08)] px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-[rgba(219,235,247,0.74)]">
+        <span className="mono rounded-full border border-[var(--border-strong)] bg-[var(--accent-soft)] px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-[rgba(219,235,247,0.74)]">
           {portfolio3dAreaLabels[activeContract.id] ?? activeContract.label}
         </span>
       </div>
@@ -696,7 +769,7 @@ function Portfolio3dSectionPanel(): React.ReactElement {
           {content.tags.slice(0, 5).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[rgba(148,163,184,0.24)] bg-[rgba(15,23,42,0.52)] px-2 py-1 text-[10px] font-semibold text-[rgba(219,235,247,0.64)]"
+              className="rounded-full border border-[var(--border)] bg-[var(--surface-raised)] px-2 py-1 text-[10px] font-semibold text-[rgba(219,235,247,0.64)]"
             >
               {tag}
             </span>
@@ -708,7 +781,9 @@ function Portfolio3dSectionPanel(): React.ReactElement {
 
       <div className="mt-4 grid gap-2">
         {content.blocks.length > 0 ? (
-          content.blocks.slice(0, 2).map((block) => <Portfolio3dContentBlock key={block.heading} block={block} />)
+          content.blocks
+            .slice(0, 2)
+            .map((block) => <Portfolio3dContentBlock key={block.heading} block={block} />)
         ) : (
           <p className="text-sm text-[var(--text-muted)]">{content.emptyLabel}</p>
         )}
@@ -725,10 +800,10 @@ function Portfolio3dSectionPanel(): React.ReactElement {
         ) : null}
         {content.links.slice(0, 2).map((link) => (
           <a
-            key={link.label + '-' + link.href}
+            key={link.label + "-" + link.href}
             className="button-base button-secondary justify-center text-xs"
             href={getPortfolio3dPanelHref(link.href)}
-            {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           >
             <ExternalLink aria-hidden="true" size={14} />
             {link.label}
@@ -740,7 +815,7 @@ function Portfolio3dSectionPanel(): React.ReactElement {
         <button
           type="button"
           className="button-base button-secondary mt-3 w-full justify-center text-xs"
-          onClick={() => setActiveSection('overview')}
+          onClick={() => setActiveSection("overview")}
         >
           Back to overview
         </button>
@@ -776,13 +851,14 @@ function Portfolio3dContentBlock({
   );
 }
 function getPortfolio3dPanelHref(href: string): string {
-  return href.startsWith('/') ? withPortfolio3dBasePath(href) : href;
+  return href.startsWith("/") ? withPortfolio3dBasePath(href) : href;
 }
 
-function getHotspotById(hotspotId: Portfolio3dHotspotId | undefined): Portfolio3dHotspotDefinition | undefined {
+function getHotspotById(
+  hotspotId: Portfolio3dHotspotId | undefined
+): Portfolio3dHotspotDefinition | undefined {
   return hotspotId ? portfolio3dHotspots.find((hotspot) => hotspot.id === hotspotId) : undefined;
 }
-
 
 class Portfolio3dErrorBoundary extends Component<
   Readonly<{ children: React.ReactNode; fallback: React.ReactNode }>,
@@ -795,8 +871,8 @@ class Portfolio3dErrorBoundary extends Component<
   }
 
   componentDidCatch(error: unknown): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('[portfolio-3d] Runtime failed. Rendering HTML portfolio fallback.', error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[portfolio-3d] Runtime failed. Rendering HTML portfolio fallback.", error);
     }
   }
 
