@@ -10,6 +10,7 @@ import { getEmbeddedScreenStaticPreview } from "../embedded-screen-preview-manif
 import { usePortfolio3dState } from "../state/Portfolio3dState";
 import { type EmbeddedScreenRegistration, useEmbeddedScreenLayer } from "./EmbeddedScreenLayer";
 import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
+import { CrtScreenSurface } from "./CrtScreenSurface";
 
 const desktopScreenPixelWidth = 1000;
 const mobileViewportBreakpoint = 768;
@@ -85,6 +86,7 @@ export function ArcadeScreenSurface({
     screenId === "automation" ||
     screenId === "backend" ||
     screenId === "performance";
+  const usesCrtSurface = screenId === "pipeline";
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
@@ -824,49 +826,60 @@ export function ArcadeScreenSurface({
 
   return (
     <>
-      <mesh
-        name={`Embedded_${screenId}_Surface`}
-        position={screen.position}
-        quaternion={screen.quaternion}
-        onClick={(event) => {
-          event.stopPropagation();
-          if (event.delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
-        }}
-      >
-        <planeGeometry args={[screen.width, screen.height]} />
-        {previewTexture && !isPreviewCapturePending ? (
-          <meshBasicMaterial
-            key="screen-preview"
-            polygonOffset={isMonitor}
-            polygonOffsetFactor={-1}
-            polygonOffsetUnits={-1}
-            map={previewTexture}
-            color="#ffffff"
-            toneMapped={false}
-            fog={false}
-            depthTest
-            depthWrite
-            side={THREE.DoubleSide}
-          />
-        ) : (
-          /* This clears the canvas only inside the display while preserving its depth. */
-          <meshBasicMaterial
-            key="live-screen-depth"
-            polygonOffset={isMonitor}
-            polygonOffsetFactor={-1}
-            polygonOffsetUnits={-1}
-            color="#000000"
-            blending={THREE.NoBlending}
-            opacity={0}
-            transparent={false}
-            toneMapped={false}
-            fog={false}
-            depthTest
-            depthWrite
-            side={THREE.DoubleSide}
-          />
-        )}
-      </mesh>
+      {usesCrtSurface ? (
+        <CrtScreenSurface
+          screen={screen}
+          texture={previewTexture}
+          showPreview={Boolean(previewTexture && !isPreviewCapturePending)}
+          onActivate={(delta) => {
+            if (delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
+          }}
+        />
+      ) : (
+        <mesh
+          name={`Embedded_${screenId}_Surface`}
+          position={screen.position}
+          quaternion={screen.quaternion}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (event.delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
+          }}
+        >
+          <planeGeometry args={[screen.width, screen.height]} />
+          {previewTexture && !isPreviewCapturePending ? (
+            <meshBasicMaterial
+              key="screen-preview"
+              polygonOffset={isMonitor}
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
+              map={previewTexture}
+              color="#ffffff"
+              toneMapped={false}
+              fog={false}
+              depthTest
+              depthWrite
+              side={THREE.DoubleSide}
+            />
+          ) : (
+            /* This clears the canvas only inside the display while preserving its depth. */
+            <meshBasicMaterial
+              key="live-screen-depth"
+              polygonOffset={isMonitor}
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
+              color="#000000"
+              blending={THREE.NoBlending}
+              opacity={0}
+              transparent={false}
+              toneMapped={false}
+              fog={false}
+              depthTest
+              depthWrite
+              side={THREE.DoubleSide}
+            />
+          )}
+        </mesh>
+      )}
     </>
   );
 }
