@@ -6513,22 +6513,231 @@ textarea:focus-visible,
   scroll-behavior: auto;
 }
 
+/* ==========================================================================
+   PHYSICAL CRT MONITOR CHASSIS & BEZEL (Directly from Reference Images 1, 2, 3)
+   ========================================================================== */
+.arcade-crt-physical-enclosure {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: #141210;
+  border: 4px solid #0d0c0a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.8),
+    0 8px 32px rgba(0, 0, 0, 0.95);
+  padding: 8px 12px 10px 12px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Molded Outer Bezel Top Chassis */
+.arcade-crt-chassis-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #080706;
+  background: #181614;
+  box-shadow: inset 0 -1px 0 #2a2622;
+  margin-bottom: 6px;
+}
+
+.arcade-crt-corner-screw {
+  color: #38342e;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.arcade-crt-vent-cluster {
+  display: flex;
+  gap: 3px;
+}
+
+.arcade-crt-vent-slot {
+  width: 14px;
+  height: 3px;
+  background: #080706;
+  border-bottom: 1px solid #2d2924;
+}
+
+.arcade-crt-nameplate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0b0a08;
+  border: 1px solid #332e26;
+  padding: 2px 10px;
+  color: #d69736;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.arcade-crt-power-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50% !important;
+  background: #ffb000;
+  box-shadow: 0 0 8px #ffb000;
+  animation: crt-led-flicker 4s infinite;
+}
+
+@keyframes crt-led-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+  52% { opacity: 1; }
+  54% { opacity: 0.78; }
+  56% { opacity: 1; }
+}
+
+.arcade-crt-hardware-knobs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arcade-crt-knob-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.arcade-crt-knob-label {
+  font-family: monospace;
+  font-size: 8px;
+  font-weight: bold;
+  color: #a67324;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.arcade-crt-knob {
+  width: 14px;
+  height: 14px;
+  border-radius: 50% !important;
+  background: radial-gradient(circle at 35% 35%, #38342e 0%, #1a1714 80%, #0a0908 100%);
+  border: 1px solid #080706;
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.9),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  position: relative;
+}
+
+.arcade-crt-knob::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 4px;
+  background: #ffb000;
+  box-shadow: 0 0 2px #ffb000;
+}
+
+/* Molded Outer Bezel Bottom Chassis */
+.arcade-crt-chassis-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 5px;
+  margin-top: 6px;
+  border-top: 2px solid #080706;
+  background: #181614;
+  user-select: none;
+}
+
+/* RECESSED CURVED CRT TUBE VIEWPORT */
+.arcade-crt-tube-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #070502;
+  border-radius: 32px !important;
+  overflow: hidden;
+  border: 5px solid #0d0c0a;
+  box-shadow:
+    inset 0 0 140px rgba(0, 0, 0, 0.98),
+    inset 0 0 50px rgba(0, 0, 0, 0.9),
+    inset 0 0 20px rgba(255, 176, 0, 0.35),
+    inset 0 2px 4px rgba(255, 215, 120, 0.15),
+    0 0 0 3px #28241e,
+    0 6px 20px rgba(0, 0, 0, 0.9);
+}
+
+/* Specular Curved Glass Reflection (Directly from Image 1 & 2) */
+.arcade-crt-glass-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 35;
+  background:
+    linear-gradient(132deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 24%, transparent 48%),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 210, 100, 0.05), transparent 60%);
+  border-radius: 32px !important;
+}
+
+/* Raster Scanlines & Shadow Mask Triad Overlay (Directly from Image 1 & 2) */
+.arcade-crt-raster-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 33;
+  opacity: 0.42;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.58) 0px,
+      rgba(0, 0, 0, 0.58) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.22) 0px,
+      rgba(0, 0, 0, 0.22) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  border-radius: 32px !important;
+}
+
+.arcade-crt-tube-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 34;
+  opacity: 0.72;
+  background: radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.88) 100%);
+  border-radius: 32px !important;
+}
+
 .arcade-pipeline-screen {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   letter-spacing: 0;
+  background: #070502;
+  position: relative;
+  z-index: 10;
 }
 
 .arcade-pipeline-heading {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   flex: 0 0 auto;
-  padding: 16px 22px;
-  border-bottom: 1px solid #6b4512;
-  background: #211406;
+  padding: 12px 18px;
+  border-bottom: 2px solid #6b4512;
+  background: #181006;
   color: #ffb000;
 }
 
@@ -6536,15 +6745,16 @@ textarea:focus-visible,
   min-width: 0;
   margin: 0;
   color: #ffe4a3;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1.3;
 }
 
 .arcade-simulation-label {
   margin-left: auto;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--accent-secondary);
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .arcade-pipeline-scroll {
@@ -8836,91 +9046,52 @@ textarea:focus-visible,
 }
 
 .pipeline-simulator-screen {
-  display: grid;
-  gap: 0;
-  padding: 18px 22px;
-}
-
-.pipeline-simulator-screen .panel-surface {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 14px 18px;
   background: transparent;
 }
 
-.pipeline-simulator-screen .pipeline-controls {
+.pipeline-simulator-workspace {
+  margin-top: 4px;
+}
+
+.pipeline-simulator-screen .pipeline-controls,
+.pipeline-simulator-workspace .pipeline-controls {
+  border-color: var(--border-strong) !important;
+  background: var(--surface-deep) !important;
+}
+
+.pipeline-simulator-screen .panel-surface {
+  background: var(--surface-deep) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.pipeline-telemetry-kpi-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 8px 16px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #6b4512;
-}
-
-.pipeline-simulator-screen .pipeline-controls label {
-  grid-column: 1 / -1;
-  margin: 0;
-}
-
-.pipeline-simulator-screen .pipeline-controls select {
-  min-width: 0;
-  min-height: 48px;
-  margin: 0;
-}
-
-.pipeline-simulator-screen .pipeline-actions {
-  margin: 0;
-}
-
-.pipeline-simulator-screen .pipeline-actions button {
-  min-height: 48px;
-  padding: 10px 18px;
-  transform: none;
-}
-
-.pipeline-simulator-screen .pipeline-scenario-detail,
-.pipeline-simulator-screen .pipeline-execution > div:first-child p {
-  display: none;
-}
-
-.pipeline-simulator-screen .pipeline-results {
-  min-width: 0;
-  padding-top: 18px;
-}
-
-.pipeline-simulator-screen .pipeline-execution h2 {
-  margin: 0;
-  font-size: 20px;
-  line-height: 1.35;
-}
-
-.pipeline-simulator-screen .pipeline-signal-rail {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 16px;
-}
-
-.pipeline-simulator-screen .pipeline-stage-list {
-  margin-top: 16px;
   gap: 8px;
 }
 
-.pipeline-simulator-screen .pipeline-stage-list > li {
-  grid-template-columns: 36px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+.pipeline-arcade-flow {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
 }
 
-.pipeline-simulator-screen .pipeline-stage-list p {
-  margin-top: 2px;
-  line-height: 1.4;
+.pipeline-simulator-screen .pipeline-actions button {
+  min-height: 44px;
+  padding: 8px 14px;
+  transform: none;
+}
+
+.pipeline-simulator-screen .pipeline-stage-list > li {
+  padding: 8px 10px;
 }
 
 .pipeline-simulator-screen .pipeline-reports {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  padding-top: 18px;
-  border-top: 1px solid #6b4512;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  padding-top: 14px;
+  border-top: 2px solid var(--border-strong);
 }
 
 @container (max-width: 600px) {
@@ -10625,10 +10796,10 @@ textarea:focus-visible,
   color: var(--text-primary);
 }
 
-.workspace-root *,
+.workspace-root *:not(.arcade-crt-tube-viewport, .arcade-crt-glass-glare, .arcade-crt-raster-scanlines, .arcade-crt-tube-vignette, .arcade-crt-knob, .arcade-crt-power-led),
 .landing-shell *,
 .system-awakening-shell *,
-.arcade-screen-document * {
+.arcade-screen-document *:not(.arcade-crt-tube-viewport, .arcade-crt-glass-glare, .arcade-crt-raster-scanlines, .arcade-crt-tube-vignette, .arcade-crt-knob, .arcade-crt-power-led) {
   border-radius: 0px !important;
 }
 
