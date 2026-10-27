@@ -19,7 +19,6 @@ const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
 const previewCaptureRetryDelayMs = 360;
-const returnPreviewCaptureDelayMs = 0;
 
 export interface EmbeddedScreenPan {
   readonly x: number;
@@ -70,13 +69,13 @@ export function ArcadeScreenSurface({
   const previewTextureRef = useRef<THREE.Texture | null>(null);
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
-  const cancelReturnPreviewCaptureRef = useRef<(() => void) | null>(null);
+  const keepsLiveRoomFrame = screenId === "pipeline";
   const staticPreview = getEmbeddedScreenStaticPreview(screenId);
-  const staticPreviewUrl = staticPreview
+  const staticPreviewUrl = !keepsLiveRoomFrame && staticPreview
     ? withPortfolio3dBasePath(staticPreview.publicPath)
     : undefined;
   const [previewTexture, setPreviewTexture] = useState<THREE.Texture | null>(null);
-  const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
+  const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(keepsLiveRoomFrame);
   const [staticPreviewLoadFailed, setStaticPreviewLoadFailed] = useState(false);
   const isInteractive =
     state.activeSectionId === screenId && state.navigationState === "section-open";
@@ -108,7 +107,7 @@ export function ArcadeScreenSurface({
       pixelHeight,
       isInteractive: false,
       hasPreview: false,
-      isPreviewCapturePending: false
+      isPreviewCapturePending: keepsLiveRoomFrame
     };
     runtimeRef.current = runtime;
     screenLayer.registerScreen(runtime);
@@ -119,7 +118,7 @@ export function ArcadeScreenSurface({
       runtimeRef.current = null;
       onScreenReady?.(screenId, null);
     };
-  }, [onScreenReady, screenId, screenLayer]);
+  }, [keepsLiveRoomFrame, onScreenReady, screenId, screenLayer]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -634,11 +633,6 @@ export function ArcadeScreenSurface({
     };
   }, [gl, isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
-  const cancelReturnPreviewCapture = useCallback((): void => {
-    cancelReturnPreviewCaptureRef.current?.();
-    cancelReturnPreviewCaptureRef.current = null;
-  }, []);
-
   const capturePreview = useCallback(async (): Promise<boolean> => {
     const runtime = runtimeRef.current;
     if (!runtime || !runtime.content.firstElementChild) {
@@ -730,7 +724,7 @@ export function ArcadeScreenSurface({
   }, [gl, invalidate, isInteractive, staticPreviewUrl]);
 
   useEffect(() => {
-    if (isInteractive || previewTextureRef.current) {
+    if (keepsLiveRoomFrame || isInteractive || previewTextureRef.current) {
       return;
     }
     if (staticPreviewUrl && !staticPreviewLoadFailed) {
@@ -760,46 +754,23 @@ export function ArcadeScreenSurface({
       isCancelled = true;
       cancelScheduledCapture();
     };
-  }, [capturePreview, isInteractive, screenLayer, staticPreviewLoadFailed, staticPreviewUrl]);
+  }, [capturePreview, isInteractive, keepsLiveRoomFrame, screenLayer, staticPreviewLoadFailed, staticPreviewUrl]);
 
-  const scheduleReturnPreviewCapture = useCallback((): void => {
+  const retainReturnFrame = useCallback((): void => {
     const runtime = runtimeRef.current;
     if (!runtime || !runtime.content.firstElementChild) {
       return;
     }
 
-    cancelReturnPreviewCapture();
-    // Invalidate a capture from an older room session before this screen can
-    // become visible again. A completed stale capture must never replace the
-    // latest frozen frame while the next idle capture is still queued.
+    // Keep the exact DOM frame the visitor last operated for this session.
+    // DOM-to-image output can differ from the live page and must not replace it.
     previewCaptureRequestRef.current += 1;
-
-    // Keep the latest live CSS3D page visible while the camera moves. DOM-to-
-    // image serialization is deferred until both camera and room input are
-    // idle, so it cannot steal a frame from the return transition.
     setIsPreviewCapturePending(true);
     screenLayer.setPreviewCapturePending(runtime, true);
-    let attempts = 0;
-    const scheduleCapture = (delayMs: number): void => {
-      cancelReturnPreviewCaptureRef.current = screenLayer.schedulePreviewCapture(async () => {
-        cancelReturnPreviewCaptureRef.current = null;
-        if (runtimeRef.current !== runtime || runtime.isInteractive) return;
-
-        const didCapture = await capturePreview();
-        if (didCapture || runtimeRef.current !== runtime || runtime.isInteractive) return;
-        if (attempts >= 8) return;
-
-        attempts += 1;
-        scheduleCapture(previewCaptureRetryDelayMs);
-      }, delayMs);
-    };
-
-    scheduleCapture(returnPreviewCaptureDelayMs);
-  }, [cancelReturnPreviewCapture, capturePreview, screenLayer]);
+  }, [screenLayer]);
 
   useLayoutEffect(() => {
     if (isInteractive) {
-      cancelReturnPreviewCapture();
       previewCaptureRequestRef.current += 1;
       wasInteractiveRef.current = true;
       return;
@@ -810,8 +781,8 @@ export function ArcadeScreenSurface({
     }
 
     wasInteractiveRef.current = false;
-    scheduleReturnPreviewCapture();
-  }, [cancelReturnPreviewCapture, isInteractive, scheduleReturnPreviewCapture]);
+    retainReturnFrame();
+  }, [isInteractive, retainReturnFrame]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -827,11 +798,10 @@ export function ArcadeScreenSurface({
 
   useEffect(() => {
     return () => {
-      cancelReturnPreviewCapture();
       previewCaptureRequestRef.current += 1;
       previewTextureRef.current = null;
     };
-  }, [cancelReturnPreviewCapture]);
+  }, []);
 
   return (
     <>

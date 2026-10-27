@@ -304,7 +304,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(scrollContainer.scrollTop).toBe(100);
   });
 
-  it('uses a static first-load preview instead of runtime screenshot capture', async () => {
+  it('uses a static first-load preview for ordinary monitor screens', async () => {
     harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
     const staticTexture: THREE.Texture<HTMLImageElement> = new THREE.Texture(document.createElement('img'));
     const loadSpy = vi
@@ -317,7 +317,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     render(
       <ArcadeScreenSurface
         screen={placement}
-        screenId="pipeline"
+        screenId="architecture"
         onScreenZoomChange={onScreenZoomChange}
         onScreenPanChange={onScreenPanChange}
       />
@@ -327,7 +327,7 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     await act(async () => { await Promise.resolve(); });
 
     expect(loadSpy).toHaveBeenCalledWith(
-      '/portfolio-screen-previews/pipeline.webp',
+      '/portfolio-screen-previews/architecture.webp',
       expect.any(Function),
       undefined,
       expect.any(Function)
@@ -340,9 +340,31 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     );
   });
 
-  it('keeps the latest live frame visible and defers snapshot work until camera idle', async () => {
-    const snapshotCanvas = document.createElement('canvas');
-    vi.mocked(captureEmbeddedScreenSnapshot).mockResolvedValue(snapshotCanvas);
+  it('renders the pipeline document live on first room load', async () => {
+    harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
+    const loadSpy = vi.spyOn(THREE.TextureLoader.prototype, 'load');
+
+    render(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="pipeline"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+
+    await act(async () => { await Promise.resolve(); });
+
+    expect(harness.runtime).toMatchObject({
+      hasPreview: false,
+      isPreviewCapturePending: true
+    });
+    expect(loadSpy).not.toHaveBeenCalled();
+    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
+    expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
+  });
+
+  it('keeps the latest live frame without scheduling a return snapshot', async () => {
     const { rerender } = render(
       <ArcadeScreenSurface
         screen={placement}
@@ -369,111 +391,6 @@ describe('ArcadeScreenSurface mobile gestures', () => {
       true
     );
     expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-
-    const returnCapture = harness.scheduledPreviewCaptures.find((job) => job.delayMs === 0);
-    expect(returnCapture).toBeDefined();
-    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-
-    await act(async () => { await returnCapture?.capture(); });
-
-    expect(captureEmbeddedScreenSnapshot).toHaveBeenCalledWith(
-      harness.runtime!.object.element,
-      expect.objectContaining({ shouldContinue: expect.any(Function) })
-    );
-    expect(harness.screenLayer.setPreviewAvailable).toHaveBeenCalledWith(harness.runtime, true);
-    expect(harness.screenLayer.setPreviewCapturePending).not.toHaveBeenLastCalledWith(
-      harness.runtime,
-      false
-    );
-  });
-
-  it('does not start heavy snapshot work while immediate room input blocks idle capture', async () => {
-    const { rerender } = render(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    expect(harness.runtime).toBeDefined();
-    harness.runtime!.content.appendChild(document.createElement('section'));
-
-    harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    const returnCapture = harness.scheduledPreviewCaptures.find((job) => job.delayMs === 0);
-    expect(returnCapture).toBeDefined();
-
-    harness.screenLayer.canCapturePreview.mockReturnValue(false);
-    await act(async () => { await returnCapture?.capture(); });
-
-    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-    expect(harness.screenLayer.setPreviewCapturePending).toHaveBeenLastCalledWith(
-      harness.runtime,
-      false
-    );
-  });
-
-  it('does not let a completed capture from an older screen session replace the current return frame', async () => {
-    const oldCanvas = document.createElement('canvas');
-    let resolveOldCapture: ((canvas: HTMLCanvasElement) => void) | undefined;
-    vi.mocked(captureEmbeddedScreenSnapshot)
-      .mockImplementationOnce(() => new Promise((resolve) => { resolveOldCapture = resolve; }));
-
-    const { rerender } = render(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    harness.runtime!.content.appendChild(document.createElement('section'));
-
-    harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    const firstReturnCapture = harness.scheduledPreviewCaptures.at(-1);
-    expect(firstReturnCapture).toBeDefined();
-    void firstReturnCapture?.capture();
-    await act(async () => { await Promise.resolve(); });
-
-    harness.state = { activeSectionId: 'architecture', navigationState: 'section-open' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-
-    await act(async () => {
-      resolveOldCapture?.(oldCanvas);
-      await Promise.resolve();
-    });
-    expect(harness.screenLayer.setPreviewAvailable).not.toHaveBeenCalled();
+    expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
   });
 });

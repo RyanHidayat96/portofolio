@@ -263,6 +263,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         runtime.screens.add(screen);
         runtime.scene.add(screen.object);
         configureScreen(screen, screen.screen, screen.pixelWidth, screen.pixelHeight);
+        syncLayerPointerEvents(runtime);
         render();
       },
       unregisterScreen: (screen): void => {
@@ -350,6 +351,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         screen.isPreviewCapturePending = isPending;
         if (!isPending) clearFrozenScreenPreview(screen);
         syncScreenPreviewVisibility(screen);
+        syncLayerPointerEvents(runtime);
         render();
       },
       setPreviewAvailable: (screen, isAvailable): void => {
@@ -359,6 +361,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         screen.isPreviewCapturePending = false;
         clearFrozenScreenPreview(screen);
         syncScreenPreviewVisibility(screen);
+        syncLayerPointerEvents(runtime);
         render();
       },
       registerOverlay: (overlay): void => {
@@ -575,10 +578,13 @@ function hasVisibleCssScreens(runtime: EmbeddedScreenLayerRuntime): boolean {
 function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
   const activeScreen = runtime.activeScreen;
   const isInteractive = Boolean(activeScreen);
+  const hasLiveRoomFrame = [...runtime.screens].some(
+    (screen) => screen.isPreviewCapturePending && screen.object.visible
+  );
   // Elevate z-index above the canvas container when interactive so mobile touch gestures
-  // and scroll hit the active document directly. CSS overlays use the same layer while
-  // inactive screens stay hidden below their static WebGL previews.
-  runtime.renderer.domElement.style.zIndex = isInteractive || runtime.overlays.size > 0
+  // and scroll hit the active document directly. A retained room frame must also
+  // stay above a WebGL preview texture.
+  runtime.renderer.domElement.style.zIndex = isInteractive || hasLiveRoomFrame || runtime.overlays.size > 0
     ? screenOverlayLayerZIndex
     : screenLayerZIndex;
   runtime.renderer.domElement.style.pointerEvents = 'none';

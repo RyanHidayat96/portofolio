@@ -4,9 +4,6 @@ import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import type { ArcadeScreenPlacement } from "../arcade-screen";
 
-const pipelineScreenCurveDepthRatio = 0.052;
-const pipelineScreenSegments = 32;
-
 export function CrtScreenSurface({
   screen,
   texture,
@@ -21,7 +18,7 @@ export function CrtScreenSurface({
   onActivate: (delta: number) => void;
 }>): React.ReactElement {
   const geometry = useMemo(
-    () => createConvexScreenGeometry(screen.width, screen.height),
+    () => new THREE.PlaneGeometry(screen.width, screen.height),
     [screen.height, screen.width]
   );
   useEffect(() => () => geometry.dispose(), [geometry]);
@@ -92,27 +89,4 @@ export function CrtScreenSurface({
       ) : null}
     </group>
   );
-}
-
-function createConvexScreenGeometry(width: number, height: number): THREE.PlaneGeometry {
-  const geometry = new THREE.PlaneGeometry(width, height, pipelineScreenSegments, pipelineScreenSegments);
-  const positions = geometry.getAttribute("position");
-  const halfWidth = Math.max(width / 2, Number.EPSILON);
-  const halfHeight = Math.max(height / 2, Number.EPSILON);
-  const curveDepth = Math.min(width, height) * pipelineScreenCurveDepthRatio;
-
-  for (let index = 0; index < positions.count; index += 1) {
-    const xRatio = positions.getX(index) / halfWidth;
-    const yRatio = positions.getY(index) / halfHeight;
-    // Cosine spherical dome creates seamless C1-continuous curvature with realistic optical normals
-    const bowX = Math.cos((Math.PI / 2) * Math.min(1, Math.max(-1, xRatio)));
-    const bowY = Math.cos((Math.PI / 2) * Math.min(1, Math.max(-1, yRatio)));
-    const bow = Math.max(0, bowX * bowY);
-    positions.setZ(index, curveDepth * bow);
-  }
-
-  positions.needsUpdate = true;
-  geometry.computeVertexNormals();
-  geometry.computeBoundingSphere();
-  return geometry;
 }

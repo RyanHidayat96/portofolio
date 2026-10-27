@@ -33,6 +33,7 @@ function isKnownPath(pathname: string): boolean {
     pathname.startsWith("/api/") ||
     pathname === "/api" ||
     pathname === "/" ||
+    pathname === "/portfolio-3d" ||
     workspacePaths.has(pathname) ||
     generatedAssetPaths.has(pathname) ||
     publicFilePattern.test(pathname)
