@@ -672,6 +672,7 @@ export function ArcadeScreenSurface({
         shouldContinue: shouldContinueCapture
       });
       if (!shouldContinueCapture()) {
+        clearPendingCapture();
         return false;
       }
 
@@ -679,6 +680,7 @@ export function ArcadeScreenSurface({
       previewTextureRef.current = nextTexture;
       setPreviewTexture(nextTexture);
       setIsPreviewCapturePending(false);
+      screenLayer.setPreviewCapturePending(runtime, false);
       invalidate();
 
       return true;
@@ -777,9 +779,11 @@ export function ArcadeScreenSurface({
     const scheduleCapture = (delayMs: number): void => {
       cancelReturnPreviewCaptureRef.current = screenLayer.schedulePreviewCapture(async () => {
         cancelReturnPreviewCaptureRef.current = null;
+        if (runtimeRef.current !== runtime || runtime.isInteractive) return;
+
         const didCapture = await capturePreview();
         if (didCapture || runtimeRef.current !== runtime || runtime.isInteractive) return;
-        if (attempts >= 3) return;
+        if (attempts >= 8) return;
 
         attempts += 1;
         scheduleCapture(previewCaptureRetryDelayMs);
@@ -831,6 +835,7 @@ export function ArcadeScreenSurface({
           screen={screen}
           texture={previewTexture}
           showPreview={Boolean(previewTexture && !isPreviewCapturePending)}
+          isInteractive={isInteractive}
           onActivate={(delta) => {
             if (delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
           }}

@@ -4,6 +4,7 @@ import { useThree } from "@react-three/fiber";
 import { useLayoutEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import type { ArcadeScreenPlacement } from "../arcade-screen";
+import { usePortfolio3dState } from "../state/Portfolio3dState";
 
 const marqueeMessage = "Ryan Hidayat - 087775009393";
 const marqueeCanvasWidth = 640;
@@ -58,6 +59,7 @@ export function ArcadeMarqueeDisplay({
   marquee: ArcadeScreenPlacement;
 }>): React.ReactElement | null {
   const { camera, invalidate, gl } = useThree();
+  const { state } = usePortfolio3dState();
   const runtimeRef = useRef<MarqueeRuntime | null>(null);
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
 
@@ -98,7 +100,9 @@ export function ArcadeMarqueeDisplay({
     if (!runtime) return;
 
     const paint = (): void => {
-      if (document.hidden || !isMarqueeVisible(camera, marquee, runtime.projection)) return;
+      if (document.hidden) return;
+      if (state.activeSectionId !== "overview") return;
+      if (!isMarqueeVisible(camera, marquee, runtime.projection)) return;
       drawMarquee(runtime, performance.now());
       invalidate();
     };
@@ -114,7 +118,7 @@ export function ArcadeMarqueeDisplay({
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [camera, invalidate, marquee, texture]);
+  }, [camera, invalidate, marquee, state.activeSectionId, texture]);
 
   if (!texture) return null;
 
@@ -248,7 +252,6 @@ function isMarqueeVisible(
   marquee: ArcadeScreenPlacement,
   projection: THREE.Vector3
 ): boolean {
-  camera.updateMatrixWorld();
   projection.copy(marquee.position).project(camera);
   return (
     projection.z >= -1 &&

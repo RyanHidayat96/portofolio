@@ -6651,7 +6651,24 @@ textarea:focus-visible,
   user-select: none;
 }
 
-/* RECESSED CURVED CRT TUBE VIEWPORT */
+/* Molded Inner Collar - Recessed chassis bezel holding the bulbous tube */
+.arcade-crt-bezel-collar {
+  flex: 1;
+  min-height: 0;
+  background: #0b0a08;
+  border: 4px solid #080705;
+  border-radius: 26px !important;
+  padding: 8px 10px;
+  box-shadow:
+    inset 0 0 32px rgba(0, 0, 0, 0.96),
+    0 2px 4px rgba(255, 255, 255, 0.05);
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* RECESSED BULBOUS CONVEX CRT TUBE VIEWPORT */
 .arcade-crt-tube-viewport {
   position: relative;
   flex: 1;
@@ -6659,31 +6676,32 @@ textarea:focus-visible,
   display: flex;
   flex-direction: column;
   background: #070502;
-  border-radius: 32px !important;
+  border-radius: 46px / 34px !important;
   overflow: hidden;
-  border: 5px solid #0d0c0a;
+  border: 4px solid #14110d;
   box-shadow:
-    inset 0 0 140px rgba(0, 0, 0, 0.98),
-    inset 0 0 50px rgba(0, 0, 0, 0.9),
-    inset 0 0 20px rgba(255, 176, 0, 0.35),
-    inset 0 2px 4px rgba(255, 215, 120, 0.15),
-    0 0 0 3px #28241e,
-    0 6px 20px rgba(0, 0, 0, 0.9);
+    inset 0 0 110px rgba(0, 0, 0, 0.98),
+    inset 0 0 45px rgba(0, 0, 0, 0.94),
+    inset 0 0 24px rgba(255, 176, 0, 0.32),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.98),
+    0 0 0 2px #28231c,
+    0 0 0 6px #070605;
 }
 
-/* Specular Curved Glass Reflection (Directly from Image 1 & 2) */
+/* 1. Subtle Convex Phosphor Falloff (No Hardcoded Specular Arcs) */
+.arcade-crt-glass-dome,
 .arcade-crt-glass-glare {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 35;
   background:
-    linear-gradient(132deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 24%, transparent 48%),
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 210, 100, 0.05), transparent 60%);
-  border-radius: 32px !important;
+    radial-gradient(ellipse 90% 80% at 50% 50%, rgba(255, 176, 0, 0.04) 0%, transparent 65%, rgba(0, 0, 0, 0.88) 100%);
+  border-radius: 46px / 34px !important;
 }
 
-/* Raster Scanlines & Shadow Mask Triad Overlay (Directly from Image 1 & 2) */
+/* 2. Concentric Downward-Curving Spherical Scanline Arcs & Shadow Mask Triad */
+.arcade-crt-curved-scanlines,
 .arcade-crt-raster-scanlines {
   position: absolute;
   inset: 0;
@@ -6691,8 +6709,8 @@ textarea:focus-visible,
   z-index: 33;
   opacity: 0.42;
   background-image:
-    repeating-linear-gradient(
-      to bottom,
+    repeating-radial-gradient(
+      ellipse 260% 190% at 50% -80px,
       rgba(0, 0, 0, 0.58) 0px,
       rgba(0, 0, 0, 0.58) 1px,
       transparent 1px,
@@ -6705,17 +6723,37 @@ textarea:focus-visible,
       transparent 1px,
       transparent 3px
     );
-  border-radius: 32px !important;
+  border-radius: 46px / 34px !important;
 }
 
+/* 3. Thick Glass Corner Refraction & Astigmatism Defocus Falloff */
+.arcade-crt-corner-refraction,
 .arcade-crt-tube-vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 34;
-  opacity: 0.72;
-  background: radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.88) 100%);
-  border-radius: 32px !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 100% 0%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 0% 100%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.88) 100%);
+  border-radius: 46px / 34px !important;
+}
+
+/* 4. Anti-Static Etched Glass Micro-Texture */
+.arcade-crt-dirty-glass {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 36;
+  opacity: 0.25;
+  background:
+    radial-gradient(circle at 50% 40%, transparent 70%, rgba(255, 176, 0, 0.04) 100%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: 100% 100%, 4px 100%;
+  border-radius: 46px / 34px !important;
 }
 
 .arcade-pipeline-screen {
@@ -9046,11 +9084,13 @@ textarea:focus-visible,
 }
 
 .pipeline-simulator-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 12px;
   background: transparent;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .pipeline-simulator-workspace {
@@ -9063,6 +9103,14 @@ textarea:focus-visible,
   background: var(--surface-deep) !important;
 }
 
+.pipeline-simulator-screen .pipeline-controls {
+  padding: 8px 10px;
+}
+
+.pipeline-simulator-screen .pipeline-execution {
+  padding: 10px 12px;
+}
+
 .pipeline-simulator-screen .panel-surface {
   background: var(--surface-deep) !important;
   border-color: var(--border-strong) !important;
@@ -9073,14 +9121,19 @@ textarea:focus-visible,
   gap: 8px;
 }
 
+.pipeline-simulator-screen .pipeline-telemetry-kpi-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
 .pipeline-arcade-flow {
   border: 1px solid var(--border-strong);
   background: var(--surface-raised);
 }
 
 .pipeline-simulator-screen .pipeline-actions button {
-  min-height: 44px;
-  padding: 8px 14px;
+  min-height: 40px;
+  padding: 6px 12px;
   transform: none;
 }
 
@@ -9090,7 +9143,7 @@ textarea:focus-visible,
 
 .pipeline-simulator-screen .pipeline-reports {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  padding-top: 14px;
+  padding-top: 12px;
   border-top: 2px solid var(--border-strong);
 }
 
@@ -10796,10 +10849,10 @@ textarea:focus-visible,
   color: var(--text-primary);
 }
 
-.workspace-root *:not(.arcade-crt-tube-viewport, .arcade-crt-glass-glare, .arcade-crt-raster-scanlines, .arcade-crt-tube-vignette, .arcade-crt-knob, .arcade-crt-power-led),
+.workspace-root *:not(.arcade-crt-tube-viewport, .arcade-crt-bezel-collar, .arcade-crt-glass-dome, .arcade-crt-curved-scanlines, .arcade-crt-corner-refraction, .arcade-crt-dirty-glass, .arcade-crt-glass-glare, .arcade-crt-raster-scanlines, .arcade-crt-tube-vignette, .arcade-crt-knob, .arcade-crt-power-led),
 .landing-shell *,
 .system-awakening-shell *,
-.arcade-screen-document *:not(.arcade-crt-tube-viewport, .arcade-crt-glass-glare, .arcade-crt-raster-scanlines, .arcade-crt-tube-vignette, .arcade-crt-knob, .arcade-crt-power-led) {
+.arcade-screen-document *:not(.arcade-crt-tube-viewport, .arcade-crt-bezel-collar, .arcade-crt-glass-dome, .arcade-crt-curved-scanlines, .arcade-crt-corner-refraction, .arcade-crt-dirty-glass, .arcade-crt-glass-glare, .arcade-crt-raster-scanlines, .arcade-crt-tube-vignette, .arcade-crt-knob, .arcade-crt-power-led) {
   border-radius: 0px !important;
 }
 
@@ -10839,20 +10892,49 @@ textarea:focus-visible,
 }
 
 /* The pipeline remains a native DOM surface while focused, but its aperture
-   and non-interactive GPU preview share the rounded CRT glass silhouette. */
+   and non-interactive GPU preview share the bulbous convex CRT glass silhouette. */
 .arcade-screen-document--pipeline {
   overflow: hidden;
+  border-radius: 46px / 34px !important;
+  border: 4px solid #14110d;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 175, 77, 0.14),
-    inset 0 0 32px rgba(0, 0, 0, 0.56),
-    inset 0 10px 18px rgba(255, 174, 83, 0.035);
+    inset 0 0 110px rgba(0, 0, 0, 0.98),
+    inset 0 0 45px rgba(0, 0, 0, 0.94),
+    inset 0 0 24px rgba(255, 176, 0, 0.32),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.98),
+    0 0 0 2px #28231c,
+    0 0 0 6px #070605;
 }
 
 .arcade-screen-document--pipeline::before {
+  border-radius: 46px / 34px !important;
   background-image:
-    linear-gradient(118deg, rgba(255, 217, 165, 0.07), transparent 20%, transparent 72%, rgba(114, 47, 8, 0.08)),
-    var(--crt-vignette);
-  opacity: 0.94;
+    radial-gradient(circle at 0% 0%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 100% 0%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 0% 100%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.88) 0%, transparent 24%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, rgba(255, 176, 0, 0.04) 0%, transparent 65%, rgba(0, 0, 0, 0.88) 100%);
+  opacity: 0.96;
+}
+
+.arcade-screen-document--pipeline::after {
+  border-radius: 46px / 34px !important;
+  background-image:
+    repeating-radial-gradient(
+      ellipse 260% 190% at 50% -80px,
+      rgba(0, 0, 0, 0.58) 0px,
+      rgba(0, 0, 0, 0.58) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.22) 0px,
+      rgba(0, 0, 0, 0.22) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  opacity: 0.44;
 }
 
 @keyframes crt-refresh-ripple {

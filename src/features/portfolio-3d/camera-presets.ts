@@ -124,7 +124,7 @@ export const portfolio3dCameraPresets = [
     far: 20,
     targetNodeName: 'gaming mashine',
     reducedMotionMs: 80,
-    transitionMs: 850
+    transitionMs: 650
   },
   {
     id: 'terminal',

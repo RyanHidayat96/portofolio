@@ -632,7 +632,7 @@ function CameraNavigationRig({
   embeddedScreenZoomById: EmbeddedScreenZoomById;
   embeddedScreenPanById: EmbeddedScreenPanById;
 }>): null {
-  const { camera, invalidate, size } = useThree();
+  const { camera, gl, invalidate, size } = useThree();
   const { state, setNavigationState } = usePortfolio3dState();
   const prefersReducedMotion = useReducedMotion();
   const transitionRef = useRef<CameraTransitionState | null>(null);
@@ -749,15 +749,22 @@ function CameraNavigationRig({
       return;
     }
 
+    const isReturningToOverview = state.activeSectionId === 'overview';
     const isScreenJourney = Boolean(embeddedScreenId) ||
-      (state.activeSectionId === 'overview' && screenJourneyRef.current);
+      (isReturningToOverview && screenJourneyRef.current);
     screenJourneyRef.current = isScreenJourney;
 
     transitionRef.current = {
       activeSectionId: state.activeSectionId,
-      finalNavigationState: state.activeSectionId === 'overview' ? 'overview' : 'section-open',
+      finalNavigationState: isReturningToOverview ? 'overview' : 'section-open',
       startedAt: performance.now(),
-      durationMs: prefersReducedMotion ? preset.reducedMotionMs : isScreenJourney ? Math.max(900, preset.transitionMs) : preset.transitionMs,
+      durationMs: prefersReducedMotion
+        ? preset.reducedMotionMs
+        : isReturningToOverview
+          ? 480
+          : isScreenJourney
+            ? Math.max(650, preset.transitionMs)
+            : preset.transitionMs,
       startPosition: camera.position.clone(),
       targetPosition,
       targetLookAt: target.clone(),
@@ -781,6 +788,35 @@ function CameraNavigationRig({
     }
     invalidate();
   }, [camera, embeddedScreenPanById, embeddedScreenZoomById, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const onEarlyPointerDown = (): void => {
+      const transition = transitionRef.current;
+      if (transition && transition.finalNavigationState === 'overview') {
+        camera.position.copy(transition.targetPosition);
+        camera.quaternion.copy(transition.targetQuaternion);
+        if (transition.smoothLens && camera instanceof THREE.PerspectiveCamera) {
+          camera.fov = transition.targetFov;
+          camera.updateProjectionMatrix();
+        }
+        transitionRef.current = null;
+        if (sharedOrbitControlsRef.current) {
+          sharedOrbitControlsRef.current.target.copy(transition.targetLookAt);
+          sharedOrbitControlsRef.current.enabled = true;
+          syncOverviewOrbitControls(camera, transition.targetLookAt, size.width < 768);
+        }
+        screenJourneyRef.current = false;
+        setNavigationState('overview');
+        invalidate();
+      }
+    };
+
+    canvas.addEventListener('pointerdown', onEarlyPointerDown, { passive: true });
+    return () => {
+      canvas.removeEventListener('pointerdown', onEarlyPointerDown);
+    };
+  }, [camera, gl.domElement, invalidate, setNavigationState, size.width]);
 
   useFrame((rootState) => {
     const transition = transitionRef.current;

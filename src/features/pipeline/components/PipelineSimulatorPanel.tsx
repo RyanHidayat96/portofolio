@@ -455,8 +455,8 @@ function StageLatencyHistogram({
   const points = stages.map((stage, idx) => {
     const def = stageDefs.find((d) => d.id === stage.id);
     const ms = def ? def.durationMs : 300;
-    const x = 50 + idx * 115;
-    const y = 140 - (ms / maxMs) * 110;
+    const x = 46 + idx * 76;
+    const y = 125 - (ms / maxMs) * 95;
     return { x, y, ms, stage };
   });
 
@@ -465,29 +465,19 @@ function StageLatencyHistogram({
   }, "");
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full">
       <svg
-        viewBox="0 0 940 160"
-        className="w-full min-w-[700px] h-36 font-mono text-[11px]"
+        viewBox="0 0 660 148"
+        className="w-full h-28 sm:h-32 font-mono text-[10px]"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           {/* Authentic CRT Dither Pattern (Alternating pixel dots) */}
-          <pattern
-            id="crt-dither-pat"
-            width="4"
-            height="4"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="crt-dither-pat" width="4" height="4" patternUnits="userSpaceOnUse">
             <rect width="2" height="2" fill="#ffb000" fillOpacity="0.8" />
             <rect x="2" y="2" width="2" height="2" fill="#ffb000" fillOpacity="0.8" />
           </pattern>
-          <pattern
-            id="crt-dither-dim"
-            width="4"
-            height="4"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="crt-dither-dim" width="4" height="4" patternUnits="userSpaceOnUse">
             <rect width="1" height="1" fill="#ffb000" fillOpacity="0.3" />
             <rect x="2" y="2" width="1" height="1" fill="#ffb000" fillOpacity="0.3" />
           </pattern>
@@ -495,19 +485,19 @@ function StageLatencyHistogram({
 
         {/* Horizontal grid lines */}
         {[0, 25, 50, 75, 100].map((pct) => {
-          const y = 140 - (pct / 100) * 110;
+          const y = 125 - (pct / 100) * 95;
           return (
             <g key={pct}>
               <line
-                x1="40"
+                x1="30"
                 y1={y}
-                x2="920"
+                x2="650"
                 y2={y}
                 stroke="#ffb000"
                 strokeOpacity="0.18"
                 strokeDasharray="2 3"
               />
-              <text x="5" y={y + 3} fill="#ffb000" fillOpacity="0.5" fontSize="9">
+              <text x="2" y={y + 3} fill="#ffb000" fillOpacity="0.5" fontSize="8">
                 {Math.round((pct / 100) * maxMs)}
               </text>
             </g>
@@ -518,9 +508,9 @@ function StageLatencyHistogram({
         {stages.map((stage, idx) => {
           const def = stageDefs.find((d) => d.id === stage.id);
           const ms = def ? def.durationMs : 300;
-          const barHeight = (ms / maxMs) * 110;
-          const x = 30 + idx * 115;
-          const y = 140 - barHeight;
+          const barHeight = (ms / maxMs) * 95;
+          const x = 30 + idx * 76;
+          const y = 125 - barHeight;
           const isPassed = stage.status === "passed";
           const isRunning = stage.status === "running";
           const isBlocked = stage.status === "failed" || stage.status === "blocked";
@@ -531,38 +521,32 @@ function StageLatencyHistogram({
               <rect
                 x={x}
                 y={y}
-                width="40"
+                width="32"
                 height={barHeight}
                 fill={isPassed || isRunning ? "url(#crt-dither-pat)" : "url(#crt-dither-dim)"}
                 stroke={isBlocked ? "#ff704d" : isRunning ? "#ffd24d" : "#ffb000"}
                 strokeWidth={isRunning ? 2 : 1}
               />
               {/* Top Bar Highlight Cap */}
-              <rect
-                x={x}
-                y={y}
-                width="40"
-                height="3"
-                fill={isBlocked ? "#ff704d" : "#ffd24d"}
-              />
+              <rect x={x} y={y} width="32" height="2.5" fill={isBlocked ? "#ff704d" : "#ffd24d"} />
               {/* Numeric readout over bar */}
               <text
-                x={x + 20}
-                y={y - 5}
+                x={x + 16}
+                y={y - 4}
                 textAnchor="middle"
                 fill={isBlocked ? "#ff704d" : "#ffe4a3"}
-                fontSize="10"
+                fontSize="9"
                 fontWeight="bold"
               >
                 {ms}ms
               </text>
               {/* X-axis stage code label */}
               <text
-                x={x + 20}
-                y="154"
+                x={x + 16}
+                y="140"
                 textAnchor="middle"
                 fill="#ffb000"
-                fontSize="10"
+                fontSize="9"
                 fontWeight="bold"
               >
                 {getStageAbbreviation(stage.id)}
@@ -587,24 +571,24 @@ function StageLatencyHistogram({
         ))}
 
         {/* Callout Box on Peak Bar (E2E stage at idx 4, mimicking Image 1's 57.1% badge) */}
-        <g transform="translate(480, 15)">
-          <line x1="25" y1="20" x2="35" y2="40" stroke="#ffd24d" strokeWidth="1" />
+        <g transform="translate(334, 8)">
+          <line x1="25" y1="18" x2="25" y2="38" stroke="#ffd24d" strokeWidth="1" />
           <rect
             x="0"
             y="0"
-            width="90"
-            height="20"
+            width="80"
+            height="18"
             fill="#ffb000"
             stroke="#ffd24d"
             strokeWidth="1"
           />
           <text
-            x="45"
-            y="14"
+            x="40"
+            y="13"
             textAnchor="middle"
             fill="#070502"
             fontWeight="bold"
-            fontSize="10"
+            fontSize="9"
           >
             PEAK: 920ms
           </text>
@@ -618,41 +602,18 @@ function StageLatencyHistogram({
 function PipelineStageFlow({
   stages
 }: Readonly<{ stages: readonly PipelineStage[] }>): React.ReactElement {
-  const row1 = stages.slice(0, 4);
-  const row2 = stages.slice(4, 8);
-
   return (
-    <div className="pipeline-arcade-flow border border-[var(--border-strong)] bg-[var(--surface-raised)] p-3 mono text-xs">
-      {/* Top Row: 01 to 04 */}
-      <div className="grid grid-cols-4 gap-2 items-center">
-        {row1.map((stage, idx) => (
+    <div className="pipeline-arcade-flow border border-[var(--border-strong)] bg-[var(--surface-raised)] p-1.5 mono text-xs">
+      {/* 8-stage direct conduit track: all 8 stages clearly visible across the frame */}
+      <div className="grid grid-cols-8 gap-1 items-center">
+        {stages.map((stage, idx) => (
           <StageNodeBox
             key={stage.id}
             index={idx}
             stage={stage}
-            isArrowRight={idx < 3}
+            isArrowRight={idx < 7}
           />
         ))}
-      </div>
-
-      {/* Down Connector between Stage 4 and Stage 5 */}
-      <div className="flex justify-end pr-10 my-1 text-[var(--accent)] font-bold">
-        <span>║ [CONDUIT] ▼</span>
-      </div>
-
-      {/* Bottom Row: 08 to 05 (Flowing backwards into deploy) */}
-      <div className="grid grid-cols-4 gap-2 items-center">
-        {row2
-          .slice()
-          .reverse()
-          .map((stage, idx) => (
-            <StageNodeBox
-              key={stage.id}
-              index={7 - idx}
-              stage={stage}
-              isArrowLeft={idx < 3}
-            />
-          ))}
       </div>
     </div>
   );
@@ -662,13 +623,11 @@ function PipelineStageFlow({
 function StageNodeBox({
   index,
   stage,
-  isArrowRight,
-  isArrowLeft
+  isArrowRight
 }: Readonly<{
   index: number;
   stage: PipelineStage;
   isArrowRight?: boolean;
-  isArrowLeft?: boolean;
 }>): React.ReactElement {
   const isRunning = stage.status === "running";
   const isPassed = stage.status === "passed";
@@ -678,9 +637,9 @@ function StageNodeBox({
   return (
     <div className="relative">
       <div
-        className={`border-2 p-2 transition-none ${
+        className={`border p-1 text-center transition-none ${
           isRunning
-            ? "border-[var(--accent-secondary)] bg-[var(--accent)] text-[var(--accent-contrast)] font-bold animate-pulse shadow-[0_0_12px_rgba(255,176,0,0.6)]"
+            ? "border-[var(--accent-secondary)] bg-[var(--accent)] text-[var(--accent-contrast)] font-bold animate-pulse shadow-[0_0_8px_rgba(255,176,0,0.6)]"
             : isPassed
               ? "border-[var(--accent)] bg-[var(--surface-deep)] text-[var(--text-primary)]"
               : isBlocked
@@ -690,27 +649,19 @@ function StageNodeBox({
                   : "border-[var(--border)] bg-[var(--surface-deep)] text-[var(--text-muted)]"
         }`}
       >
-        <div className="flex items-center justify-between text-[10px] font-bold">
+        <div className="flex items-center justify-between text-[8px] font-bold">
           <span>0{index + 1}</span>
-          <span className="uppercase">{stage.status}</span>
+          <span className="uppercase">{stage.status.slice(0, 4)}</span>
         </div>
-        <p className="mt-1 font-bold text-xs truncate uppercase">{stage.label}</p>
-        <p className="text-[10px] text-[var(--text-muted)] truncate">{stage.durationMs}ms</p>
+        <p className="mt-0.5 font-bold text-[10px] truncate uppercase">{getStageAbbreviation(stage.id)}</p>
+        <p className="text-[8px] text-[var(--text-muted)] truncate">{stage.durationMs}ms</p>
       </div>
       {isArrowRight ? (
         <span
-          className="hidden sm:inline-block absolute -right-3 top-1/2 -translate-y-1/2 text-[var(--accent)] font-bold z-10"
+          className="hidden sm:inline-block absolute -right-1.5 top-1/2 -translate-y-1/2 text-[var(--accent)] font-bold z-10 text-[8px] pointer-events-none"
           aria-hidden="true"
         >
           ►
-        </span>
-      ) : null}
-      {isArrowLeft ? (
-        <span
-          className="hidden sm:inline-block absolute -right-3 top-1/2 -translate-y-1/2 text-[var(--accent)] font-bold z-10"
-          aria-hidden="true"
-        >
-          ◄
         </span>
       ) : null}
     </div>
