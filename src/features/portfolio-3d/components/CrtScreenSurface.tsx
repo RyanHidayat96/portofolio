@@ -17,18 +17,28 @@ export function CrtScreenSurface({
   isInteractive?: boolean;
   onActivate: (delta: number) => void;
 }>): React.ReactElement {
-  const geometry = useMemo(
+  const baseGeometry = useMemo(
     () => new THREE.PlaneGeometry(screen.width, screen.height),
     [screen.height, screen.width]
   );
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(() => () => baseGeometry.dispose(), [baseGeometry]);
+
+  // Spherical convex normal vectors across flat rectangular boundaries:
+  // Normals curve outward like a real spherical CRT monitor faceplate,
+  // allowing specular room lighting to smoothly glide in all directions as the room is orbited,
+  // while the physical perimeter remains 100% flush and rectangular with the 3D cabinet bezel.
+  const glassGeometry = useMemo(
+    () => createCrtGlassGeometry(screen.width, screen.height),
+    [screen.height, screen.width]
+  );
+  useEffect(() => () => glassGeometry.dispose(), [glassGeometry]);
 
   return (
     <group position={screen.position} quaternion={screen.quaternion}>
       {/* Primary Screen Mesh with preview texture or live depth punch */}
       <mesh
         name="Embedded_pipeline_CrtSurface"
-        geometry={geometry}
+        geometry={baseGeometry}
         onClick={(event) => {
           event.stopPropagation();
           onActivate(event.delta);
@@ -67,26 +77,74 @@ export function CrtScreenSurface({
         )}
       </mesh>
 
-      {/* Lightweight dynamic specular glass sheen: reflects room lighting across the convex dome as the user rotates/pans */}
+      {/* Dynamic Specular Glass Sheen:
+          Reflects room lighting and ceiling neons across the spherical CRT faceplate
+          smoothly in ALL directions as the user rotates or pans the room */}
       {!isInteractive ? (
-        <mesh geometry={geometry} position={[0, 0, 0.001]} raycast={() => null}>
-          <meshPhongMaterial
-            key="pipeline-crt-specular-glint"
-            color="#000000"
-            specular="#ffd24d"
-            shininess={100}
-            transparent
-            opacity={0.38}
-            blending={THREE.AdditiveBlending}
-            depthTest
-            depthWrite={false}
-            polygonOffset
-            polygonOffsetFactor={-2}
-            polygonOffsetUnits={-2}
-            side={THREE.FrontSide}
-          />
-        </mesh>
+        <>
+          {/* Layer 1: High-shininess pinpoint specular glints from point lights */}
+          <mesh geometry={glassGeometry} position={[0, 0, 0.001]} raycast={() => null}>
+            <meshPhongMaterial
+              key="pipeline-crt-specular-glint"
+              color="#000000"
+              specular="#fff5cc"
+              shininess={85}
+              transparent
+              opacity={0.46}
+              blending={THREE.AdditiveBlending}
+              depthTest
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={-2}
+              polygonOffsetUnits={-2}
+              side={THREE.FrontSide}
+            />
+          </mesh>
+
+          {/* Layer 2: Broad optical clearcoat reflection from room environment */}
+          <mesh geometry={glassGeometry} position={[0, 0, 0.0015]} raycast={() => null}>
+            <meshPhysicalMaterial
+              key="pipeline-crt-clearcoat-reflection"
+              color="#000000"
+              roughness={0.14}
+              metalness={0.02}
+              clearcoat={1.0}
+              clearcoatRoughness={0.06}
+              reflectivity={0.9}
+              transparent
+              opacity={0.32}
+              blending={THREE.AdditiveBlending}
+              depthTest
+              depthWrite={false}
+              polygonOffset
+              polygonOffsetFactor={-3}
+              polygonOffsetUnits={-3}
+              side={THREE.FrontSide}
+            />
+          </mesh>
+        </>
       ) : null}
     </group>
   );
+}
+
+function createCrtGlassGeometry(width: number, height: number): THREE.PlaneGeometry {
+  const segments = 32;
+  const geometry = new THREE.PlaneGeometry(width, height, segments, segments);
+  const positions = geometry.getAttribute("position");
+  const normals = geometry.getAttribute("normal");
+  const sphereRadius = Math.max(width, height) * 1.5;
+  const normal = new THREE.Vector3();
+
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const y = positions.getY(i);
+    // Outward spherical normal at (x, y)
+    normal.set(x / sphereRadius, y / sphereRadius, 1.0).normalize();
+    normals.setXYZ(i, normal.x, normal.y, normal.z);
+  }
+
+  normals.needsUpdate = true;
+  geometry.computeVertexNormals();
+  return geometry;
 }
