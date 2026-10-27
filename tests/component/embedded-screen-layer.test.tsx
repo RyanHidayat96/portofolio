@@ -141,7 +141,7 @@ describe('embedded screen render scheduling', () => {
     expect(screen.object.element.style.visibility).toBe('');
   });
 
-  it('preserves the last scroll and keeps the page visible until its return snapshot commits', () => {
+  it('freezes the last scroll frame and keeps it visible until its return snapshot commits', async () => {
     render(<Subject />);
     act(() => layer.setPreviewAvailable(screen, true));
     act(() => layer.setInteractive(screen, true));
@@ -151,8 +151,13 @@ describe('embedded screen render scheduling', () => {
     expect(screen.content.scrollTop).toBe(450);
     expect(screen.content.scrollLeft).toBe(20);
     expect(screen.object.visible).toBe(true);
+    expect(screen.frozenPreview).toBeDefined();
+    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
+    expect(screen.frozenPreview?.scrollTop).toBe(450);
+    expect(screen.frozenPreview?.scrollLeft).toBe(20);
     act(() => layer.setPreviewAvailable(screen, true));
     expect(screen.object.visible).toBe(false);
+    expect(screen.frozenPreview).toBeUndefined();
     act(() => layer.setInteractive(screen, true));
     expect(screen.content.scrollTop).toBe(450);
     expect(screen.object.visible).toBe(true);

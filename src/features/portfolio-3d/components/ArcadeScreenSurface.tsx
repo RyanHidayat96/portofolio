@@ -680,7 +680,6 @@ export function ArcadeScreenSurface({
       previewTextureRef.current = nextTexture;
       setPreviewTexture(nextTexture);
       setIsPreviewCapturePending(false);
-      screenLayer.setPreviewCapturePending(runtime, false);
       invalidate();
 
       return true;
@@ -770,9 +769,14 @@ export function ArcadeScreenSurface({
     }
 
     cancelReturnPreviewCapture();
+    // Invalidate a capture from an older room session before this screen can
+    // become visible again. A completed stale capture must never replace the
+    // latest frozen frame while the next idle capture is still queued.
+    previewCaptureRequestRef.current += 1;
 
-    // Keep the latest live page visible, but move DOM-to-image work away from
-    // camera animation and active room input so transitions remain smooth.
+    // Keep the latest live CSS3D page visible while the camera moves. DOM-to-
+    // image serialization is deferred until both camera and room input are
+    // idle, so it cannot steal a frame from the return transition.
     setIsPreviewCapturePending(true);
     screenLayer.setPreviewCapturePending(runtime, true);
     let attempts = 0;
@@ -796,6 +800,7 @@ export function ArcadeScreenSurface({
   useLayoutEffect(() => {
     if (isInteractive) {
       cancelReturnPreviewCapture();
+      previewCaptureRequestRef.current += 1;
       wasInteractiveRef.current = true;
       return;
     }

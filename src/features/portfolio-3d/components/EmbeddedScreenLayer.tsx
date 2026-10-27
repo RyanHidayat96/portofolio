@@ -36,6 +36,9 @@ export interface EmbeddedScreenRegistration {
   isPreviewCapturePending: boolean;
   isFlattenedForInteraction?: boolean;
   cssTransform?: string;
+  frozenPreview?: HTMLDivElement;
+  frozenContentDisplay?: string;
+  frozenScrollRestoreFrame?: number;
 }
 
 export interface EmbeddedScreenOverlayRegistration {
@@ -264,6 +267,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       },
       unregisterScreen: (screen): void => {
         if (!runtime.screens.has(screen)) return;
+        clearFrozenScreenPreview(screen);
         restoreScreenToLayer(runtime, screen);
         runtime.screens.delete(screen);
         runtime.scene.remove(screen.object);
@@ -288,6 +292,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         let shouldRevealActiveScreenAfterProjection = false;
 
         if (isInteractive) {
+          clearFrozenScreenPreview(screen);
           if (runtime.activeScreen && runtime.activeScreen !== screen) {
             restoreScreenToLayer(runtime, runtime.activeScreen);
           }
@@ -310,8 +315,11 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           screen.object.element.style.transformOrigin = '0 0';
           runtime.renderer.domElement.appendChild(screen.object.element);
         } else {
-          // The exiting page stays visible until its final screenshot commits.
+          // Freeze current DOM before moving it from the flat interactive layer
+          // back into CSS3D. The copy stays exact even if React or Chrome's
+          // compositor updates the hidden live document during camera motion.
           screen.isPreviewCapturePending = true;
+          freezeScreenPreview(screen);
           restoreScreenToLayer(runtime, screen);
         }
 
@@ -340,6 +348,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         if (!runtime.screens.has(screen) || screen.isPreviewCapturePending === isPending) return;
 
         screen.isPreviewCapturePending = isPending;
+        if (!isPending) clearFrozenScreenPreview(screen);
         syncScreenPreviewVisibility(screen);
         render();
       },
@@ -348,6 +357,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
 
         screen.hasPreview = isAvailable;
         screen.isPreviewCapturePending = false;
+        clearFrozenScreenPreview(screen);
         syncScreenPreviewVisibility(screen);
         render();
       },
@@ -453,6 +463,88 @@ function restoreScreenToLayer(
   screen.object.element.style.pointerEvents = 'none';
   screen.object.element.style.visibility = '';
   syncScreenPreviewVisibility(screen);
+}
+
+function freezeScreenPreview(screen: EmbeddedScreenRegistration): void {
+  clearFrozenScreenPreview(screen);
+
+  const scrollState = readFrozenScreenScrollState(screen.content);
+  const frozenPreview = screen.content.cloneNode(true) as HTMLDivElement;
+  copyFrozenScreenState(screen.content, frozenPreview);
+  frozenPreview.classList.add('arcade-screen-frozen-preview');
+  frozenPreview.setAttribute('aria-hidden', 'true');
+  frozenPreview.inert = true;
+  frozenPreview.style.pointerEvents = 'none';
+  frozenPreview.style.position = 'absolute';
+  frozenPreview.style.inset = '0';
+  frozenPreview.style.zIndex = '1';
+  frozenPreview.style.width = '100%';
+  frozenPreview.style.height = '100%';
+  frozenPreview.style.overflow = 'hidden';
+
+  screen.frozenContentDisplay = screen.content.style.display;
+  screen.content.style.display = 'none';
+  screen.object.element.appendChild(frozenPreview);
+  restoreFrozenScreenScrollState(frozenPreview, scrollState);
+  screen.frozenPreview = frozenPreview;
+  screen.frozenScrollRestoreFrame = requestAnimationFrame(() => {
+    screen.frozenScrollRestoreFrame = undefined;
+    if (screen.frozenPreview === frozenPreview) {
+      restoreFrozenScreenScrollState(frozenPreview, scrollState);
+    }
+  });
+}
+
+function clearFrozenScreenPreview(screen: EmbeddedScreenRegistration): void {
+  if (screen.frozenScrollRestoreFrame !== undefined) {
+    cancelAnimationFrame(screen.frozenScrollRestoreFrame);
+    screen.frozenScrollRestoreFrame = undefined;
+  }
+  screen.frozenPreview?.remove();
+  screen.frozenPreview = undefined;
+  if (screen.frozenContentDisplay !== undefined) {
+    screen.content.style.display = screen.frozenContentDisplay;
+    screen.frozenContentDisplay = undefined;
+  }
+}
+
+function copyFrozenScreenState(source: HTMLElement, target: HTMLElement): void {
+  const sourceElements = [source, ...source.querySelectorAll<HTMLElement>('*')];
+  const targetElements = [target, ...target.querySelectorAll<HTMLElement>('*')];
+
+  for (let index = 0; index < sourceElements.length; index += 1) {
+    const sourceElement = sourceElements[index];
+    const targetElement = targetElements[index];
+    if (!targetElement) continue;
+
+    if (sourceElement instanceof HTMLInputElement && targetElement instanceof HTMLInputElement) {
+      targetElement.value = sourceElement.value;
+      targetElement.checked = sourceElement.checked;
+    } else if (sourceElement instanceof HTMLTextAreaElement && targetElement instanceof HTMLTextAreaElement) {
+      targetElement.value = sourceElement.value;
+    } else if (sourceElement instanceof HTMLSelectElement && targetElement instanceof HTMLSelectElement) {
+      targetElement.value = sourceElement.value;
+    }
+  }
+}
+
+function readFrozenScreenScrollState(source: HTMLElement): readonly { index: number; top: number; left: number }[] {
+  return [source, ...source.querySelectorAll<HTMLElement>('*')]
+    .map((element, index) => ({ index, top: element.scrollTop, left: element.scrollLeft }))
+    .filter(({ top, left }) => top !== 0 || left !== 0);
+}
+
+function restoreFrozenScreenScrollState(
+  target: HTMLElement,
+  scrollState: readonly { index: number; top: number; left: number }[]
+): void {
+  const targetElements = [target, ...target.querySelectorAll<HTMLElement>('*')];
+  for (const { index, top, left } of scrollState) {
+    const targetElement = targetElements[index];
+    if (!targetElement) continue;
+    targetElement.scrollTop = top;
+    targetElement.scrollLeft = left;
+  }
 }
 
 function canCaptureEmbeddedScreenPreview(
