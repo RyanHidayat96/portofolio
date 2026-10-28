@@ -656,7 +656,9 @@ export function ArcadeScreenSurface({
 
     try {
       const canvas = await captureEmbeddedScreenSnapshot(runtime.object.element, {
-        shouldContinue: shouldContinueCapture
+        shouldContinue: shouldContinueCapture,
+        scale: 1.0,
+        maxDimension: 1000
       });
       if (!shouldContinueCapture()) {
         return false;

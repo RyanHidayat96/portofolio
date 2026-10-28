@@ -418,19 +418,6 @@ function ScreenRepaintController(): null {
 }
 
 function CameraDebugOverlay(): null {
-  const { camera } = useThree();
-  const { state } = usePortfolio3dState();
-
-  useFrame(() => {
-    // Expose camera position on window for live debugging via DevTools console.
-    // Open browser console and run: setInterval(() => console.log(window.__dbgCam), 500)
-    (window as unknown as Record<string, unknown>).__dbgCam = {
-      pos: camera.position.toArray().map((v: number) => +v.toFixed(3)),
-      section: state.activeSectionId,
-      navState: state.navigationState,
-    };
-  });
-
   return null;
 }
 
@@ -455,8 +442,8 @@ function InteractiveOrbitControls(): null {
   useEffect(() => {
     const controls = new OrbitControlsImpl(camera, gl.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.rotateSpeed = 0.8;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 1.05;
     controls.zoomSpeed = 1.5;
     controls.panSpeed = 0.8;
     controls.enablePan = false;

@@ -111,7 +111,7 @@ export function CrtScreenSurface({
 }
 
 function createCrtGlassGeometry(width: number, height: number): THREE.PlaneGeometry {
-  const segments = 32;
+  const segments = 16;
   const geometry = new THREE.PlaneGeometry(width, height, segments, segments);
   const positions = geometry.getAttribute("position");
   const normals = geometry.getAttribute("normal");

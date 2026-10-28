@@ -34,8 +34,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 const playbackDelayMs = 120;
 
 export function PipelineSimulatorPanel({
-  variant = "workspace"
-}: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
+  variant = "workspace",
+  interactive = true
+}: Readonly<{ variant?: "workspace" | "screen"; interactive?: boolean }> = {}): React.ReactElement {
   const simulator = useMemo(() => new PipelineSimulator(), []);
   const [scenarioId, setScenarioId] = useState<PipelineScenarioId>("success");
   const [currentRun, setCurrentRun] = useState<PipelineRunResult | null>(null);
@@ -61,6 +62,16 @@ export function PipelineSimulatorPanel({
       elapsedTimerRef.current = null;
     }
   }, []);
+
+  // When not interactive (e.g. viewed from room overview), pause simulation timers to keep room rendering smooth
+  useEffect(() => {
+    if (!interactive && isRunning) {
+      clearTimers();
+      setIsRunning(false);
+    }
+  }, [clearTimers, interactive, isRunning]);
+
+  const isPulseActive = isRunning && interactive;
 
   const runPipeline = useCallback(() => {
     clearTimers();
@@ -231,7 +242,7 @@ export function PipelineSimulatorPanel({
             cursorLabel="RUN"
             magnetic={!isScreen}
             className={`min-h-12 border-2 text-sm font-bold uppercase mono ${
-              isRunning ? "animate-pulse" : ""
+              isPulseActive ? "animate-pulse" : ""
             }`}
           >
             Run
@@ -357,7 +368,7 @@ export function PipelineSimulatorPanel({
               <span>RUNNER TELEMETRY WAVEFORM (0.5Hz OSCILLATION)</span>
               <span className="text-[var(--accent-secondary)]">[SIGNAL: STABLE]</span>
             </div>
-            <TelemetryOscilloscope isRunning={isRunning} />
+            <TelemetryOscilloscope isRunning={isPulseActive} />
           </div>
         </Panel>
 

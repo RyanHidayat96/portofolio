@@ -7,6 +7,8 @@ const snapshotScrollAttribute = 'data-embedded-snapshot-scroll';
 
 interface EmbeddedScreenSnapshotOptions {
   readonly shouldContinue?: () => boolean;
+  readonly scale?: number;
+  readonly maxDimension?: number;
 }
 
 interface ScrollSnapshotStyle {
@@ -38,9 +40,11 @@ export async function captureEmbeddedScreenSnapshot(
   if (sourceWidth < 1 || sourceHeight < 1) {
     throw new Error('Embedded screen is not measurable for a snapshot.');
   }
+  const targetScale = options.scale ?? snapshotTextureScale;
+  const targetMaxDimension = options.maxDimension ?? maximumSnapshotDimension;
   const snapshotScale = Math.min(
-    snapshotTextureScale,
-    maximumSnapshotDimension / Math.max(sourceWidth, sourceHeight)
+    targetScale,
+    targetMaxDimension / Math.max(sourceWidth, sourceHeight)
   );
   const { toSvg } = await import('html-to-image');
   assertSnapshotCanContinue(options);

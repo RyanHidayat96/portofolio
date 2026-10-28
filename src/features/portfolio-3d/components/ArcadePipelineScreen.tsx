@@ -50,7 +50,7 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
         </div>
         <div className="arcade-simulation-meta flex items-center gap-3 mono text-xs">
           <span className="flex items-center gap-1 text-[var(--accent)]">
-            <Radio size={12} className="animate-pulse" />
+            <Radio size={12} className={interactive ? "animate-pulse" : ""} />
             <span>ONLINE // 60Hz</span>
           </span>
           <span className="arcade-simulation-label uppercase text-[var(--accent-secondary)]">
@@ -66,7 +66,7 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
         aria-label="Pipeline controls and results"
         onScroll={onScroll}
       >
-        <PipelineSimulatorPanel variant="screen" />
+        <PipelineSimulatorPanel variant="screen" interactive={interactive} />
       </div>
 
       {/* CRT Monitor Bottom Status Trim */}
