@@ -5928,6 +5928,12 @@ textarea:focus-visible,
   animation: terminal-caret-blink 1.05s steps(1, end) infinite;
 }
 
+/* Terminal remains mounted in room overview. Pause only visual cadence while
+   its CSS3D document is non-interactive; command state stays intact. */
+.terminal-panel--inactive .terminal-caret {
+  animation-play-state: paused;
+}
+
 @keyframes terminal-caret-blink {
   0%,
   49% {

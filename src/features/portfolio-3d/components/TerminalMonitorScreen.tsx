@@ -68,7 +68,7 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
         </div>
         <div className="arcade-simulation-meta flex items-center gap-3 mono text-xs">
           <span className="flex items-center gap-1 text-[var(--accent)]">
-            <Radio size={12} className="animate-pulse" />
+            <Radio size={12} className={interactive ? "animate-pulse" : ""} />
             <span>ONLINE // 60Hz</span>
           </span>
           <span className="arcade-simulation-label uppercase text-[var(--accent-secondary)]">
@@ -84,6 +84,7 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
       >
         <TerminalPanel
           variant="screen"
+          interactive={interactive}
           terminalOutputRef={terminalOutputScrollRef}
           onTerminalOutputScroll={onTerminalOutputScroll}
           onNavigate={(section) => setActiveSection(terminalNavigationTargets[section] ?? 'overview')}

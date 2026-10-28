@@ -97,4 +97,10 @@ describe("TerminalPanel", () => {
     fireEvent.scroll(outputRef.current!);
     expect(onOutputScroll).toHaveBeenCalledOnce();
   });
+
+  it("marks an inactive room terminal so its visual cadence can pause", () => {
+    const { container } = render(<TerminalPanel onNavigate={vi.fn()} variant="screen" interactive={false} />);
+
+    expect(container.querySelector(".terminal-panel")).toHaveClass("terminal-panel--inactive");
+  });
 });

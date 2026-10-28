@@ -43,6 +43,7 @@ function createLine(kind: TerminalLineKind, value: string): TerminalLine {
 interface TerminalPanelProps {
   onNavigate: (section: WorkspaceSection) => void;
   readonly variant?: "workspace" | "screen";
+  readonly interactive?: boolean;
   readonly terminalOutputRef?: Ref<HTMLDivElement>;
   readonly onTerminalOutputScroll?: UIEventHandler<HTMLDivElement>;
 }
@@ -51,7 +52,8 @@ export function TerminalPanel({
   onNavigate,
   terminalOutputRef,
   onTerminalOutputScroll,
-  variant = "workspace"
+  variant = "workspace",
+  interactive = true
 }: Readonly<TerminalPanelProps>): React.ReactElement {
   const registry = useMemo(() => createPortfolioCommandRegistry(), []);
   const registryCommands = useMemo(() => registry.list(), [registry]);
@@ -161,7 +163,9 @@ export function TerminalPanel({
 
   return (
     <Panel
-      className={`terminal-panel ${isScreenMode ? "terminal-panel-screen" : ""} overflow-hidden`}
+      className={`terminal-panel ${isScreenMode ? "terminal-panel-screen" : ""} ${
+        interactive ? "" : "terminal-panel--inactive"
+      } overflow-hidden`}
     >
       <div className="terminal-header">
         <div>
