@@ -340,14 +340,14 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     );
   });
 
-  it('renders the pipeline document live on first room load', async () => {
+  it.each(['pipeline', 'terminal'] as const)('keeps %s screen live on first room load', async (screenId) => {
     harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
     const loadSpy = vi.spyOn(THREE.TextureLoader.prototype, 'load');
 
     render(
       <ArcadeScreenSurface
         screen={placement}
-        screenId="pipeline"
+        screenId={screenId}
         onScreenZoomChange={onScreenZoomChange}
         onScreenPanChange={onScreenPanChange}
       />
@@ -355,16 +355,12 @@ describe('ArcadeScreenSurface mobile gestures', () => {
 
     await act(async () => { await Promise.resolve(); });
 
-    expect(harness.runtime).toMatchObject({
-      hasPreview: false,
-      isPreviewCapturePending: true
-    });
     expect(loadSpy).not.toHaveBeenCalled();
     expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
     expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
   });
 
-  it('keeps the latest live frame without scheduling a return snapshot', async () => {
+  it('waits until camera returns before scheduling latest-frame snapshot', async () => {
     const { rerender } = render(
       <ArcadeScreenSurface
         screen={placement}
@@ -376,6 +372,16 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(harness.runtime).toBeDefined();
     harness.runtime!.content.appendChild(document.createElement('section'));
 
+    harness.state = { activeSectionId: 'architecture', navigationState: 'section-open' };
+    rerender(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+
     harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
     rerender(
       <ArcadeScreenSurface
@@ -386,11 +392,20 @@ describe('ArcadeScreenSurface mobile gestures', () => {
       />
     );
 
-    expect(harness.screenLayer.setPreviewCapturePending).toHaveBeenCalledWith(
-      harness.runtime,
-      true
-    );
     expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
     expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
+
+    harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
+    rerender(
+      <ArcadeScreenSurface
+        screen={placement}
+        screenId="architecture"
+        onScreenZoomChange={onScreenZoomChange}
+        onScreenPanChange={onScreenPanChange}
+      />
+    );
+
+    await act(async () => { await Promise.resolve(); });
+    expect(harness.screenLayer.schedulePreviewCapture).toHaveBeenCalled();
   });
 });

@@ -69,13 +69,18 @@ export function ArcadeScreenSurface({
   const previewTextureRef = useRef<THREE.Texture | null>(null);
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
-  const keepsLiveRoomFrame = screenId === "pipeline";
-  const staticPreview = getEmbeddedScreenStaticPreview(screenId);
-  const staticPreviewUrl = !keepsLiveRoomFrame && staticPreview
+  const returnSnapshotPendingRef = useRef(false);
+  // Primary CRT monitors remain live CSS3D pages in the room, including on
+  // first load. They never swap to a static or captured texture.
+  const keepsLiveRoomDocument = screenId === "pipeline" || screenId === "terminal";
+  const staticPreview = keepsLiveRoomDocument
+    ? undefined
+    : getEmbeddedScreenStaticPreview(screenId);
+  const staticPreviewUrl = staticPreview
     ? withPortfolio3dBasePath(staticPreview.publicPath)
     : undefined;
   const [previewTexture, setPreviewTexture] = useState<THREE.Texture | null>(null);
-  const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(keepsLiveRoomFrame);
+  const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
   const [staticPreviewLoadFailed, setStaticPreviewLoadFailed] = useState(false);
   const isInteractive =
     state.activeSectionId === screenId && state.navigationState === "section-open";
@@ -85,7 +90,7 @@ export function ArcadeScreenSurface({
     screenId === "automation" ||
     screenId === "backend" ||
     screenId === "performance";
-  const usesCrtSurface = screenId === "pipeline";
+  const usesCrtSurface = screenId === "pipeline" || screenId === "terminal";
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
@@ -107,7 +112,7 @@ export function ArcadeScreenSurface({
       pixelHeight,
       isInteractive: false,
       hasPreview: false,
-      isPreviewCapturePending: keepsLiveRoomFrame
+      isPreviewCapturePending: false
     };
     runtimeRef.current = runtime;
     screenLayer.registerScreen(runtime);
@@ -118,7 +123,7 @@ export function ArcadeScreenSurface({
       runtimeRef.current = null;
       onScreenReady?.(screenId, null);
     };
-  }, [keepsLiveRoomFrame, onScreenReady, screenId, screenLayer]);
+  }, [onScreenReady, screenId, screenLayer]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -633,6 +638,47 @@ export function ArcadeScreenSurface({
     };
   }, [gl, isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
+  const captureReturnSnapshot = useCallback(async (): Promise<boolean> => {
+    if (keepsLiveRoomDocument) {
+      return false;
+    }
+
+    const runtime = runtimeRef.current;
+    if (!runtime || !runtime.content.firstElementChild) {
+      return false;
+    }
+
+    const requestId = ++previewCaptureRequestRef.current;
+    const shouldContinueCapture = (): boolean =>
+      previewCaptureRequestRef.current === requestId &&
+      runtimeRef.current === runtime &&
+      !runtime.isInteractive;
+
+    try {
+      const canvas = await captureEmbeddedScreenSnapshot(runtime.object.element, {
+        shouldContinue: shouldContinueCapture
+      });
+      if (!shouldContinueCapture()) {
+        return false;
+      }
+
+      const nextTexture = createScreenPreviewTexture(canvas, gl);
+      previewTextureRef.current = nextTexture;
+      setPreviewTexture(nextTexture);
+      setIsPreviewCapturePending(false);
+      screenLayer.setPreviewAvailable(runtime, true);
+      invalidate();
+
+      return true;
+    } catch {
+      setIsPreviewCapturePending(false);
+      if (previewTextureRef.current) {
+        screenLayer.setPreviewAvailable(runtime, true);
+      }
+      return false;
+    }
+  }, [gl, invalidate, keepsLiveRoomDocument, screenLayer]);
+
   const capturePreview = useCallback(async (): Promise<boolean> => {
     const runtime = runtimeRef.current;
     if (!runtime || !runtime.content.firstElementChild) {
@@ -724,7 +770,7 @@ export function ArcadeScreenSurface({
   }, [gl, invalidate, isInteractive, staticPreviewUrl]);
 
   useEffect(() => {
-    if (keepsLiveRoomFrame || isInteractive || previewTextureRef.current) {
+    if (keepsLiveRoomDocument || isInteractive || previewTextureRef.current) {
       return;
     }
     if (staticPreviewUrl && !staticPreviewLoadFailed) {
@@ -754,25 +800,13 @@ export function ArcadeScreenSurface({
       isCancelled = true;
       cancelScheduledCapture();
     };
-  }, [capturePreview, isInteractive, keepsLiveRoomFrame, screenLayer, staticPreviewLoadFailed, staticPreviewUrl]);
-
-  const retainReturnFrame = useCallback((): void => {
-    const runtime = runtimeRef.current;
-    if (!runtime || !runtime.content.firstElementChild) {
-      return;
-    }
-
-    // Keep the exact DOM frame the visitor last operated for this session.
-    // DOM-to-image output can differ from the live page and must not replace it.
-    previewCaptureRequestRef.current += 1;
-    setIsPreviewCapturePending(true);
-    screenLayer.setPreviewCapturePending(runtime, true);
-  }, [screenLayer]);
+  }, [capturePreview, isInteractive, keepsLiveRoomDocument, screenLayer, staticPreviewLoadFailed, staticPreviewUrl]);
 
   useLayoutEffect(() => {
     if (isInteractive) {
       previewCaptureRequestRef.current += 1;
       wasInteractiveRef.current = true;
+      returnSnapshotPendingRef.current = false;
       return;
     }
 
@@ -781,8 +815,35 @@ export function ArcadeScreenSurface({
     }
 
     wasInteractiveRef.current = false;
-    retainReturnFrame();
-  }, [isInteractive, retainReturnFrame]);
+    // Keep the operated live page visible while camera returns. Capturing after
+    // the journey prevents the DOM-to-canvas work from starving camera frames.
+    returnSnapshotPendingRef.current = !keepsLiveRoomDocument;
+  }, [isInteractive, keepsLiveRoomDocument]);
+
+  useEffect(() => {
+    if (
+      keepsLiveRoomDocument ||
+      state.navigationState !== "overview" ||
+      !returnSnapshotPendingRef.current
+    ) {
+      return;
+    }
+
+    let isCancelled = false;
+    const cancelCapture = screenLayer.schedulePreviewCapture(async () => {
+      if (isCancelled || !returnSnapshotPendingRef.current) return;
+
+      const didCapture = await captureReturnSnapshot();
+      if (didCapture || runtimeRef.current?.isInteractive) {
+        returnSnapshotPendingRef.current = false;
+      }
+    }, 0);
+
+    return () => {
+      isCancelled = true;
+      cancelCapture();
+    };
+  }, [captureReturnSnapshot, keepsLiveRoomDocument, screenLayer, state.navigationState]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -809,8 +870,9 @@ export function ArcadeScreenSurface({
         <CrtScreenSurface
           screen={screen}
           texture={previewTexture}
-          showPreview={Boolean(previewTexture && !isPreviewCapturePending)}
+          showPreview={Boolean(previewTexture && !isInteractive)}
           isInteractive={isInteractive}
+          screenId={screenId}
           onActivate={(delta) => {
             if (delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
           }}
@@ -826,7 +888,7 @@ export function ArcadeScreenSurface({
           }}
         >
           <planeGeometry args={[screen.width, screen.height]} />
-          {previewTexture && !isPreviewCapturePending ? (
+          {previewTexture && !isInteractive ? (
             <meshBasicMaterial
               key="screen-preview"
               polygonOffset={isMonitor}

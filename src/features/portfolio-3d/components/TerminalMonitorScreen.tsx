@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ExternalLink, Terminal } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Radio, Terminal } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { TerminalPanel } from '@/features/terminal/components/TerminalPanel';
 import type { WorkspaceSection } from '@/features/workspace/types';
@@ -25,6 +25,7 @@ const terminalNavigationTargets = {
 } satisfies Partial<Record<WorkspaceSection, Portfolio3dSectionId>>;
 
 export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
+  const containerRef = useRef<HTMLElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef: terminalOutputScrollRef, onScroll: onTerminalOutputScroll } = useEmbeddedScreenScrollSession(interactive);
   const { setActiveSection } = usePortfolio3dState();
@@ -33,13 +34,49 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
     if (interactive) headingRef.current?.focus({ preventScroll: true });
   }, [interactive]);
 
+  const onPointerMove = (event: React.PointerEvent<HTMLElement>): void => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const x = Math.round(((event.clientX - rect.left) / rect.width) * 100);
+      const y = Math.round(((event.clientY - rect.top) / rect.height) * 100);
+      el.style.setProperty('--glass-x', `${x}%`);
+      el.style.setProperty('--glass-y', `${y}%`);
+    }
+  };
+
   return (
-    <section className="monitor-terminal-screen" aria-label="Terminal monitor">
+    <section
+      ref={containerRef}
+      className="monitor-terminal-screen"
+      aria-label="Terminal monitor"
+      onPointerMove={interactive ? onPointerMove : undefined}
+    >
+      {/* CRT Glass Faceplate Optical Layers (Look like inside a heavy CRT monitor glass) */}
+      <div className="arcade-crt-phosphor-mesh" aria-hidden="true" />
+      <div className="arcade-crt-glass-depth" aria-hidden="true" />
+      <div className="arcade-crt-glass-glare" aria-hidden="true" />
+
       <header className="monitor-terminal-heading">
-        <Terminal size={22} aria-hidden="true" />
-        <h2 ref={headingRef} tabIndex={-1}>Terminal</h2>
-        <span className="monitor-terminal-label">Command interface</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[var(--accent)] font-bold text-base mono">╔═</span>
+          <Terminal size={20} aria-hidden="true" className="text-[var(--accent)]" />
+          <h2 ref={headingRef} tabIndex={-1} className="mono uppercase tracking-wider text-base font-bold">
+            DEC VT220 // Command Subsystem
+          </h2>
+        </div>
+        <div className="arcade-simulation-meta flex items-center gap-3 mono text-xs">
+          <span className="flex items-center gap-1 text-[var(--accent)]">
+            <Radio size={12} className="animate-pulse" />
+            <span>ONLINE // 60Hz</span>
+          </span>
+          <span className="arcade-simulation-label uppercase text-[var(--accent-secondary)]">
+            [ INTERACTIVE SHELL ] ═╗
+          </span>
+        </div>
       </header>
+
       <div
         className="monitor-terminal-scroll"
         tabIndex={interactive ? 0 : -1}
@@ -52,6 +89,16 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
           onNavigate={(section) => setActiveSection(terminalNavigationTargets[section] ?? 'overview')}
         />
       </div>
+
+      {/* CRT Monitor Bottom Status Trim */}
+      <footer
+        className="arcade-crt-screen-footer mono text-[11px] text-[var(--text-muted)] flex items-center justify-between px-4 py-1.5 border-t border-[var(--border-strong)] bg-[var(--surface-raised)]"
+        aria-hidden="true"
+      >
+        <span>╚══[ RASTER APERTURE: P3 AMBER ]</span>
+        <span>BAUD: 9600 // VT220</span>
+        <span>FRAME: 1000x638 ══╝</span>
+      </footer>
     </section>
   );
 }

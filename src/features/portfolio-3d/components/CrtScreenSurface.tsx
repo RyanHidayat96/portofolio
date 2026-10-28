@@ -9,12 +9,14 @@ export function CrtScreenSurface({
   texture,
   showPreview,
   isInteractive = false,
+  screenId = "pipeline",
   onActivate
 }: Readonly<{
   screen: ArcadeScreenPlacement;
   texture: THREE.Texture | null;
   showPreview: boolean;
   isInteractive?: boolean;
+  screenId?: string;
   onActivate: (delta: number) => void;
 }>): React.ReactElement {
   const baseGeometry = useMemo(
@@ -37,7 +39,7 @@ export function CrtScreenSurface({
     <group position={screen.position} quaternion={screen.quaternion}>
       {/* Primary Screen Mesh with preview texture or live depth punch */}
       <mesh
-        name="Embedded_pipeline_CrtSurface"
+        name={`Embedded_${screenId}_CrtSurface`}
         geometry={baseGeometry}
         onClick={(event) => {
           event.stopPropagation();
@@ -46,7 +48,7 @@ export function CrtScreenSurface({
       >
         {showPreview && texture ? (
           <meshBasicMaterial
-            key="pipeline-crt-preview"
+            key={`${screenId}-crt-preview`}
             map={texture}
             color="#ffffff"
             depthTest
@@ -60,7 +62,7 @@ export function CrtScreenSurface({
           />
         ) : (
           <meshBasicMaterial
-            key="pipeline-live-screen-depth"
+            key={`${screenId}-live-screen-depth`}
             color="#000000"
             blending={THREE.NoBlending}
             opacity={0}
@@ -78,51 +80,31 @@ export function CrtScreenSurface({
       </mesh>
 
       {/* Dynamic Specular Glass Sheen:
-          Reflects room lighting and ceiling neons across the spherical CRT faceplate
-          smoothly in ALL directions as the user rotates or pans the room */}
+          Reflects room lighting across the CRT faceplate smoothly in ALL directions
+          as the user rotates or pans the room, without harsh hotspots or bezel clipping */}
       {!isInteractive ? (
-        <>
-          {/* Layer 1: High-shininess pinpoint specular glints from point lights */}
-          <mesh geometry={glassGeometry} position={[0, 0, 0.001]} raycast={() => null}>
-            <meshPhongMaterial
-              key="pipeline-crt-specular-glint"
-              color="#000000"
-              specular="#fff5cc"
-              shininess={85}
-              transparent
-              opacity={0.46}
-              blending={THREE.AdditiveBlending}
-              depthTest
-              depthWrite={false}
-              polygonOffset
-              polygonOffsetFactor={-2}
-              polygonOffsetUnits={-2}
-              side={THREE.FrontSide}
-            />
-          </mesh>
-
-          {/* Layer 2: Broad optical clearcoat reflection from room environment */}
-          <mesh geometry={glassGeometry} position={[0, 0, 0.0015]} raycast={() => null}>
-            <meshPhysicalMaterial
-              key="pipeline-crt-clearcoat-reflection"
-              color="#000000"
-              roughness={0.14}
-              metalness={0.02}
-              clearcoat={1.0}
-              clearcoatRoughness={0.06}
-              reflectivity={0.9}
-              transparent
-              opacity={0.32}
-              blending={THREE.AdditiveBlending}
-              depthTest
-              depthWrite={false}
-              polygonOffset
-              polygonOffsetFactor={-3}
-              polygonOffsetUnits={-3}
-              side={THREE.FrontSide}
-            />
-          </mesh>
-        </>
+        <mesh
+          geometry={glassGeometry}
+          position={[0, 0, 0.0003]}
+          scale={[0.99, 0.99, 1]}
+          raycast={() => null}
+        >
+          <meshPhongMaterial
+            key={`${screenId}-crt-specular-sheen`}
+            color="#000000"
+            specular="#ffd24d"
+            shininess={60}
+            transparent
+            opacity={0.22}
+            blending={THREE.AdditiveBlending}
+            depthTest
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-2}
+            polygonOffsetUnits={-2}
+            side={THREE.FrontSide}
+          />
+        </mesh>
       ) : null}
     </group>
   );
@@ -145,6 +127,5 @@ function createCrtGlassGeometry(width: number, height: number): THREE.PlaneGeome
   }
 
   normals.needsUpdate = true;
-  geometry.computeVertexNormals();
   return geometry;
 }

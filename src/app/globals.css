@@ -6769,31 +6769,46 @@ textarea:focus-visible,
   container-type: inline-size;
 }
 
+.arcade-screen-document--terminal {
+  overflow: hidden;
+  border-radius: 0px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: #070502;
+}
+
 .monitor-terminal-screen {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   letter-spacing: 0;
+  background: #070502;
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+  border-radius: 0px !important;
 }
 
 .monitor-terminal-heading {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   flex: 0 0 auto;
-  padding: 16px 22px;
-  border-bottom: 1px solid #6b4512;
-  background: #211406;
+  padding: 12px 18px;
+  border-bottom: 2px solid #6b4512;
+  background: #181006;
   color: #ffb000;
+  border-radius: 0px !important;
 }
 
 .monitor-terminal-heading h2 {
   min-width: 0;
   margin: 0;
   color: #ffe4a3;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1.3;
 }
 

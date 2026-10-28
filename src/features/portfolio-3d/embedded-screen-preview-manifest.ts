@@ -6,18 +6,18 @@ export interface EmbeddedScreenPreviewEntry {
 }
 
 export const embeddedScreenPreviewGeneratedAt =
-  '2026-10-27T09:09:06.633Z';
+  '2026-10-27T09:34:19.089Z';
 
 export const embeddedScreenPreviewManifest = {
-  pipeline: { publicPath: '/portfolio-screen-previews/pipeline.webp', sourceHash: '4f3ce5ad35b24ed0' },
-  automation: { publicPath: '/portfolio-screen-previews/automation.webp', sourceHash: '07f14dbf61a5712c' },
-  performance: { publicPath: '/portfolio-screen-previews/performance.webp', sourceHash: 'a3e3599e5af02a79' },
-  backend: { publicPath: '/portfolio-screen-previews/backend.webp', sourceHash: '66a94db1c908cee2' },
-  terminal: { publicPath: '/portfolio-screen-previews/terminal.webp', sourceHash: '052ed222bb090c03' },
-  profile: { publicPath: '/portfolio-screen-previews/profile.webp', sourceHash: 'aa729b97346609b9' },
-  experience: { publicPath: '/portfolio-screen-previews/experience.webp', sourceHash: '0a95d922ce3a28b0' },
-  architecture: { publicPath: '/portfolio-screen-previews/architecture.webp', sourceHash: '656d293348125571' },
-  contact: { publicPath: '/portfolio-screen-previews/contact.webp', sourceHash: 'd7111b1bc1443e59' },
+  pipeline: { publicPath: '/portfolio-screen-previews/pipeline.webp', sourceHash: '681fe0c6f18691c1' },
+  automation: { publicPath: '/portfolio-screen-previews/automation.webp', sourceHash: 'a5555de55f5c9d09' },
+  performance: { publicPath: '/portfolio-screen-previews/performance.webp', sourceHash: 'd0051eddf75be1ee' },
+  backend: { publicPath: '/portfolio-screen-previews/backend.webp', sourceHash: '13a03f661fec2849' },
+  terminal: { publicPath: '/portfolio-screen-previews/terminal.webp', sourceHash: 'd4519958f22ee328' },
+  profile: { publicPath: '/portfolio-screen-previews/profile.webp', sourceHash: '72f092447e5db951' },
+  experience: { publicPath: '/portfolio-screen-previews/experience.webp', sourceHash: 'aa409184f47c8457' },
+  architecture: { publicPath: '/portfolio-screen-previews/architecture.webp', sourceHash: '3fa1dfc2829caba5' },
+  contact: { publicPath: '/portfolio-screen-previews/contact.webp', sourceHash: '220a0680982e4686' },
 } as const satisfies Record<EmbeddedScreenId, EmbeddedScreenPreviewEntry>;
 
 export function getEmbeddedScreenStaticPreview(

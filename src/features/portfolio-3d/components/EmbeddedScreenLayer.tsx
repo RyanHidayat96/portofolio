@@ -56,6 +56,7 @@ interface EmbeddedScreenLayerRuntime {
   readonly overlays: Set<EmbeddedScreenOverlayRegistration>;
   readonly screenUp: THREE.Vector3;
   readonly screenRight: THREE.Vector3;
+  readonly screenToCamera: THREE.Vector3;
   readonly topLeft: THREE.Vector3;
   readonly topRight: THREE.Vector3;
   readonly bottomLeft: THREE.Vector3;
@@ -147,6 +148,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       overlays: new Set(),
       screenUp: new THREE.Vector3(),
       screenRight: new THREE.Vector3(),
+      screenToCamera: new THREE.Vector3(),
       topLeft: new THREE.Vector3(),
       topRight: new THREE.Vector3(),
       bottomLeft: new THREE.Vector3(),
@@ -316,11 +318,11 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           screen.object.element.style.transformOrigin = '0 0';
           runtime.renderer.domElement.appendChild(screen.object.element);
         } else {
-          // Freeze current DOM before moving it from the flat interactive layer
-          // back into CSS3D. The copy stays exact even if React or Chrome's
-          // compositor updates the hidden live document during camera motion.
+          // Keep the live document while the camera returns. Cloning a whole
+          // page here blocks the first animation frames, turning the return
+          // journey into a teleport. A later snapshot replaces this live view.
           screen.isPreviewCapturePending = true;
-          freezeScreenPreview(screen);
+          clearFrozenScreenPreview(screen);
           restoreScreenToLayer(runtime, screen);
         }
 
@@ -578,13 +580,10 @@ function hasVisibleCssScreens(runtime: EmbeddedScreenLayerRuntime): boolean {
 function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
   const activeScreen = runtime.activeScreen;
   const isInteractive = Boolean(activeScreen);
-  const hasLiveRoomFrame = [...runtime.screens].some(
-    (screen) => screen.isPreviewCapturePending && screen.object.visible
-  );
-  // Elevate z-index above the canvas container when interactive so mobile touch gestures
-  // and scroll hit the active document directly. A retained room frame must also
-  // stay above a WebGL preview texture.
-  runtime.renderer.domElement.style.zIndex = isInteractive || hasLiveRoomFrame || runtime.overlays.size > 0
+  // Room documents stay behind the WebGL canvas. This lets the model's depth
+  // buffer hide a live CSS3D page behind its bezel and cabinet, just like the
+  // texture-backed monitor surfaces. Only focused pages need to sit above it.
+  runtime.renderer.domElement.style.zIndex = isInteractive || runtime.overlays.size > 0
     ? screenOverlayLayerZIndex
     : screenLayerZIndex;
   runtime.renderer.domElement.style.pointerEvents = 'none';
@@ -595,6 +594,24 @@ function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
 
   for (const s of runtime.screens) {
     s.object.element.style.pointerEvents = s === activeScreen ? 'auto' : 'none';
+  }
+}
+
+function syncLiveRoomScreenOcclusion(runtime: EmbeddedScreenLayerRuntime): void {
+  for (const screen of runtime.screens) {
+    if (screen.isInteractive) continue;
+
+    const facing = runtime.screenToCamera
+      .subVectors(runtime.camera.position, screen.object.position)
+      .normalize()
+      .dot(screen.screen.normal);
+
+    // If viewed from the side or behind (facing < 0.25), hide the CSS3D DOM element.
+    // The depth-tested WebGL mesh renders the preview texture and is properly occluded by the 3D cabinet walls.
+    const visibility = facing >= 0.25 ? '' : 'hidden';
+    if (screen.object.element.style.visibility !== visibility) {
+      screen.object.element.style.visibility = visibility;
+    }
   }
 }
 
@@ -611,6 +628,7 @@ function renderEmbeddedScreenLayer(
   camera.getWorldPosition(runtime.camera.position).multiplyScalar(cssWorldScale);
   camera.getWorldQuaternion(runtime.camera.quaternion);
   runtime.camera.updateMatrixWorld(true);
+  syncLiveRoomScreenOcclusion(runtime);
   runtime.renderer.render(runtime.scene, runtime.camera);
 }
 

@@ -141,7 +141,7 @@ describe('embedded screen render scheduling', () => {
     expect(screen.object.element.style.visibility).toBe('');
   });
 
-  it('keeps the last scroll frame visible throughout the room session', async () => {
+  it('keeps the last live frame behind the depth-tested room canvas', async () => {
     render(<Subject />);
     const cssLayer = harness.root.gl.domElement.parentElement?.querySelector<HTMLElement>('.arcade-css-layer');
     expect(cssLayer).toBeTruthy();
@@ -153,15 +153,15 @@ describe('embedded screen render scheduling', () => {
     expect(screen.content.scrollTop).toBe(450);
     expect(screen.content.scrollLeft).toBe(20);
     expect(screen.object.visible).toBe(true);
-    expect(screen.frozenPreview).toBeDefined();
-    expect(cssLayer?.style.zIndex).toBe('2');
+    expect(screen.frozenPreview).toBeUndefined();
+    expect(cssLayer?.style.zIndex).toBe('0');
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
-    expect(screen.frozenPreview?.scrollTop).toBe(450);
-    expect(screen.frozenPreview?.scrollLeft).toBe(20);
+    expect(screen.content.scrollTop).toBe(450);
+    expect(screen.content.scrollLeft).toBe(20);
     await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
     expect(screen.object.visible).toBe(true);
-    expect(screen.frozenPreview?.scrollTop).toBe(450);
-    expect(cssLayer?.style.zIndex).toBe('2');
+    expect(screen.content.scrollTop).toBe(450);
+    expect(cssLayer?.style.zIndex).toBe('0');
     act(() => layer.setInteractive(screen, true));
     expect(screen.content.scrollTop).toBe(450);
     expect(screen.object.visible).toBe(true);

@@ -610,6 +610,11 @@ interface CameraTransitionState {
   readonly activeSectionId: string;
   readonly finalNavigationState: 'overview' | 'section-open';
   readonly startedAt: number;
+  // Only the return journey advances by rendered frames. A synchronous CSS3D
+  // update must not consume it and make the next frame teleport.
+  readonly usesFrameClock: boolean;
+  readonly lastFrameAt: number | null;
+  readonly elapsedMs: number;
   readonly durationMs: number;
   readonly startPosition: THREE.Vector3;
   readonly targetPosition: THREE.Vector3;
@@ -620,6 +625,8 @@ interface CameraTransitionState {
   readonly startFov: number;
   readonly targetFov: number;
 }
+
+const maximumCameraTransitionFrameStepMs = 100;
 
 function CameraNavigationRig({
   runtimeNodesByAsset,
@@ -632,7 +639,7 @@ function CameraNavigationRig({
   embeddedScreenZoomById: EmbeddedScreenZoomById;
   embeddedScreenPanById: EmbeddedScreenPanById;
 }>): null {
-  const { camera, gl, invalidate, size } = useThree();
+  const { camera, invalidate, size } = useThree();
   const { state, setNavigationState } = usePortfolio3dState();
   const prefersReducedMotion = useReducedMotion();
   const transitionRef = useRef<CameraTransitionState | null>(null);
@@ -758,6 +765,9 @@ function CameraNavigationRig({
       activeSectionId: state.activeSectionId,
       finalNavigationState: isReturningToOverview ? 'overview' : 'section-open',
       startedAt: performance.now(),
+      usesFrameClock: isReturningToOverview && !prefersReducedMotion,
+      lastFrameAt: null,
+      elapsedMs: 0,
       durationMs: prefersReducedMotion
         ? preset.reducedMotionMs
         : isReturningToOverview
@@ -789,44 +799,41 @@ function CameraNavigationRig({
     invalidate();
   }, [camera, embeddedScreenPanById, embeddedScreenZoomById, embeddedScreens, invalidate, prefersReducedMotion, runtimeNodesByAsset, size.width, size.height, state.activeSectionId, state.navigationState]);
 
-  useEffect(() => {
-    const canvas = gl.domElement;
-    const onEarlyPointerDown = (): void => {
-      const transition = transitionRef.current;
-      if (transition && transition.finalNavigationState === 'overview') {
-        camera.position.copy(transition.targetPosition);
-        camera.quaternion.copy(transition.targetQuaternion);
-        if (transition.smoothLens && camera instanceof THREE.PerspectiveCamera) {
-          camera.fov = transition.targetFov;
-          camera.updateProjectionMatrix();
-        }
-        transitionRef.current = null;
-        if (sharedOrbitControlsRef.current) {
-          sharedOrbitControlsRef.current.target.copy(transition.targetLookAt);
-          sharedOrbitControlsRef.current.enabled = true;
-          syncOverviewOrbitControls(camera, transition.targetLookAt, size.width < 768);
-        }
-        screenJourneyRef.current = false;
-        setNavigationState('overview');
-        invalidate();
-      }
-    };
-
-    canvas.addEventListener('pointerdown', onEarlyPointerDown, { passive: true });
-    return () => {
-      canvas.removeEventListener('pointerdown', onEarlyPointerDown);
-    };
-  }, [camera, gl.domElement, invalidate, setNavigationState, size.width]);
-
   useFrame((rootState) => {
     const transition = transitionRef.current;
     if (!transition) {
       return;
     }
 
-    const progress = transition.durationMs <= 0
-      ? 1
-      : (performance.now() - transition.startedAt) / transition.durationMs;
+    if (transition.usesFrameClock && transition.lastFrameAt === null) {
+      transitionRef.current = {
+        ...transition,
+        lastFrameAt: performance.now()
+      };
+      rootState.invalidate();
+      return;
+    }
+
+    let progress: number;
+    if (transition.usesFrameClock) {
+      // R3F's clock includes blocked main-thread time. Limit one rendered
+      // frame after a long task, so CSS3D layout work cannot skip back.
+      const now = performance.now();
+      const elapsedMs = Math.min(
+        transition.durationMs,
+        transition.elapsedMs + Math.min(now - (transition.lastFrameAt ?? now), maximumCameraTransitionFrameStepMs)
+      );
+      transitionRef.current = {
+        ...transition,
+        lastFrameAt: now,
+        elapsedMs
+      };
+      progress = transition.durationMs <= 0 ? 1 : elapsedMs / transition.durationMs;
+    } else {
+      progress = transition.durationMs <= 0
+        ? 1
+        : (performance.now() - transition.startedAt) / transition.durationMs;
+    }
     const easedProgress = transition.smoothLens
       ? THREE.MathUtils.smootherstep(progress, 0, 1)
       : easePortfolio3dCameraTransition(progress);

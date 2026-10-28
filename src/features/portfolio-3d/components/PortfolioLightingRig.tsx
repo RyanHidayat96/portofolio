@@ -139,21 +139,6 @@ export function PortfolioLightingRig({
         distance={4.8}
         decay={2}
       />
-      {/* Arcade cabinet illumination & dynamic CRT glass specular reflection across all orbit directions */}
-      <pointLight
-        position={[0.25, 2.15, 1.45]}
-        color="#ffe099"
-        intensity={0.65 * clampedLightingLevel}
-        distance={4.5}
-        decay={1.8}
-      />
-      <pointLight
-        position={[-0.35, 1.35, 2.35]}
-        color="#ffd480"
-        intensity={0.55 * clampedLightingLevel}
-        distance={3.8}
-        decay={1.8}
-      />
       {screenAccentLights.map((light) => (
         <pointLight
           key={light.key}
