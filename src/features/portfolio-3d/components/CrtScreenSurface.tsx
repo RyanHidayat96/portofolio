@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { ArcadeScreenPlacement } from "../arcade-screen";
 
@@ -34,6 +35,35 @@ export function CrtScreenSurface({
     [screen.height, screen.width]
   );
   useEffect(() => () => glassGeometry.dispose(), [glassGeometry]);
+
+  const materialRef = useRef<THREE.MeshPhongMaterial | null>(null);
+
+  useFrame(({ camera }) => {
+    const mat = materialRef.current;
+    if (!mat) return;
+
+    // Physically accurate distance-based specular fade:
+    // When far away in the room (> 2.6m), full reflective sheen is rendered.
+    // As the camera moves closer (transitioning into the screen between 2.6m and 1.15m),
+    // the specular reflection smoothly and continuously dims down ("berangsur meredup").
+    // When settled in front of the screen (<= 1.15m), the reflection dims to 0 so the
+    // telemetry interface has 100% crystal-clear contrast and readability without any abrupt jump!
+    const distance = camera.position.distanceTo(screen.position);
+    const minDistance = 1.15;
+    const maxDistance = 2.6;
+    const fadeRatio = THREE.MathUtils.clamp(
+      (distance - minDistance) / (maxDistance - minDistance),
+      0,
+      1
+    );
+    const smoothRatio = THREE.MathUtils.smootherstep(fadeRatio, 0, 1);
+    const nextOpacity = 0.26 * smoothRatio;
+
+    if (Math.abs(mat.opacity - nextOpacity) > 0.002) {
+      mat.opacity = nextOpacity;
+      mat.visible = nextOpacity > 0.005;
+    }
+  });
 
   return (
     <group position={screen.position} quaternion={screen.quaternion}>
@@ -79,33 +109,32 @@ export function CrtScreenSurface({
         )}
       </mesh>
 
-      {/* Dynamic Specular Glass Sheen:
-          Reflects room lighting across the CRT faceplate smoothly in ALL directions
-          as the user rotates or pans the room, without harsh hotspots or bezel clipping */}
-      {!isInteractive ? (
-        <mesh
-          geometry={glassGeometry}
-          position={[0, 0, 0.0003]}
-          scale={[0.99, 0.99, 1]}
-          raycast={() => null}
-        >
-          <meshPhongMaterial
-            key={`${screenId}-crt-specular-sheen`}
-            color="#000000"
-            specular="#ffd24d"
-            shininess={60}
-            transparent
-            opacity={0.22}
-            blending={THREE.AdditiveBlending}
-            depthTest
-            depthWrite={false}
-            polygonOffset
-            polygonOffsetFactor={-2}
-            polygonOffsetUnits={-2}
-            side={THREE.FrontSide}
-          />
-        </mesh>
-      ) : null}
+      {/* Dynamic Real-Time Specular Glass Sheen:
+          Reflects 3D room lighting across the CRT faceplate smoothly in ALL directions,
+          seamlessly tracking the camera transition from the room to in front of the screen */}
+      <mesh
+        geometry={glassGeometry}
+        position={[0, 0, 0.0003]}
+        scale={[0.99, 0.99, 1]}
+        raycast={() => null}
+      >
+        <meshPhongMaterial
+          ref={materialRef}
+          key={`${screenId}-crt-specular-sheen`}
+          color="#000000"
+          specular="#ffd24d"
+          shininess={60}
+          transparent
+          opacity={0.26}
+          blending={THREE.AdditiveBlending}
+          depthTest
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-2}
+          polygonOffsetUnits={-2}
+          side={THREE.FrontSide}
+        />
+      </mesh>
     </group>
   );
 }

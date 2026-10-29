@@ -43,7 +43,8 @@ const harness = vi.hoisted(() => ({
 }));
 
 vi.mock('@react-three/fiber', () => ({
-  useThree: () => harness.root
+  useThree: () => harness.root,
+  useFrame: vi.fn()
 }));
 
 vi.mock('../../src/features/portfolio-3d/state/Portfolio3dState', () => ({

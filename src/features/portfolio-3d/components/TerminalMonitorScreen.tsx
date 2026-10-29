@@ -25,7 +25,6 @@ const terminalNavigationTargets = {
 } satisfies Partial<Record<WorkspaceSection, Portfolio3dSectionId>>;
 
 export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
-  const containerRef = useRef<HTMLElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef: terminalOutputScrollRef, onScroll: onTerminalOutputScroll } = useEmbeddedScreenScrollSession(interactive);
   const { setActiveSection } = usePortfolio3dState();
@@ -34,29 +33,14 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
     if (interactive) headingRef.current?.focus({ preventScroll: true });
   }, [interactive]);
 
-  const onPointerMove = (event: React.PointerEvent<HTMLElement>): void => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      const x = Math.round(((event.clientX - rect.left) / rect.width) * 100);
-      const y = Math.round(((event.clientY - rect.top) / rect.height) * 100);
-      el.style.setProperty('--glass-x', `${x}%`);
-      el.style.setProperty('--glass-y', `${y}%`);
-    }
-  };
-
   return (
     <section
-      ref={containerRef}
       className="monitor-terminal-screen"
       aria-label="Terminal monitor"
-      onPointerMove={interactive ? onPointerMove : undefined}
     >
-      {/* CRT Glass Faceplate Optical Layers (Look like inside a heavy CRT monitor glass) */}
+      {/* CRT Glass Faceplate Optical Layers (Phosphor mesh and inner bezel depth shadow) */}
       <div className="arcade-crt-phosphor-mesh" aria-hidden="true" />
       <div className="arcade-crt-glass-depth" aria-hidden="true" />
-      <div className="arcade-crt-glass-glare" aria-hidden="true" />
 
       <header className="monitor-terminal-heading">
         <div className="flex items-center gap-2">

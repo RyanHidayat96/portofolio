@@ -8,7 +8,6 @@ import { withPortfolio3dBasePath } from "../asset-url";
 import { useEmbeddedScreenScrollSession } from "../hooks/useEmbeddedScreenScrollSession";
 
 export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
-  const containerRef = useRef<HTMLElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
 
@@ -16,29 +15,14 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
     if (interactive) headingRef.current?.focus({ preventScroll: true });
   }, [interactive]);
 
-  const onPointerMove = (event: React.PointerEvent<HTMLElement>): void => {
-    const el = containerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      const x = Math.round(((event.clientX - rect.left) / rect.width) * 100);
-      const y = Math.round(((event.clientY - rect.top) / rect.height) * 100);
-      el.style.setProperty("--glass-x", `${x}%`);
-      el.style.setProperty("--glass-y", `${y}%`);
-    }
-  };
-
   return (
     <section
-      ref={containerRef}
       className="arcade-pipeline-screen"
       aria-label="Arcade pipeline simulator"
-      onPointerMove={interactive ? onPointerMove : undefined}
     >
-      {/* CRT Glass Faceplate Optical Layers (Look like inside a heavy CRT monitor glass) */}
+      {/* CRT Glass Faceplate Optical Layers (Phosphor mesh and inner bezel depth shadow) */}
       <div className="arcade-crt-phosphor-mesh" aria-hidden="true" />
       <div className="arcade-crt-glass-depth" aria-hidden="true" />
-      <div className="arcade-crt-glass-glare" aria-hidden="true" />
 
       <header className="arcade-pipeline-heading">
         <div className="flex items-center gap-2">
