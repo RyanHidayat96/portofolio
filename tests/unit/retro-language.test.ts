@@ -94,10 +94,19 @@ describe("amber CRT language", () => {
     expect(scanlineBlock).not.toContain("rgba(255, 176, 0,");
   });
 
-  it("keeps CRT overlays out of the pointer path", () => {
+  it("keeps CRT overlays out of the pointer path and scoped to room documents", () => {
     expect(globalsCss).toContain("pointer-events: none;");
-    expect(globalsCss).toMatch(/\.workspace-root::before,[\s\S]{0,200}?z-index: 30;/);
-    expect(globalsCss).toMatch(/\.workspace-root::after,[\s\S]{0,200}?z-index: 31;/);
+    expect(globalsCss).toMatch(/\.arcade-screen-document::after[\s\S]{0,200}?z-index: 30;/);
+    expect(globalsCss).toMatch(/\.arcade-screen-document::before[\s\S]{0,200}?z-index: 31;/);
+  });
+
+  it("never applies CRT overlays to the standard portfolio shell", () => {
+    expect(globalsCss).not.toMatch(/\.workspace-root::(before|after)/);
+    // .landing-shell::before/::after may only exist to switch the overlay off.
+    const landingPseudo = globalsCss.match(/\.landing-shell::(?:before|after)[^{]*\{[^}]*\}/g) ?? [];
+    for (const block of landingPseudo) {
+      expect(block).toContain("display: none");
+    }
   });
 
   it("disables CRT motion and glow under prefers-reduced-motion", () => {
@@ -106,7 +115,7 @@ describe("amber CRT language", () => {
     );
     expect(reduceBlock).toContain("animation: none;");
     expect(reduceBlock).toContain("text-shadow: none;");
-    expect(reduceBlock).toContain("transform: none;");
+    expect(reduceBlock).toMatch(/opacity:\s*0?\.\d+;/);
   });
 
   it("defines every shadow token that components consume", () => {

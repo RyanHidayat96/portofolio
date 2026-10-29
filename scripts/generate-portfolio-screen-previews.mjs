@@ -83,7 +83,7 @@ const screenDependencies = {
     "src/data/portfolio-content.ts"
   ],
   architecture: [
-    "src/features/architecture/components/ArchitectureExplorer.tsx",
+    "src/features/portfolio-3d/components/ArchitecturePosterScreen.tsx",
     "src/data/architecture.ts",
     "src/data/portfolio-content.ts"
   ],
@@ -152,6 +152,16 @@ try {
 
   for (const screenId of changedScreens) {
     const outputPath = path.join(previewDirectory, `${screenId}.webp`);
+    // Render each source in its own focused route. This avoids Fast Refresh
+    // retaining an inactive screen tree while previews are being generated.
+    const screenUrl = new URL(targetUrl);
+    screenUrl.searchParams.set("section", screenId);
+    await page.goto(screenUrl.toString(), { waitUntil: "domcontentloaded" });
+    await page.waitForSelector(`.arcade-screen-document--${screenId} .arcade-screen-content > *`);
+    await page.evaluate(async () => {
+      if ("fonts" in document) await document.fonts.ready;
+    });
+    await page.waitForTimeout(160);
     await prepareCaptureClone(page, screenId);
     await page
       .locator(`[data-portfolio-screen-preview-capture="${screenId}"] .arcade-screen-document--${screenId}`)

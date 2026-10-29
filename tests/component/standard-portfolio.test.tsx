@@ -102,7 +102,7 @@ describe("Standard portfolio hiring flow", () => {
 
     render(<ExperienceArtworkScreen interactive={false} />);
     expect(screen.getByRole("heading", { name: "Experience" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Work Experience" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Career Dispatches" })).toBeVisible();
     const roomRoles = within(
       screen.getByRole("list", { name: /Work experience, most recent first/ })
     ).getAllByRole("article");

@@ -33,8 +33,7 @@ import {
 import { createPortal } from "react-dom";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { ArchitectureExplorer } from "@/features/architecture/components/ArchitectureExplorer";
-import { ContactPanel } from "@/features/workspace/components/ContactPanel";
+import { ArchitecturePosterScreen } from "./ArchitecturePosterScreen";
 import { RetroBrochureContact } from "./RetroBrochureProfile";
 import { withPortfolio3dBasePath } from "../asset-url";
 import type { EmbeddedScreenId } from "../arcade-screen";
@@ -339,33 +338,7 @@ function PortfolioExperienceContent({
 export function ArchitectureEmbeddedScreen({
   interactive
 }: Readonly<{ interactive: boolean }>): React.ReactElement {
-  const headingRef = useRef<HTMLHeadingElement | null>(null);
-  const { scrollRef, onScroll } = useEmbeddedScreenScrollSession(interactive);
-
-  useEffect(() => {
-    if (interactive) headingRef.current?.focus({ preventScroll: true });
-  }, [interactive]);
-
-  return (
-    <section className="architecture-embedded-screen" aria-label="Architecture">
-      <header className="architecture-embedded-heading">
-        <Network size={22} aria-hidden="true" />
-        <h2 ref={headingRef} tabIndex={-1}>
-          Architecture
-        </h2>
-        <span className="architecture-embedded-label">System topology</span>
-      </header>
-      <div
-        ref={scrollRef}
-        className="architecture-embedded-content"
-        tabIndex={interactive ? 0 : -1}
-        onWheel={(event) => event.stopPropagation()}
-        onScroll={onScroll}
-      >
-        <ArchitectureExplorer />
-      </div>
-    </section>
-  );
+  return <ArchitecturePosterScreen interactive={interactive} />;
 }
 
 export function ContactEmbeddedScreen({
@@ -529,31 +502,33 @@ function FoundationCanvas({
 
 function ModelViewerRenderCalibration(): null {
   const { gl, scene, invalidate } = useThree();
+  const sceneRef = useRef(scene);
 
   useEffect(() => {
     configurePortfolio3dRenderer(gl);
 
-    const previousEnvironment = scene.environment;
-    const previousEnvironmentIntensity = scene.environmentIntensity;
+    const canvasScene = sceneRef.current;
+    const previousEnvironment = canvasScene.environment;
+    const previousEnvironmentIntensity = canvasScene.environmentIntensity;
     const pmremGenerator = new THREE.PMREMGenerator(gl);
     const environmentScene = new RoomEnvironment();
     const environment = pmremGenerator.fromScene(environmentScene, 0.04).texture;
 
     pmremGenerator.dispose();
     disposeEnvironmentScene(environmentScene);
-    scene.environment = environment;
-    scene.environmentIntensity = 0.55;
+    canvasScene.environment = environment;
+    canvasScene.environmentIntensity = 0.55;
     invalidate();
 
     return () => {
-      if (scene.environment === environment) {
-        scene.environment = previousEnvironment;
-        scene.environmentIntensity = previousEnvironmentIntensity;
+      if (canvasScene.environment === environment) {
+        canvasScene.environment = previousEnvironment;
+        canvasScene.environmentIntensity = previousEnvironmentIntensity;
       }
 
       environment.dispose();
     };
-  }, [gl, invalidate, scene]);
+  }, [gl, invalidate]);
 
   return null;
 }

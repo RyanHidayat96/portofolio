@@ -52,7 +52,32 @@ export function ProfileArtworkScreen({
         onWheel={(event) => event.stopPropagation()}
         onScroll={onScroll}
       >
-        <section className="profile-frame-identity" aria-labelledby="profile-frame-title">
+        <article className="profile-poster-page">
+          <div className="profile-poster-grain" aria-hidden="true" />
+          <div className="profile-poster-fold" aria-hidden="true" />
+
+          <header className="profile-poster-masthead">
+            <div className="profile-poster-topline">
+              <span>RYANOS / ENGINEER&apos;S EDITION</span>
+              <span>JAKARTA / MMXXVI</span>
+            </div>
+            <div className="profile-poster-title-row">
+              <div>
+                <p>FULL-STACK DEVELOPMENT / QUALITY ENGINEERING</p>
+                <h1>{profile.name}</h1>
+                <strong>BUILD WITH CARE. VERIFY WITH INTENT.</strong>
+              </div>
+              <div className="profile-poster-emblem" aria-label="Engineering profile">
+                <span className="profile-poster-emblem-ray profile-poster-emblem-ray--one" />
+                <span className="profile-poster-emblem-ray profile-poster-emblem-ray--two" />
+                <span className="profile-poster-emblem-ray profile-poster-emblem-ray--three" />
+                <UserRound size={52} strokeWidth={1.45} />
+                <small>ENGINEER</small>
+              </div>
+            </div>
+          </header>
+
+          <section className="profile-frame-identity" aria-labelledby="profile-frame-title">
           <p className="profile-frame-kicker">{profile.name}</p>
           <h2 id="profile-frame-title">Professional Profile</h2>
           <p className="profile-frame-headline">Development With a Quality Background</p>
@@ -93,12 +118,12 @@ export function ProfileArtworkScreen({
               </a>
             ) : null}
           </div>
-        </section>
+          </section>
 
-        <section
-          className="profile-frame-capabilities"
-          aria-labelledby="profile-frame-capabilities-title"
-        >
+          <section
+            className="profile-frame-capabilities"
+            aria-labelledby="profile-frame-capabilities-title"
+          >
           <header>
             <div>
               <p>core.skills</p>
@@ -141,12 +166,12 @@ export function ProfileArtworkScreen({
               );
             })}
           </div>
-        </section>
+          </section>
 
-        <section
-          className="profile-frame-education"
-          aria-labelledby="profile-frame-education-title"
-        >
+          <section
+            className="profile-frame-education"
+            aria-labelledby="profile-frame-education-title"
+          >
           <h3 id="profile-frame-education-title">
             <GraduationCap size={20} aria-hidden="true" />
             Education
@@ -160,7 +185,13 @@ export function ProfileArtworkScreen({
               <strong>GPA {credential.gpa}</strong>
             </div>
           ))}
-        </section>
+          </section>
+
+          <footer className="profile-poster-footer" aria-hidden="true">
+            <span>APPLICATIONS / DATA / QUALITY / DELIVERY</span>
+            <span>PERSONAL DOSSIER</span>
+          </footer>
+        </article>
       </div>
     </section>
   );
