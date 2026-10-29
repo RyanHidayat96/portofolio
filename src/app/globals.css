@@ -367,34 +367,17 @@ textarea:focus-visible,
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 72% 22%, rgba(255, 176, 0, 0.13), transparent 24rem),
-    radial-gradient(circle at 18% 76%, rgba(255, 194, 74, 0.08), transparent 28rem),
-    linear-gradient(180deg, var(--background-soft), var(--background));
-  color: var(--text-primary);
+  background-color: #010102 !important;
+  background-image: none !important;
+  color: #f7f8f8 !important;
+  font-family: var(--font-portfolio-sans), 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.005em;
 }
 
-.landing-shell::before {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  content: "";
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255, 176, 0, 0.05),
-      transparent 18%,
-      transparent 82%,
-      rgba(255, 210, 77, 0.035)
-    ),
-    radial-gradient(circle at 50% 0%, rgba(255, 176, 0, 0.05), transparent 34rem);
-  opacity: 0.72;
-}
-
+.landing-shell::before,
+.landing-shell::after,
 .landing-grid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.52;
+  display: none !important;
 }
 
 .landing-hero {
@@ -421,63 +404,62 @@ textarea:focus-visible,
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.9rem;
-  color: var(--accent);
-  font-family:
-    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
-    monospace;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  gap: 0.75rem;
+  color: #8a8f98 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
 }
 
 .landing-eyebrow span:nth-child(2) {
-  width: 3.5rem;
-  height: 1px;
-  background: var(--accent-strong);
+  width: 2rem !important;
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 
 .landing-role {
-  margin: 1.35rem 0 0;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  margin: 1.25rem 0 0;
+  color: #5e6ad2 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
 }
 
 .landing-title {
   max-width: 12ch;
-  margin: 0.8rem 0 0;
-  font-size: 3.25rem;
-  font-weight: 750;
-  letter-spacing: 0;
-  line-height: 0.95;
-  text-transform: uppercase;
+  margin: 0.5rem 0 0;
+  font-size: clamp(2.5rem, 5vw, 4rem) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  text-transform: none !important;
+  color: #f7f8f8 !important;
 }
 
 .landing-statement {
-  max-width: 15ch;
-  margin: 1.2rem 0 0;
-  color: var(--text-primary);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.05;
+  max-width: 20ch;
+  margin: 1rem 0 0;
+  color: #f7f8f8 !important;
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.15 !important;
 }
 
 .landing-statement span {
   display: block;
-  color: var(--accent);
+  color: #5e6ad2 !important;
 }
 
 .landing-summary {
-  max-width: 39rem;
-  margin: 1.05rem 0 0;
-  color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.65;
+  max-width: 38rem;
+  margin: 1rem 0 0;
+  color: #d0d6e0 !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  letter-spacing: -0.005em !important;
 }
 
 .landing-current {
@@ -496,9 +478,21 @@ textarea:focus-visible,
   backdrop-filter: blur(14px);
 }
 
+.landing-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  padding: 0.35rem 0.85rem !important;
+  color: #d0d6e0 !important;
+  font-size: 13px !important;
+}
+
 .landing-current svg,
 .landing-current span:first-of-type {
-  color: var(--accent);
+  color: #5e6ad2 !important;
 }
 
 .landing-pillars {
@@ -506,31 +500,32 @@ textarea:focus-visible,
   max-width: 38rem;
   margin: 1.25rem 0 0;
   padding: 0;
-  gap: 0.65rem;
+  gap: 0.75rem;
   list-style: none;
 }
 
 .landing-pillars li {
-  border-top: 1px solid var(--border-strong);
-  padding-top: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  background: #08090a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  padding: 1rem 1.25rem !important;
 }
 
 .landing-pillars span {
-  color: var(--text-primary);
-  font-family:
-    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
-    monospace;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  color: #5e6ad2 !important;
+  font-family: var(--font-portfolio-sans), sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
 }
 
 .landing-pillars p {
-  margin: 0.45rem 0 0;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  line-height: 1.45;
+  margin: 0.35rem 0 0;
+  color: #d0d6e0 !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
 }
 
 .landing-actions {
@@ -540,28 +535,49 @@ textarea:focus-visible,
   margin-top: 1.35rem;
 }
 
+.landing-action-primary {
+  background: #5e6ad2 !important;
+  border: 1px solid #5e6ad2 !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+.landing-action-primary:hover {
+  background: #6f7be0 !important;
+}
+
+.landing-action-link {
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f7f8f8 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+}
+.landing-action-link:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
 .landing-scroll-cue {
   display: inline-flex;
   min-height: var(--touch-target);
   align-items: center;
   gap: 0.55rem;
   margin-top: 1.25rem;
-  color: var(--text-muted);
-  font-family:
-    var(--font-portfolio-mono), "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
-    monospace;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  color: #8a8f98 !important;
+  font-family: var(--font-portfolio-sans), sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
   text-decoration: none;
   text-transform: uppercase;
-  transition:
-    color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
 }
 
 .landing-scroll-cue:hover {
-  color: var(--accent);
+  color: #5e6ad2 !important;
 }
 
 .hero-core {
@@ -573,14 +589,60 @@ textarea:focus-visible,
   isolation: isolate;
   overflow: hidden;
   min-height: 30rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 42%),
-    radial-gradient(circle at 72% 16%, rgba(255, 176, 0, 0.14), transparent 18rem),
-    rgba(8, 12, 18, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: #08090a !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
   padding: 1.25rem;
-  box-shadow: var(--shadow-panel-soft);
+}
+
+.hero-core::before {
+  display: none !important;
+}
+
+.hero-core-copy h2 {
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: #f7f8f8 !important;
+}
+
+.hero-core-node {
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #0f1011 !important;
+  color: #d0d6e0 !important;
+}
+
+.hero-core-node:hover,
+.hero-core-node:focus-visible,
+.hero-core-node-active {
+  border-color: #5e6ad2 !important;
+  background: rgba(94, 106, 210, 0.12) !important;
+  color: #f7f8f8 !important;
+}
+
+.hero-core-detail {
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #0f1011 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.hero-core-detail h3 {
+  font-size: 1.15rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: #f7f8f8 !important;
+}
+
+.hero-core-tech span {
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #d0d6e0 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
 }
 
 .hero-core::before {
@@ -4883,127 +4945,8 @@ textarea:focus-visible,
   }
 }
 
-.workspace-root {
-  --workspace-transition-opacity: 0;
-  --workspace-transition-scale: 0.98;
-  position: relative;
-}
-
-.workspace-sidebar {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-}
-
-.workspace-brand {
-  position: relative;
-}
-
-.workspace-brand::after {
-  display: block;
-  width: 100%;
-  height: 1px;
-  margin-top: 1rem;
-  content: "";
-  background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: 0.42;
-}
-
-.workspace-nav-button {
-  position: relative;
-  display: flex;
-  min-height: var(--touch-target);
-  width: 100%;
-  align-items: center;
-  gap: 0.75rem;
-  overflow: hidden;
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  background: transparent;
-  padding: 0.7rem 0.75rem;
-  color: var(--text-muted);
-  text-align: left;
-  transition:
-    border-color var(--motion-short) var(--ease-standard),
-    background-color var(--motion-short) var(--ease-standard),
-    color var(--motion-short) var(--ease-standard),
-    transform var(--motion-short) var(--ease-standard);
-}
-
-.workspace-nav-button:hover,
-.workspace-nav-button:focus-visible {
-  border-color: var(--border-strong);
-  background: rgba(181, 131, 50, 0.05);
-  color: var(--text-primary);
-}
-
-.workspace-nav-button-active {
-  border-color: var(--accent-strong);
-  background:
-    linear-gradient(90deg, rgba(255, 176, 0, 0.16), transparent 70%), rgba(255, 176, 0, 0.08);
-  color: var(--text-primary);
-}
-
-.workspace-nav-indicator {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 2px;
-  height: 62%;
-  border-radius: var(--radius-badge);
-  background: var(--accent);
-  opacity: 0;
-  transform: translateY(-50%) scaleY(0.4);
-  transform-origin: center;
-  transition:
-    opacity var(--motion-short) var(--ease-standard),
-    transform var(--motion-short) var(--ease-emphasized);
-}
-
-.workspace-nav-button-active .workspace-nav-indicator {
-  opacity: 1;
-  transform: translateY(-50%) scaleY(1);
-}
-
-.workspace-nav-icon {
-  display: grid;
-  width: 1.8rem;
-  height: 1.8rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  color: currentColor;
-  transition:
-    border-color var(--motion-short) var(--ease-standard),
-    background-color var(--motion-short) var(--ease-standard),
-    color var(--motion-short) var(--ease-standard);
-}
-
-.workspace-nav-button-active .workspace-nav-icon {
-  border-color: rgba(255, 176, 0, 0.42);
-  background: rgba(255, 176, 0, 0.1);
-  color: var(--accent);
-}
-
-.workspace-nav-label {
-  min-width: 0;
-  overflow: hidden;
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .workspace-main {
   position: relative;
-}
-
-.workspace-header {
-  padding: 0.5rem 1rem;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .workspace-header-row {
@@ -6523,6 +6466,27 @@ textarea:focus-visible,
 /* ==========================================================================
    ARCADE PIPELINE MONITOR SCREEN (100% fit to 3D model screen size)
    ========================================================================== */
+.arcade-screen-document,
+.arcade-screen-document *,
+.arcade-pipeline-screen,
+.terminal-monitor-screen,
+.monitor-automation-screen,
+.monitor-api-screen,
+.monitor-performance-screen {
+  --font-portfolio-mono: var(--font-crt-mono), "VT323", Consolas, monospace;
+  --font-portfolio-sans: var(--font-crt-mono), "VT323", Consolas, monospace;
+}
+
+.arcade-pipeline-screen,
+.terminal-monitor-screen,
+.monitor-automation-screen,
+.monitor-api-screen,
+.monitor-performance-screen,
+.crt-amber-screen {
+  font-family: var(--font-crt-mono), "VT323", monospace !important;
+  letter-spacing: 0.035em !important;
+}
+
 .arcade-pipeline-screen {
   display: flex;
   flex-direction: column;
@@ -10914,7 +10878,7 @@ textarea:focus-visible,
 
 .portfolio-3d-shell #portfolio-3d-scene-title + p {
   color: #ffd24d;
-  font-family: var(--font-portfolio-mono), Consolas, monospace;
+  font-family: var(--font-crt-mono), "VT323", Consolas, monospace;
   text-shadow: 1px 1px 0 rgba(57, 14, 9, 0.8);
 }
 
@@ -10926,7 +10890,7 @@ textarea:focus-visible,
 .portfolio-3d-instruction-hint .action-link {
   border-radius: 3px;
   box-shadow: 2px 2px 0 rgba(12, 3, 2, 0.68);
-  font-family: var(--font-portfolio-mono), Consolas, monospace;
+  font-family: var(--font-crt-mono), "VT323", Consolas, monospace;
   letter-spacing: 0.02em;
 }
 
@@ -11236,28 +11200,24 @@ textarea:focus-visible,
   }
 }
 
-/* RyanOS amber CRT language. Keep this override scoped to standard pages and embedded screens. */
-.workspace-root,
-.landing-shell,
-.system-awakening-shell,
+/* CRT effects belong only to embedded room documents. Standard portfolio
+   owns its Linear treatment in linear-workspace.css. */
 .arcade-screen-document {
   isolation: isolate;
   color: var(--text-primary);
 }
 
-.workspace-root *,
-.landing-shell *,
-.system-awakening-shell *,
 .arcade-screen-document * {
   border-radius: 0px !important;
 }
 
+/* Sharp 0px corners are the CRT/room contract. The Linear rounding scale now
+   lives in src/app/linear-workspace.css, imported only by the standard
+   portfolio entry, so nothing here can bleed into the 3D room. */
+
 /* CRT pass: dark inter-line gaps (a real scanline, not an amber tint),
    a stronger vignette, and a faint refresh ripple. Content stays above the
    overlays, so nothing here can block pointer input. */
-.workspace-root::before,
-.landing-shell::before,
-.system-awakening-shell::before,
 .arcade-screen-document::after {
   position: absolute;
   inset: 0;
@@ -11268,9 +11228,6 @@ textarea:focus-visible,
   opacity: var(--crt-scanline-opacity);
 }
 
-.workspace-root::after,
-.landing-shell::after,
-.system-awakening-shell::after,
 .arcade-screen-document::before {
   position: absolute;
   inset: 0;
@@ -11280,11 +11237,6 @@ textarea:focus-visible,
   background-image: var(--crt-vignette);
   opacity: var(--crt-vignette-opacity);
   animation: crt-refresh-ripple 8s linear infinite;
-}
-
-.workspace-root::before,
-.workspace-root::after {
-  position: fixed;
 }
 
 /* The pipeline remains a native DOM surface while focused, 100% fitting the 3D model screen */
@@ -11315,99 +11267,17 @@ textarea:focus-visible,
   }
 }
 
-/* Amber phosphor bloom for text-bearing elements only (never on media/panels). */
-.workspace-root
-  :is(
-    .eyebrow,
-    .mono,
-    h1,
-    h2,
-    h3,
-    .button-base,
-    .badge-base,
-    .terminal-screen,
-    .workspace-nav-label
-  ),
+/* Amber phosphor bloom: CRT surfaces only. The standard portfolio (workspace)
+   and landing page run the Linear near-black canvas with no glow. */
 .arcade-screen-document
   :is(.mono, h1, h2, h3, h4, code, pre, .button-base, .badge-base, .terminal-screen) {
   text-shadow: var(--crt-text-glow);
 }
 
-.workspace-root .panel-surface :is(h1, h2, h3),
 .arcade-screen-document .panel-surface :is(h1, h2, h3) {
   text-shadow: var(--crt-text-glow-strong);
 }
 
-.workspace-root .workspace-header {
-  position: relative;
-}
-
-/* Curvature compensation: contents bow slightly with the glass, overlay stays flat. */
-.workspace-root .workspace-content,
-.workspace-root .workspace-header-row {
-  transform: var(--crt-surface-bow);
-  transition: transform var(--motion-medium) var(--ease-standard);
-}
-
-.workspace-root .workspace-sidebar,
-.workspace-root .workspace-main,
-.workspace-root .workspace-header {
-  border-color: var(--border) !important;
-  background: var(--surface-deep-96) !important;
-  backdrop-filter: none;
-}
-
-.workspace-root .workspace-header {
-  box-shadow: 0 2px 0 rgba(255, 176, 0, 0.12);
-}
-
-.workspace-root .workspace-brand::after,
-.workspace-root .workspace-scene-transition span {
-  background: linear-gradient(90deg, var(--accent), transparent);
-}
-
-.workspace-root .workspace-nav-button {
-  border-color: transparent;
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-portfolio-mono), monospace;
-  transition: none;
-}
-
-.workspace-root .workspace-nav-button:hover,
-.workspace-root .workspace-nav-button:focus-visible {
-  border-color: var(--accent);
-  background: var(--accent) !important;
-  color: var(--accent-contrast) !important;
-}
-
-.workspace-root .workspace-nav-button:hover :is(.workspace-nav-icon, .workspace-nav-label),
-.workspace-root .workspace-nav-button:focus-visible :is(.workspace-nav-icon, .workspace-nav-label) {
-  color: var(--accent-contrast) !important;
-}
-
-.workspace-root .workspace-nav-button-active {
-  border-color: var(--accent);
-  background: var(--accent) !important;
-  color: var(--accent-contrast) !important;
-  box-shadow: 0 0 14px rgba(255, 176, 0, 0.45);
-}
-
-.workspace-root .workspace-nav-button-active :is(.workspace-nav-icon, .workspace-nav-label) {
-  color: var(--accent-contrast) !important;
-}
-
-.workspace-root .workspace-nav-button-active .workspace-nav-indicator::before {
-  content: "► ";
-  color: var(--accent-contrast);
-  font-size: 0.8em;
-}
-
-.workspace-root .badge-info,
-.workspace-root .badge-success,
-.workspace-root .badge-warning,
-.workspace-root .badge-danger,
 .arcade-screen-document .badge-info,
 .arcade-screen-document .badge-success,
 .arcade-screen-document .badge-warning,
@@ -11416,99 +11286,12 @@ textarea:focus-visible,
   color: var(--accent-secondary) !important;
 }
 
-.landing-shell {
-  background:
-    linear-gradient(180deg, rgba(255, 176, 0, 0.04), transparent 36%), var(--background) !important;
-}
-
-.landing-current {
-  background: var(--surface-glass);
-  backdrop-filter: none;
-}
-
-.workspace-root .workspace-nav-icon,
-.workspace-root .workspace-section-select,
-.workspace-root .button-base,
-.workspace-root .badge-base,
-.workspace-root .panel-surface {
-  border-radius: var(--radius-control);
-}
-
-.workspace-root .panel-surface {
-  border-color: var(--border-strong) !important;
+.arcade-screen-document .panel-surface {
+  border-color: var(--border) !important;
   background: var(--surface) !important;
   box-shadow: var(--shadow-panel-soft);
 }
 
-.workspace-root .button-base {
-  border-color: var(--border-strong);
-  border-radius: var(--radius-control);
-  background: var(--surface-raised);
-  color: var(--text-primary);
-  font-family: var(--font-portfolio-mono), monospace;
-  box-shadow: 2px 2px 0 #000;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  transition: none;
-}
-
-.workspace-root .button-base:hover:not(:disabled),
-.workspace-root .button-base:focus-visible {
-  border-color: var(--accent) !important;
-  background: var(--accent) !important;
-  color: var(--accent-contrast) !important;
-  box-shadow: 0 0 14px rgba(255, 176, 0, 0.55) !important;
-}
-
-.workspace-root .button-base:hover:not(:disabled) :is(span, svg),
-.workspace-root .button-base:focus-visible :is(span, svg) {
-  color: var(--accent-contrast) !important;
-}
-
-.workspace-root :is(h1, h2, h3, .mono, button, select, input, textarea) {
-  font-family: var(--font-portfolio-mono), Consolas, monospace;
-}
-
-.workspace-root :is(h1, h2, h3) {
-  letter-spacing: 0;
-}
-
-.workspace-root [class~="text-[#ffb000]"],
-.workspace-root [class~="text-[#67e2ff]"],
-.workspace-root [class~="text-[#53e0ff]"],
-.workspace-root [class~="text-[#51d8ff]"],
-.workspace-root [class~="text-[#ffe4a3]"],
-.workspace-root [class~="text-[#c8d4e6]"],
-.workspace-root [class~="text-[#b7c2d2]"] {
-  color: var(--text-primary) !important;
-}
-
-.workspace-root [class~="text-[#ffb000]"],
-.workspace-root [class~="text-[#67e2ff]"],
-.workspace-root [class~="text-[#53e0ff]"],
-.workspace-root [class~="text-[#51d8ff]"] {
-  color: var(--accent) !important;
-}
-
-.workspace-root [class~="bg-[#111722]"],
-.workspace-root [class~="bg-[#0b0f16]"],
-.workspace-root [class~="bg-[#0b0703]"],
-.workspace-root [class~="bg-[#05070a]"] {
-  background: var(--surface-deep) !important;
-}
-
-.workspace-root [class~="bg-[#ffb000]"] {
-  background: var(--accent) !important;
-}
-
-.workspace-root [class~="accent-[#ffb000]"] {
-  accent-color: var(--accent) !important;
-}
-
-.workspace-root [class~="text-[#ffc24a]"],
-.workspace-root [class~="text-[#82f0ba]"],
-.workspace-root [class~="text-[#ffd24d]"],
-.workspace-root [class~="text-[#e5b85e]"],
 .arcade-screen-document [class~="text-[#ffc24a]"],
 .arcade-screen-document [class~="text-[#82f0ba]"],
 .arcade-screen-document [class~="text-[#ffd24d]"],
@@ -11516,8 +11299,6 @@ textarea:focus-visible,
   color: var(--accent-secondary) !important;
 }
 
-.workspace-root [class~="bg-[#ffc24a]"],
-.workspace-root [class~="bg-[#82f0ba]"],
 .arcade-screen-document [class~="bg-[#ffc24a]"],
 .arcade-screen-document [class~="bg-[#82f0ba]"] {
   background: var(--accent-secondary) !important;
@@ -11527,11 +11308,11 @@ textarea:focus-visible,
   position: relative;
   background: var(--background) !important;
   color: var(--text-primary);
-  font-family: var(--font-portfolio-sans), Arial, sans-serif;
+  font-family: var(--font-crt-mono), "VT323", Consolas, monospace;
 }
 
 .arcade-screen-document :is(h1, h2, h3, h4, .mono, button, select, input, textarea, code, pre) {
-  font-family: var(--font-portfolio-mono), Consolas, monospace;
+  font-family: var(--font-crt-mono), "VT323", Consolas, monospace;
 }
 
 .arcade-screen-document :is(.panel-surface, [class*="bg-[#111722]"], [class*="bg-[#0b0f16]"]) {
@@ -11705,94 +11486,16 @@ textarea:focus-visible,
   color: var(--text-primary) !important;
 }
 
-.workspace-root .architecture-map {
-  background:
-    linear-gradient(90deg, rgba(224, 153, 42, 0.08) 1px, transparent 1px),
-    linear-gradient(rgba(224, 153, 42, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(36, 23, 8, 0.9), rgba(7, 5, 2, 0.98)) !important;
-  background-size:
-    44px 44px,
-    44px 44px,
-    auto !important;
-}
-
-.workspace-root .architecture-header {
-  grid-template-columns: minmax(0, 1fr) !important;
-}
-
-.workspace-root .architecture-edge-glow,
-.workspace-root .architecture-edge[data-active="true"] .architecture-edge-glow {
-  stroke: rgba(255, 176, 0, 0.3) !important;
-}
-
-.workspace-root .architecture-edge-line {
-  stroke: rgba(229, 184, 94, 0.82) !important;
-}
-
-.workspace-root .architecture-node::before {
-  background: linear-gradient(135deg, rgba(255, 176, 0, 0.28), transparent 42%);
-}
-
-.workspace-root .architecture-node[data-status="connected"],
-.workspace-root .architecture-mobile-node[data-status="connected"] {
-  border-color: rgba(255, 210, 77, 0.72) !important;
-  background: rgba(255, 176, 0, 0.1) !important;
-  color: var(--text-primary) !important;
-}
-
-.workspace-root .architecture-node[data-status="selected"],
-.workspace-root .architecture-mobile-node[data-status="selected"] {
-  border-color: var(--accent) !important;
-  background: rgba(255, 176, 0, 0.14) !important;
-  box-shadow: 0 12px 34px rgba(255, 176, 0, 0.12) !important;
-}
-
-.workspace-root .architecture-details-kicker .badge-base {
-  border-color: var(--accent-strong) !important;
-  background: rgba(255, 176, 0, 0.08) !important;
-  color: var(--accent-secondary) !important;
-}
-
-.workspace-root .architecture-details-kicker > span {
-  color: var(--accent-secondary) !important;
-}
-
-.workspace-root .case-study-world-node[data-tone="quality"] span,
-.workspace-root .automation-signal-rail article[data-tone="success"],
-.workspace-root .performance-posture-card[data-status="success"] {
-  color: var(--accent-secondary);
-  border-left-color: var(--accent-secondary);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .workspace-root::before,
   .arcade-screen-document::after {
     opacity: 0.12;
   }
 
-  .workspace-root::after,
   .arcade-screen-document::before {
     opacity: 0.26;
     animation: none;
   }
 
-  .workspace-root .workspace-content,
-  .workspace-root .workspace-header-row {
-    transform: none;
-  }
-
-  .workspace-root
-    :is(
-      .eyebrow,
-      .mono,
-      h1,
-      h2,
-      h3,
-      .button-base,
-      .badge-base,
-      .terminal-screen,
-      .workspace-nav-label
-    ),
   .arcade-screen-document
     :is(.mono, h1, h2, h3, h4, code, pre, .button-base, .badge-base, .terminal-screen) {
     text-shadow: none;

@@ -11,6 +11,18 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
+const coreColors = {
+  canvas: "#010102",
+  surface: "#0f1011",
+  surfaceRaised: "#18191a",
+  hairline: "#34343a",
+  ink: "#f7f8f8",
+  muted: "#8a8f98",
+  accent: "#5e6ad2",
+  accentHover: "#828fff",
+  success: "#27a644"
+} as const;
+
 export interface EngineeringCore3DProps {
   readonly nodes: readonly EngineeringCoreNode[];
   readonly edges: readonly EngineeringCoreEdge[];
@@ -92,9 +104,9 @@ function EngineeringCoreScene({
   return (
     <group ref={groupRef}>
       <ambientLight intensity={0.62} />
-      <pointLight position={[0, 2.6, 3.4]} intensity={6.8} color="#ffb000" />
-      <pointLight position={[-3.2, -1.8, 2.4]} intensity={1.45} color="#a86719" />
-      <directionalLight position={[3.5, 2, 4]} intensity={2.4} color="#ffffff" />
+      <pointLight position={[0, 2.6, 3.4]} intensity={5.8} color={coreColors.accent} />
+      <pointLight position={[-3.2, -1.8, 2.4]} intensity={1.1} color="#343a71" />
+      <directionalLight position={[3.5, 2, 4]} intensity={2.2} color={coreColors.ink} />
 
       <CorePlane />
 
@@ -141,7 +153,7 @@ function CorePlane(): React.ReactElement {
       <mesh rotation={[-0.18, 0, 0]}>
         <planeGeometry args={[5.8, 5.4, 8, 8]} />
         <meshStandardMaterial
-          color="#1a0e04"
+          color={coreColors.surfaceRaised}
           roughness={0.86}
           metalness={0.18}
           transparent
@@ -152,7 +164,7 @@ function CorePlane(): React.ReactElement {
       <mesh position={[0, 0, -0.05]} rotation={[-0.18, 0, 0]}>
         <planeGeometry args={[5.8, 5.4]} />
         <meshStandardMaterial
-          color="#100802"
+          color={coreColors.canvas}
           roughness={0.92}
           metalness={0.08}
           transparent
@@ -183,7 +195,7 @@ function CoreConnection({
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <lineBasicMaterial
-        color={isActive ? "#ffd24d" : "#6b4512"}
+        color={isActive ? coreColors.accentHover : coreColors.hairline}
         transparent
         opacity={isActive ? 0.92 : 0.28}
       />
@@ -218,7 +230,7 @@ function CoreNode({
       <mesh>
         <boxGeometry args={[0.86, 0.42, 0.16]} />
         <meshStandardMaterial
-          color={isActive ? "#241406" : "#120b03"}
+          color={isActive ? coreColors.surfaceRaised : coreColors.surface}
           emissive={tone.emissive}
           emissiveIntensity={isActive ? 0.38 : 0.12}
           roughness={0.52}
@@ -273,7 +285,7 @@ function CoreNodeGlyph({
         </mesh>
         <mesh position={[0, -0.21, 0.11]}>
           <boxGeometry args={[0.32, 0.035, 0.035]} />
-          <meshBasicMaterial color="#ffe4a3" transparent opacity={textOpacity} />
+          <meshBasicMaterial color={coreColors.ink} transparent opacity={textOpacity} />
         </mesh>
       </group>
     );
@@ -292,11 +304,11 @@ function CoreNodeGlyph({
         </mesh>
         <mesh position={[0, 0.11, 0.11]}>
           <boxGeometry args={[0.35, 0.035, 0.035]} />
-          <meshBasicMaterial color="#ffe4a3" transparent opacity={textOpacity} />
+          <meshBasicMaterial color={coreColors.ink} transparent opacity={textOpacity} />
         </mesh>
         <mesh position={[0, -0.11, 0.11]}>
           <boxGeometry args={[0.35, 0.035, 0.035]} />
-          <meshBasicMaterial color="#c98a32" transparent opacity={mutedOpacity} />
+          <meshBasicMaterial color={coreColors.muted} transparent opacity={mutedOpacity} />
         </mesh>
       </group>
     );
@@ -309,7 +321,11 @@ function CoreNodeGlyph({
           <group key={y} position={[0, y, 0.11]}>
             <mesh>
               <boxGeometry args={[0.5, 0.075, 0.035]} />
-              <meshBasicMaterial color={index === 1 ? tone.accent : "#ffe4a3"} transparent opacity={index === 1 ? signalOpacity : textOpacity} />
+              <meshBasicMaterial
+                color={index === 1 ? tone.accent : coreColors.ink}
+                transparent
+                opacity={index === 1 ? signalOpacity : textOpacity}
+              />
             </mesh>
             <mesh position={[-0.27, 0, 0.005]}>
               <boxGeometry args={[0.045, 0.045, 0.035]} />
@@ -346,7 +362,11 @@ function CoreNodeGlyph({
         {[-0.14, 0, 0.14].map((y, index) => (
           <mesh key={y} position={[0, y, 0.11]}>
             <boxGeometry args={[0.46 - index * 0.04, 0.08, 0.035]} />
-            <meshBasicMaterial color={index === 0 ? "#ffe4a3" : tone.accent} transparent opacity={index === 0 ? textOpacity : signalOpacity * (0.86 - index * 0.14)} />
+            <meshBasicMaterial
+              color={index === 0 ? coreColors.ink : tone.accent}
+              transparent
+              opacity={index === 0 ? textOpacity : signalOpacity * (0.86 - index * 0.14)}
+            />
           </mesh>
         ))}
         <mesh position={[-0.28, 0, 0.115]}>
@@ -362,7 +382,11 @@ function CoreNodeGlyph({
       {[-0.24, 0, 0.24].map((x, index) => (
         <mesh key={x} position={[x, 0, 0.11]}>
           <boxGeometry args={[0.13, 0.13, 0.035]} />
-          <meshBasicMaterial color={index === 1 ? tone.accent : "#ffe4a3"} transparent opacity={index === 1 ? signalOpacity : textOpacity} />
+          <meshBasicMaterial
+            color={index === 1 ? tone.accent : coreColors.ink}
+            transparent
+            opacity={index === 1 ? signalOpacity : textOpacity}
+          />
         </mesh>
       ))}
       <mesh position={[-0.12, 0, 0.105]}>
@@ -387,16 +411,16 @@ interface CoreToneColors {
 }
 function getToneColors(tone: EngineeringCoreNodeTone): CoreToneColors {
   if (tone === "quality") {
-    return { accent: "#ffd24d", emissive: "#3d2507" };
+    return { accent: coreColors.success, emissive: "#123b27" };
   }
 
   if (tone === "ship") {
-    return { accent: "#f6d16f", emissive: "#3d3316" };
+    return { accent: coreColors.accentHover, emissive: "#252b64" };
   }
 
   if (tone === "data") {
-    return { accent: "#e5b85e", emissive: "#3a2208" };
+    return { accent: "#7a7fad", emissive: "#242743" };
   }
 
-  return { accent: "#ffb000", emissive: "#3b2105" };
+  return { accent: coreColors.accent, emissive: "#252b64" };
 }

@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import "@/app/linear-workspace.css";
 import { Panel } from "@/components/ui/Panel";
 import { CustomCursor } from "@/features/interaction/components/CustomCursor";
 import { useReducedMotion } from "@/features/interaction/hooks/useReducedMotion";
@@ -410,7 +411,7 @@ export function PortfolioApp({
 
   if (phase === "landing") {
     return (
-      <>
+      <div className="standard-portfolio">
         <CustomCursor />
         <Landing
           onInitialize={() => {
@@ -421,21 +422,21 @@ export function PortfolioApp({
             }
           }}
         />
-      </>
+      </div>
     );
   }
 
   if (phase === "boot") {
     return (
-      <>
+      <div className="standard-portfolio">
         <CustomCursor />
         <BootSequence onComplete={completeBoot} />
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="standard-portfolio">
       <CustomCursor />
       <WorkspaceShell
         section={section}
@@ -452,7 +453,7 @@ export function PortfolioApp({
         onClose={() => setIsPaletteOpen(false)}
         onSelect={runPaletteAction}
       />
-    </>
+    </div>
   );
 }
 

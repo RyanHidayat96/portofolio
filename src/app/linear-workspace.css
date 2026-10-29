@@ -1,0 +1,783 @@
+/* ==========================================================================
+   LINEAR.APP DESIGN SYSTEM FOR STANDARD PORTFOLIO (WORKSPACE)
+   Spec: https://github.com/VoltAgent/awesome-design-md/blob/main/design-md/linear.app/DESIGN.md
+   - Deepest near-black canvas #010102 with 4-step surface ladder
+   - Signature Linear Lavender (#5e6ad2) primary accent
+   - Crisp 1px hairline borders (rgba(255,255,255,0.08)) & top-edge highlight
+   - Clean SF Pro Display / Inter typography with negative display tracking
+   - 0px scanlines, zero CRT distortion (3D room screens stay CRT untouched)
+   ========================================================================== */
+
+/* This scope is the only owner of the Linear design language. It wraps the
+   landing, boot sequence, workspace, and command palette. */
+.standard-portfolio {
+  --workspace-transition-opacity: 0;
+  --workspace-transition-scale: 0.98;
+  min-height: 100vh;
+  color-scheme: dark;
+
+  /* Linear Surfaces */
+  --background: #010102;
+  --background-soft: #08090a;
+  --surface: #08090a; /* Surface 1: feature cards, pricing cards, panels */
+  --surface-elevated: #0f1011; /* Surface 2: featured/hovered cards */
+  --surface-raised: #141517; /* Surface 3: sub-nav, pills */
+  --surface-deep: #08090a;
+  --surface-deep-96: rgba(8, 9, 10, 0.96);
+  --surface-deep-92: rgba(8, 9, 10, 0.92);
+  --surface-deeper: #010102;
+  --surface-translucent: rgba(8, 9, 10, 0.86);
+  --surface-glass: rgba(8, 9, 10, 0.8);
+
+  /* Linear Text (Ink) */
+  --text-primary: #f7f8f8; /* Ink */
+  --text-secondary: #d0d6e0; /* Ink Muted */
+  --text-muted: #8a8f98; /* Ink Subtle */
+  --text-subtle: #62666d; /* Ink Tertiary */
+
+  /* Linear Lavender Brand Accent */
+  --accent: #5e6ad2;
+  --accent-secondary: #6f7be0;
+  --accent-soft: rgba(94, 106, 210, 0.12);
+  --accent-strong: #5e6ad2;
+  --accent-contrast: #ffffff;
+  --accent-hover: #6f7be0;
+
+  /* Linear Semantic Success */
+  --success: #27a644;
+  --warning: #828fff;
+  --danger: #e5484d;
+  --danger-text: #ff9592;
+  --danger-soft: rgba(229, 72, 77, 0.12);
+  --danger-strong: rgba(229, 72, 77, 0.42);
+  --danger-hover: rgba(229, 72, 77, 0.18);
+
+  /* Linear Hairline Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Linear Radii */
+  --radius-panel: 12px;
+  --radius-control: 8px;
+  --radius-badge: 9999px;
+
+  /* Linear Depth (Hairline + Top-edge subtle highlight) */
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-panel-soft: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-focus: 0 0 0 2px rgba(94, 106, 210, 0.4);
+
+  --font-sans: var(--font-linear-sans);
+  --font-mono: var(--font-linear-mono);
+  --font-portfolio-sans: var(--font-linear-sans);
+  --font-portfolio-mono: var(--font-linear-mono);
+
+  background: #010102;
+  font-family: var(--font-portfolio-sans), 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.005em;
+  color: #f7f8f8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body:has(.standard-portfolio) {
+  background: #010102;
+  font-family: var(--font-linear-sans), "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.standard-portfolio .workspace-root {
+  position: relative;
+}
+
+/* Standard portfolio never inherits CRT treatment. */
+.standard-portfolio .workspace-root::before,
+.standard-portfolio .workspace-root::after,
+.standard-portfolio .landing-shell::before,
+.standard-portfolio .landing-shell::after,
+.standard-portfolio .system-awakening-shell::before,
+.standard-portfolio .system-awakening-shell::after,
+.standard-portfolio .engineering-grid {
+  display: none !important;
+}
+
+.standard-portfolio .mono,
+.standard-portfolio code,
+.standard-portfolio pre,
+.standard-portfolio kbd {
+  font-family: var(--font-linear-mono), ui-monospace, "SF Mono", Menlo, monospace !important;
+  letter-spacing: 0;
+}
+
+.standard-portfolio ::selection {
+  background: rgba(94, 106, 210, 0.42);
+  color: #ffffff;
+}
+
+.standard-portfolio :is(button, a, select, input, textarea) {
+  -webkit-tap-highlight-color: rgba(94, 106, 210, 0.18);
+}
+
+/* Linear Sidebar */
+.standard-portfolio .workspace-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: #08090a !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+.standard-portfolio .workspace-brand {
+  position: relative;
+}
+
+.standard-portfolio .workspace-brand::after {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 1rem;
+  content: "";
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Linear Nav Items */
+.standard-portfolio .workspace-nav-button {
+  position: relative;
+  display: flex;
+  min-height: 38px;
+  width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  overflow: hidden;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  padding: 0.5rem 0.75rem;
+  color: #8a8f98 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.standard-portfolio .workspace-nav-button:hover,
+.standard-portfolio .workspace-nav-button:focus-visible {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #f7f8f8 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.standard-portfolio .workspace-nav-button-active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f7f8f8 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.standard-portfolio .workspace-nav-indicator {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  border-radius: 9999px !important;
+  background: #5e6ad2 !important;
+  opacity: 0;
+  transform: translateY(-50%) scaleY(0.4);
+  transition: all 0.15s ease;
+}
+
+.standard-portfolio .workspace-nav-button-active .workspace-nav-indicator {
+  opacity: 1;
+  transform: translateY(-50%) scaleY(1);
+}
+
+.standard-portfolio .workspace-nav-icon {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #8a8f98 !important;
+  background: transparent !important;
+}
+
+.standard-portfolio .workspace-nav-button:hover .workspace-nav-icon {
+  color: #f7f8f8 !important;
+}
+
+.standard-portfolio .workspace-nav-button-active .workspace-nav-icon {
+  color: #5e6ad2 !important;
+}
+
+.standard-portfolio .workspace-nav-label {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Linear Header */
+.standard-portfolio .workspace-header {
+  padding: 0.65rem 1.25rem;
+  background: rgba(1, 1, 2, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
+.standard-portfolio .workspace-section-label {
+  color: #f7f8f8 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.standard-portfolio .workspace-header-specialty {
+  background: rgba(94, 106, 210, 0.1) !important;
+  border: 1px solid rgba(94, 106, 210, 0.25) !important;
+  color: #828ff5 !important;
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 10px !important;
+}
+
+.standard-portfolio .workspace-header-tool {
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #d0d6e0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: all 0.15s ease;
+}
+
+.standard-portfolio .workspace-header-tool:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+/* Linear Buttons inside Workspace */
+.standard-portfolio .workspace-root .button-base > .mono {
+  display: none !important;
+}
+
+.standard-portfolio .workspace-root .button-base {
+  border-radius: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.005em !important;
+  padding: 0.5rem 1rem !important;
+  min-height: 38px !important;
+  transition: all 0.15s ease !important;
+}
+
+.standard-portfolio .workspace-root .button-primary {
+  background: #5e6ad2 !important;
+  border: 1px solid #5e6ad2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.standard-portfolio .workspace-root .button-primary:hover:not(:disabled) {
+  background: #6f7be0 !important;
+  border-color: #6f7be0 !important;
+}
+
+.standard-portfolio .workspace-root .button-secondary {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f7f8f8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.standard-portfolio .workspace-root .button-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+}
+
+.standard-portfolio .workspace-root .button-ghost {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: #8a8f98 !important;
+}
+
+.standard-portfolio .workspace-root .button-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #f7f8f8 !important;
+}
+
+/* Linear Badges inside Workspace */
+.standard-portfolio .workspace-root .badge-base {
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 2px 9px !important;
+}
+
+.standard-portfolio .workspace-root .badge-success {
+  background: rgba(76, 183, 130, 0.1) !important;
+  border: 1px solid rgba(76, 183, 130, 0.25) !important;
+  color: #4cb782 !important;
+}
+
+.standard-portfolio .workspace-root .badge-info {
+  background: rgba(94, 106, 210, 0.1) !important;
+  border: 1px solid rgba(94, 106, 210, 0.25) !important;
+  color: #828ff5 !important;
+}
+
+.standard-portfolio .workspace-root .badge-neutral {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #d0d6e0 !important;
+}
+
+.standard-portfolio .workspace-root .badge-warning {
+  background: rgba(130, 143, 255, 0.1) !important;
+  border: 1px solid rgba(130, 143, 255, 0.25) !important;
+  color: #828fff !important;
+}
+
+/* Linear Cards & Panels inside Workspace */
+.standard-portfolio .workspace-root .panel-surface,
+.standard-portfolio .workspace-root .professional-highlights article,
+.standard-portfolio .workspace-root .professional-skill,
+.standard-portfolio .workspace-root .recruiter-scan-skill-grid article,
+.standard-portfolio .workspace-root .recruiter-scan-project-grid article,
+.standard-portfolio .workspace-root .recruiter-fast-path-grid article,
+.standard-portfolio .workspace-root .project-card-button,
+.standard-portfolio .workspace-root .projects-index-panel,
+.standard-portfolio .workspace-root .contact-card,
+.standard-portfolio .workspace-root .contact-cv-card,
+.standard-portfolio .workspace-root .contact-hero,
+.standard-portfolio .workspace-root .full-cycle-stage,
+.standard-portfolio .workspace-root .professional-job {
+  border-radius: 12px !important;
+  background: #08090a !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.15s ease;
+}
+
+.standard-portfolio .workspace-root .professional-highlights article:hover,
+.standard-portfolio .workspace-root .professional-skill:hover,
+.standard-portfolio .workspace-root .recruiter-scan-skill-grid article:hover,
+.standard-portfolio .workspace-root .recruiter-scan-project-grid article:hover,
+.standard-portfolio .workspace-root .recruiter-fast-path-grid article:hover,
+.standard-portfolio .workspace-root .project-card-button:hover,
+.standard-portfolio .workspace-root .contact-card:hover {
+  background: #0f1011 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Linear Headings & Typography inside Workspace */
+.standard-portfolio .workspace-root h1 {
+  font-size: clamp(2rem, 3.5vw, 2.75rem) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  color: #f7f8f8 !important;
+  line-height: 1.1 !important;
+}
+
+.standard-portfolio .workspace-root h2 {
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: #f7f8f8 !important;
+  line-height: 1.25 !important;
+}
+
+.standard-portfolio .workspace-root h3 {
+  font-size: 1.05rem !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.015em !important;
+  color: #f7f8f8 !important;
+  line-height: 1.3 !important;
+}
+
+.standard-portfolio .workspace-root .professional-eyebrow,
+.standard-portfolio .workspace-root .eyebrow {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #8a8f98 !important;
+}
+
+.standard-portfolio .workspace-root .professional-role-title {
+  color: #5e6ad2 !important;
+  font-size: 1.15rem !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.standard-portfolio .workspace-root .professional-lead {
+  color: #d0d6e0 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+  letter-spacing: -0.005em !important;
+}
+
+.standard-portfolio .workspace-root .professional-context,
+.standard-portfolio .workspace-root .professional-current,
+.standard-portfolio .workspace-root small {
+  color: #8a8f98 !important;
+  font-size: 13px !important;
+}
+
+.standard-portfolio .workspace-root .professional-text-link {
+  color: #828ff5 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+}
+.standard-portfolio .workspace-root .professional-text-link:hover {
+  text-decoration: underline !important;
+}
+
+/* Linear Project Filter Pills */
+.standard-portfolio .workspace-root .project-filter-button {
+  border-radius: 9999px !important;
+  padding: 5px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  min-height: 32px !important;
+  transition: all 0.15s ease;
+}
+
+.standard-portfolio .workspace-root .project-filter-button[data-active="true"] {
+  background: #141517 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #f7f8f8 !important;
+}
+
+.standard-portfolio .workspace-root .project-filter-button[data-active="false"] {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: #8a8f98 !important;
+}
+
+.standard-portfolio .workspace-root .project-filter-button[data-active="false"]:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #f7f8f8 !important;
+}
+
+/* Linear Contact Cards */
+.standard-portfolio .workspace-root .contact-link-card {
+  border-radius: 10px !important;
+  background: #0f1011 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 12px 16px !important;
+  color: #f7f8f8 !important;
+  transition: all 0.15s ease;
+}
+
+.standard-portfolio .workspace-root .contact-link-card:hover {
+  background: #141517 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.standard-portfolio .workspace-root .contact-readiness-list li {
+  border-left: 2px solid #5e6ad2 !important;
+  background: rgba(94, 106, 210, 0.06) !important;
+  border-radius: 4px !important;
+  color: #d0d6e0 !important;
+}
+
+/* Global cursor primitives belong to the room. Normalize the standard cursor
+   locally so it does not retain CRT glow, square geometry, or mono labels. */
+.standard-portfolio .custom-cursor-ring {
+  border-color: #828fff;
+  border-radius: 9999px;
+  background: rgba(94, 106, 210, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.36);
+  transition-timing-function: ease;
+}
+
+.standard-portfolio .custom-cursor-dot {
+  border-radius: 9999px;
+  background: #5e6ad2;
+  box-shadow: none;
+}
+
+.standard-portfolio .custom-cursor-label {
+  border-color: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: #141517;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  color: #f7f8f8;
+  font-family: var(--font-linear-sans), "SF Pro Display", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-transform: none;
+}
+
+.standard-portfolio .magnetic-surface:hover:not(:disabled),
+.standard-portfolio .magnetic-surface:focus-visible {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.24);
+}
+
+/* Entry states share the same Linear system as the workspace. */
+.standard-portfolio .landing-shell,
+.standard-portfolio .system-awakening-shell {
+  background: #010102 !important;
+  color: #f7f8f8 !important;
+  font-family: var(--font-linear-sans), "SF Pro Display", -apple-system, sans-serif !important;
+}
+
+.standard-portfolio .landing-shell *,
+.standard-portfolio .system-awakening-shell * {
+  text-shadow: none !important;
+}
+
+.standard-portfolio .landing-eyebrow,
+.standard-portfolio .system-awakening-copy .eyebrow {
+  color: #8a8f98 !important;
+  font-family: var(--font-linear-sans), sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+}
+
+.standard-portfolio .landing-title,
+.standard-portfolio .system-awakening-copy h1 {
+  color: #f7f8f8 !important;
+  font-family: var(--font-linear-sans), "SF Pro Display", sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  text-transform: none !important;
+}
+
+.standard-portfolio .landing-role,
+.standard-portfolio .landing-statement span {
+  color: #5e6ad2 !important;
+}
+
+.standard-portfolio .landing-pillars li,
+.standard-portfolio .hero-core,
+.standard-portfolio .system-awakening-map {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  background: #08090a !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.standard-portfolio .landing-action-primary,
+.standard-portfolio .landing-action-link {
+  border-radius: 8px !important;
+}
+
+.standard-portfolio .system-awakening-steps li,
+.standard-portfolio .system-awakening-node {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  background: #0f1011 !important;
+  box-shadow: none !important;
+}
+
+.standard-portfolio .system-awakening-steps li[data-active="true"],
+.standard-portfolio .system-awakening-steps li[data-done="true"],
+.standard-portfolio .system-awakening-node-active {
+  border-color: rgba(94, 106, 210, 0.52) !important;
+  background: rgba(94, 106, 210, 0.12) !important;
+}
+
+.standard-portfolio .system-awakening-node > span:first-child {
+  background: #5e6ad2 !important;
+  box-shadow: none !important;
+}
+
+.standard-portfolio .system-awakening-node[data-tone="quality"] > span:first-child {
+  background: #27a644 !important;
+}
+
+.standard-portfolio .system-awakening-node[data-tone="ship"] > span:first-child {
+  background: #828fff !important;
+}
+
+.standard-portfolio .full-cycle-flow-line {
+  background: rgba(94, 106, 210, 0.4) !important;
+  animation: none !important;
+}
+
+/* Linear surfaces use hairlines and hierarchy, never CRT bevels or amber glow. */
+.standard-portfolio [class~="border-2"] {
+  border-width: 1px !important;
+}
+
+.standard-portfolio [class*="shadow-["] {
+  box-shadow: none !important;
+}
+
+.standard-portfolio [class~="text-[#ffb000]"],
+.standard-portfolio [class~="text-[#67e2ff]"],
+.standard-portfolio [class~="text-[#53e0ff]"],
+.standard-portfolio [class~="text-[#51d8ff]"] {
+  color: #5e6ad2 !important;
+}
+
+.standard-portfolio [class~="text-[#ffe4a3]"],
+.standard-portfolio [class~="text-[#c8d4e6]"],
+.standard-portfolio [class~="text-[#b7c2d2]"] {
+  color: #f7f8f8 !important;
+}
+
+.standard-portfolio [class~="text-[#ffc24a]"],
+.standard-portfolio [class~="text-[#82f0ba]"] {
+  color: #27a644 !important;
+}
+
+.standard-portfolio [class~="text-[#ffd24d]"],
+.standard-portfolio [class~="text-[#e5b85e]"] {
+  color: #828fff !important;
+}
+
+.standard-portfolio [class~="bg-[#ffb000]"] {
+  background: #5e6ad2 !important;
+}
+
+.standard-portfolio [class~="bg-[#111722]"],
+.standard-portfolio [class~="bg-[#0b0f16]"],
+.standard-portfolio [class~="bg-[#0b0703]"],
+.standard-portfolio [class~="bg-[#05070a]"] {
+  background: #08090a !important;
+}
+
+.standard-portfolio [class~="accent-[#ffb000]"] {
+  accent-color: #5e6ad2 !important;
+}
+
+.standard-portfolio [class~="bg-[#ffc24a]"],
+.standard-portfolio [class~="bg-[#82f0ba]"] {
+  background: #27a644 !important;
+}
+
+.standard-portfolio [fill="#ffb000"] {
+  fill: #5e6ad2 !important;
+}
+
+.standard-portfolio [stroke="#ffb000"] {
+  stroke: #5e6ad2 !important;
+}
+
+.standard-portfolio [fill="#ffc24a"] {
+  fill: #27a644 !important;
+}
+
+.standard-portfolio [stroke="#ffc24a"] {
+  stroke: #27a644 !important;
+}
+
+.standard-portfolio [fill="#ffd24d"] {
+  fill: #828fff !important;
+}
+
+.standard-portfolio [stroke="#ffd24d"] {
+  stroke: #828fff !important;
+}
+
+.standard-portfolio [fill="#ff704d"] {
+  fill: #e5484d !important;
+}
+
+.standard-portfolio [stroke="#ff704d"] {
+  stroke: #e5484d !important;
+}
+
+.standard-portfolio [fill="#ffe4a3"] {
+  fill: #f7f8f8 !important;
+}
+
+.standard-portfolio [fill="#070502"] {
+  fill: #010102 !important;
+}
+
+/* Architecture remains an app diagram, not an amber terminal map. */
+.standard-portfolio .architecture-map {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px), #08090a !important;
+  background-size: 44px 44px !important;
+}
+
+.standard-portfolio .architecture-header {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.standard-portfolio .architecture-edge-glow,
+.standard-portfolio .architecture-edge[data-active="true"] .architecture-edge-glow {
+  stroke: rgba(94, 106, 210, 0.3) !important;
+}
+
+.standard-portfolio .architecture-edge-line {
+  stroke: rgba(208, 214, 224, 0.56) !important;
+}
+
+.standard-portfolio .architecture-node::before {
+  background: none !important;
+}
+
+.standard-portfolio .architecture-node[data-status="connected"],
+.standard-portfolio .architecture-mobile-node[data-status="connected"] {
+  border-color: rgba(94, 106, 210, 0.52) !important;
+  background: rgba(94, 106, 210, 0.1) !important;
+  color: #f7f8f8 !important;
+}
+
+.standard-portfolio .architecture-node[data-status="selected"],
+.standard-portfolio .architecture-mobile-node[data-status="selected"] {
+  border-color: #5e6ad2 !important;
+  background: rgba(94, 106, 210, 0.14) !important;
+  box-shadow: none !important;
+}
+
+.standard-portfolio .architecture-details-kicker .badge-base {
+  border-color: rgba(94, 106, 210, 0.42) !important;
+  background: rgba(94, 106, 210, 0.1) !important;
+  color: #828fff !important;
+}
+
+.standard-portfolio .architecture-details-kicker > span {
+  color: #828fff !important;
+}
+
+.standard-portfolio .case-study-world-node[data-tone="quality"] span,
+.standard-portfolio .automation-signal-rail article[data-tone="success"],
+.standard-portfolio .performance-posture-card[data-status="success"] {
+  border-left-color: #27a644 !important;
+  color: #27a644 !important;
+}
+
+.standard-portfolio .workspace-scene-transition span {
+  background: #5e6ad2 !important;
+}
+
+.standard-portfolio .workspace-content,
+.standard-portfolio .workspace-header-row {
+  transform: none !important;
+}
+
+.standard-portfolio .landing-current {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: none !important;
+}
+

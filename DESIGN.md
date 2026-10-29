@@ -1,52 +1,64 @@
-# RyanOS Amber CRT
+# RyanOS Visual Boundaries
 
-RyanOS uses one visual language across standard portfolio and embedded room screens: a dark brown-black CRT with amber phosphor accents.
+RyanOS has two deliberately separate visual systems. They share content and
+navigation contracts, but never share visual tokens, typography, effects, or
+component overrides.
 
-## Tokens
+## 3D Room And Embedded Monitors
 
-- Background: `#070502` and `#0b0703`
-- Panels: `#181006`, `#211406`, `#241708`
-- Primary phosphor: `#ffb000`
-- Highlight phosphor: `#ffd24d`
-- Text: `#ffe4a3`, `#e5b85e`, `#b58332`
-- Status: `#ffc24a` amber
-- Borders: low-opacity amber, rectangular 2-3px corners
+The room is an amber CRT environment.
 
-## CRT effect tokens
+- Owner CSS: `src/app/globals.css`
+- Root selectors: `.portfolio-3d-shell` and `.arcade-screen-document`
+- Fonts: `--font-portfolio-sans`, `--font-portfolio-mono`, and
+  `--font-crt-mono`
+- Characteristics: amber phosphor, CRT scanlines, screen curvature, monitor
+  materials, room controls, and room-only overlays.
+- Immutable boundary: GLB geometry, materials, textures, lighting, cameras,
+  object positions, touch controls, snapshots, and screen interactions remain
+  room concerns.
 
-Defined in `:root` and used by the `.workspace-root` / `.landing-shell` / `.system-awakening-shell` / `.arcade-screen-document` overlays:
+Embedded documents intentionally use `.arcade-screen-document` so they retain
+monitor-specific rendering without inheriting standard portfolio design.
 
-- `--crt-scanlines`: dark 1px line every 4px (`rgba(0, 0, 0, 0.34)`) — a real inter-line gap, not an amber tint.
-- `--crt-vignette`: radial falloff toward the glass edges.
-- `--crt-scanline-opacity` (`0.22`) and `--crt-vignette-opacity` (`0.42`) keep the two overlays separately tunable and legible.
-- `--crt-text-glow` / `--crt-text-glow-strong`: amber phosphor bloom, applied to text-bearing elements only (`.mono`, headings, buttons, badges, terminal) so media and panels stay sharp.
-- `--crt-surface-bow`: perspective transform applied to `.workspace-content` and the sticky header row so the scrolling plane bows with the glass while the overlays stay flat.
-- `--terminal-caret-color` + `@keyframes terminal-caret-blink`: the blinking block caret on the terminal prompt.
+## Standard Portfolio
 
-All overlays are `pointer-events: none` and sit at `z-index: 30` (scanlines) / `31` (vignette); the vignette also carries the faint 8s refresh ripple. Under `prefers-reduced-motion` the ripple, the bow, and all text glow switch off and the overlays dim.
+The standard portfolio is a Linear-inspired dark product workspace.
 
-## Rules
+- Owner CSS: `src/app/linear-workspace.css`
+- Root selector: `.standard-portfolio`
+- Fonts: `--font-linear-sans` and `--font-linear-mono`
+- Palette: near-black surfaces, `#5e6ad2` lavender for primary interaction,
+  green only for successful status, and red only for errors.
+- Characteristics: clean sans-serif hierarchy, 1px hairlines, 8px controls,
+  12px panels, restrained shadows, no scanlines, no CRT glow, no amber theme,
+  and no retro monitor curvature.
 
-- Use monospace for terminal labels, controls, headings, code, and metadata.
-- Use amber for focus, links, diagrams, screen previews, and active navigation.
-- Keep content readable: scanlines and vignette stay subtle and never block pointer input.
-- Prefer solid panels and hard shadows. Avoid glassmorphism, blue/cyan neon, large gradients, and pill-heavy UI.
-- Respect `prefers-reduced-motion`.
-- Keep room GLB geometry, materials, textures, lighting, camera behavior, and object positions unchanged.
-- Keep live embedded pages, snapshot capture, touch gestures, navigation, and all portfolio content unchanged.
+`PortfolioApp` owns `.standard-portfolio` around landing, boot, workspace, and
+command palette. Every selector in `linear-workspace.css` stays below that
+boundary. Never add Linear rules to `globals.css` or use unscoped
+`.workspace-*` selectors in a new stylesheet.
 
-## Routes
+## Shared Rules
 
-- `/` — 3D room.
-- `/workspace` — standard portfolio landing phase (BootSequence on initialize).
-- `/overview`, `/profile`, `/experience`, `/projects`, `/terminal`, `/challenge`, `/contact` — workspace sections.
-- `/labs`, `/labs/<automation|pipeline|performance|api|architecture>` — engineer-mode sections.
-- `/hire` — recruiter-mode alias for the overview.
+- Data, routes, keyboard support, reduced-motion behavior, and accessibility
+  remain shared behavior, not design ownership.
+- Keep presentation colors behind their owning scope. Do not use global color
+  overrides to make one mode resemble the other.
+- New 3D styling starts with `.portfolio-3d-shell` or
+  `.arcade-screen-document`.
+- New standard styling starts with `.standard-portfolio`.
+- Shared components may use semantic CSS variables. Their values come from
+  closest owning root and must not be hard-coded globally.
 
-`getStaticWorkspacePaths()` covers every path above except `/workspace`, which is served by `src/app/workspace/page.tsx`; both `src/proxy.ts` and `src/app/sitemap.ts` include it explicitly through `workspaceEntryPath`.
+## Verification
 
-## Scope
+For every visual change, check independently:
 
-Global tokens live in `src/app/globals.css`. Embedded screen tokens are scoped under `.arcade-screen-document`. WebGL monitor preview accents live in `screen-content.ts` and mirror the amber palette.
-
-Components consume design tokens (`var(--text-muted)`, `var(--surface-raised)`, …) rather than raw colour literals; `tests/unit/retro-language.test.ts` guards that rule, the CRT tokens, reduced-motion handling, and the route wiring.
+1. `/` retains amber CRT room controls and embedded monitor styling.
+2. `/overview`, `/profile`, `/experience`, `/projects`, `/contact`, and every
+   `/labs/*` route retain Linear typography, lavender interaction, and dark
+   product surfaces.
+3. No Linear stylesheet selector matches an element outside
+   `.standard-portfolio`.
+4. No room selector changes standard workspace layout, colors, or fonts.

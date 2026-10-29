@@ -76,11 +76,18 @@ export function WorkspaceShell({
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[280px_1fr]">
         <aside className="workspace-sidebar hidden border-r border-[var(--border)] bg-[var(--surface-deep-96)] p-4 lg:block">
           <div className="workspace-brand mb-6">
-            <p className="mono text-xs uppercase tracking-[0.24em] text-[var(--accent)]">
-              {branding.appName}
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-[6px] bg-[var(--accent)] text-[11px] font-bold text-[var(--accent-contrast)] shadow-sm">
+                R
+              </span>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">
+                {branding.appName}
+              </p>
+            </div>
+            <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+              Professional Portfolio
             </p>
-            <p className="mt-2 text-xl font-semibold">Professional Portfolio</p>
-            <Badge tone="success" className="mt-4">
+            <Badge tone="success" className="mt-3">
               Portfolio Online
             </Badge>
           </div>
@@ -176,8 +183,11 @@ export function WorkspaceShell({
                 data-cursor-intent="button"
                 data-cursor-label="SEARCH"
               >
-                <Search aria-hidden="true" size={18} />
+                <Search aria-hidden="true" size={16} />
                 <span className="workspace-tool-label">Search</span>
+                <kbd className="ml-1 hidden rounded border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-muted)] lg:inline-block">
+                  Ctrl K
+                </kbd>
               </button>
             </div>
           </header>
