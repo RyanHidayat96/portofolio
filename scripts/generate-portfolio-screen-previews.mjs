@@ -88,6 +88,7 @@ const screenDependencies = {
     "src/data/portfolio-content.ts"
   ],
   contact: [
+    "src/features/portfolio-3d/components/RetroBrochureProfile.tsx",
     "src/features/workspace/components/ContactPanel.tsx",
     "src/features/workspace/components/ProfessionalContactActions.tsx",
     "src/data/profile.ts",

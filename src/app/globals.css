@@ -7918,25 +7918,644 @@ textarea:focus-visible,
 }
 
 .arcade-screen-document--contact {
-  background: #0b0703;
+  background: transparent !important;
+  border-radius: 0px !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  /* Contact lies flat on the table. Keep CSS3D visible until its room
+     snapshot has committed, even when the camera sees the paper obliquely. */
+  backface-visibility: visible;
 }
 
+.retro-brochure-screen,
 .contact-book-screen {
   display: flex;
+  width: 100%;
   height: 100%;
-  min-height: 100%;
+  max-height: 100%;
   flex-direction: column;
-  background: #0b0703;
-  color: #ffe4a3;
+  background: transparent !important;
+  color: #231812 !important;
+  border-radius: 0px !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
 }
 
-.contact-book-content {
-  min-height: 0;
+.contact-book-content,
+.retro-brochure-content-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
   flex: 1;
+  overflow: hidden !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   AUTHENTIC VINTAGE PRINT BROCHURE DESIGN SYSTEM
+   - Zero pixel fonts (Woodtype display, Georgia serif body, Trebuchet labels)
+   - 100% Fit in 1 page (Zero Scroll)
+   - Real physical paper flyer / brochure aesthetics:
+     • Aged cream parchment with subtle sunburst rays & paper noise
+     • 3D woodtype title with layered dimensional drop shadow
+     • Folded crimson ribbon banner with swallowtail notches
+     • Circular guarantee rosette seal badge with concentric rings
+     • Perforated coupon voucher section with scissor cuts
+     • Tactile letterpress CTA button
+   ========================================================================== */
+
+.retro-brochure-page {
+  position: relative;
+  width: 1000px;
+  height: 100% !important;
+  max-height: 100% !important;
+  box-sizing: border-box;
+  padding: 6px 14px;
+  background: transparent;
+  color: #231812;
+  font-family: Georgia, 'Times New Roman', serif;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  text-rendering: optimizeLegibility;
+  filter: drop-shadow(0 2px 4px rgba(25, 12, 6, 0.35)) drop-shadow(0 14px 28px rgba(18, 9, 4, 0.45));
+}
+
+/* Subtle Sunburst Background Print & Paper Texture */
+.retro-brochure-sunburst {
+  position: absolute;
+  inset: 6px 14px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(255, 255, 255, 0.7) 0%, transparent 55%),
+    repeating-conic-gradient(from 0deg at 50% 12%, rgba(161, 50, 32, 0.03) 0deg 7.5deg, transparent 7.5deg 15deg),
+    radial-gradient(circle at 100% 100%, rgba(161, 50, 32, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 0% 0%, rgba(212, 155, 53, 0.07) 0%, transparent 45%);
+  z-index: 1;
+}
+
+.retro-brochure-paper-grain {
+  position: absolute;
+  inset: 6px 14px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(79, 49, 28, 0.12) 0 0.5px, transparent 0.7px),
+    radial-gradient(circle at 82% 64%, rgba(161, 50, 32, 0.1) 0 0.6px, transparent 0.8px),
+    radial-gradient(ellipse at center, transparent 48%, rgba(95, 55, 24, 0.12) 100%);
+  background-size: 7px 7px, 11px 11px, 100% 100%;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+/* Tactile Vertical Center Crease (Folded Brochure Effect) */
+.retro-brochure-crease {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 50%;
+  width: 4px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(36, 21, 14, 0.025) 40%,
+    rgba(36, 21, 14, 0.06) 50%,
+    rgba(255, 255, 255, 0.18) 60%,
+    transparent
+  );
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* Main Physical Paper Sheet with Layered Inset Borders (image_d5f7d1.png) */
+.retro-brochure-frame {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  border: 4px solid #231c18;
+  outline: 1px dashed #8b6e4e;
+  outline-offset: -7px;
+  padding: 10px 18px 8px;
+  background: radial-gradient(ellipse at 50% 25%, #faf4e4 0%, #f4ebd6 55%, #e9dac0 100%);
+  box-shadow:
+    inset 0 0 50px rgba(130, 85, 40, 0.1),
+    inset 0 0 100px rgba(180, 110, 45, 0.06),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.8),
+    inset -1px -1px 0 rgba(80, 45, 20, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden !important;
+}
+
+/* 1. Masthead */
+.retro-brochure-masthead {
+  border-bottom: 3px double #231c18;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  flex: 0 0 auto;
+}
+
+.retro-brochure-top-rule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #5a3825;
+  border-bottom: 1px solid #7d4924;
+  padding-bottom: 3px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.retro-brochure-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.retro-brochure-hero-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.retro-brochure-kicker {
+  font-family: 'Arial Narrow', 'Trebuchet MS', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #b6452c;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+}
+
+/* Woodtype Bold Title with 3D Dimensional Drop Shadow */
+.retro-brochure-title {
+  margin: 0;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: #231c18;
+  text-shadow:
+    2px 2px 0px #faf4e4,
+    4px 4px 0px #b6452c,
+    6px 6px 0px rgba(35, 22, 14, 0.35);
+}
+
+/* 3D Folded Crimson Ribbon Banner */
+.retro-brochure-ribbon-wrap {
+  margin-top: 6px;
+  display: inline-block;
+  position: relative;
+}
+
+.retro-brochure-ribbon {
+  background: #9e331b;
+  color: #fff8eb;
+  padding: 4px 20px;
+  font-family: 'Trebuchet MS', sans-serif;
+  font-size: 13.5px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-style: italic;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  clip-path: polygon(
+    14px 0%, 100% 0%,
+    calc(100% - 14px) 50%, 100% 100%,
+    14px 100%, 0% 50%
+  );
+  text-align: center;
+}
+
+/* Skewed Postage Stamp Badge */
+.retro-brochure-seal {
+  position: relative;
+  flex: 0 0 auto;
+  width: 92px;
+  height: 92px;
+  transform: rotate(5deg);
+}
+
+.retro-brochure-seal-stamp {
+  width: 100%;
+  height: 100%;
+  background: #b83929;
+  border: 2px dashed #faf4e4;
+  box-shadow: 3px 3px 0 #231c18;
+  color: #fff8eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+.retro-brochure-seal-badge {
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #ffd460;
+}
+
+.retro-brochure-seal-val {
+  font-family: 'Impact', sans-serif;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  margin: 1px 0;
+}
+
+.retro-brochure-seal-lbl {
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  color: #fff8eb;
+}
+
+.retro-brochure-seal-cancellation {
+  position: absolute;
+  inset: -4px;
+  border: 1.5px solid rgba(35, 22, 14, 0.45);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Slogan Banner Bar */
+.retro-brochure-slogan-bar {
+  background: #221c18;
+  color: #ffe1a0;
+  padding: 6px 16px;
+  text-align: center;
+  border: 1.5px solid #bd6a2e;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  flex: 0 0 auto;
+}
+
+.retro-brochure-slogan-bar p {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16.5px;
+  font-style: italic;
+  font-weight: 700;
+  color: #ffe1a0;
+  letter-spacing: 0.04em;
+}
+
+/* Two-Column Feature: Engineering Dispatch (Left) + Dossier Copy (Right) */
+.retro-brochure-feature {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.88fr) minmax(0, 1.12fr);
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 8px;
+}
+
+.retro-brochure-print-plate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  border: 2px solid rgba(255, 176, 0, 0.72);
-  background: linear-gradient(135deg, rgba(255, 176, 0, 0.08), transparent 34%), #0b0703;
-  box-shadow: inset 0 0 0 8px rgba(255, 176, 0, 0.04);
+  border: 3px solid #231c18;
+  background: #b6452c;
+  box-shadow: 3px 3px 0 #231c18;
+  color: #231c18;
+  text-align: center;
+  padding: 8px 10px;
+}
+
+.retro-brochure-plate-overline {
+  position: relative;
+  z-index: 1;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #231c18;
+  margin: 0;
+}
+
+.retro-brochure-plate-mark {
+  position: relative;
+  display: grid;
+  width: 110px;
+  height: 110px;
+  margin: 4px 0;
+  place-items: center;
+}
+
+.retro-brochure-plate-ray {
+  position: absolute;
+  width: 150%;
+  height: 12px;
+  background: #f9dda0;
+  opacity: 0.95;
+  transform-origin: center;
+}
+.retro-brochure-plate-ray--one { transform: rotate(12deg); }
+.retro-brochure-plate-ray--two { transform: rotate(72deg); }
+.retro-brochure-plate-ray--three { transform: rotate(132deg); }
+
+.retro-brochure-plate-ring {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border: 5px solid #231c18;
+  border-radius: 50%;
+  background: #faf4e4;
+}
+
+.retro-brochure-send-icon {
+  color: #231c18;
+}
+
+.retro-brochure-plate-wordmark {
+  position: relative;
+  z-index: 1;
+  font-family: 'Impact', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #231c18;
+  margin: 0;
+}
+
+.retro-brochure-plate-caption {
+  position: relative;
+  z-index: 1;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #231c18;
+  margin: 4px 0 0;
+}
+
+/* Right Copy */
+.retro-brochure-profile-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.retro-brochure-copy-eyebrow {
+  margin: 0 0 2px;
+  color: #b6452c;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.retro-brochure-copy-title {
+  margin: 0 0 4px;
+  color: #231c18;
+  font-family: Impact, Haettenschweiler, sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+}
+
+.retro-brochure-summary {
+  margin: 0 0 6px;
+  color: #3d261a;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.retro-brochure-facts {
+  margin: 0;
+  border-top: 1.5px solid #231c18;
+}
+
+.retro-brochure-facts > div {
+  display: grid;
+  grid-template-columns: 75px minmax(0, 1fr);
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(45, 26, 18, 0.4);
+}
+
+.retro-brochure-facts dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #b6452c;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.retro-brochure-facts dd {
+  margin: 0;
+  color: #231c18;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.retro-brochure-focus-list {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.retro-brochure-focus-list li {
+  padding: 3px 11px;
+  border: 1.5px solid #231c18;
+  background: #f9e2ab;
+  box-shadow: 1.5px 1.5px 0 #231c18;
+  color: #231c18;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Lower Section: Correspondence Voucher Zone with Tabs & Dashed Coupon */
+.retro-brochure-voucher-zone {
+  border: 2px dashed #8b6e4e;
+  background: rgba(255, 253, 247, 0.95);
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.retro-brochure-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.retro-brochure-tab {
+  padding: 3px 10px;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1.5px solid #231c18;
+  background: #e8d6b0;
+  color: #5a3825;
+  box-shadow: 1.5px 1.5px 0 #231c18;
+}
+
+.retro-brochure-tab--active {
+  background: #faf4e4;
+  color: #231c18;
+  font-weight: 900;
+}
+
+.retro-brochure-voucher-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.retro-brochure-voucher-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.retro-brochure-stamp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1.5px solid #231c18;
+  background: #f7f0d8;
+  padding: 5px 10px;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 #231c18;
+  border-radius: 4px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.retro-brochure-stamp:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #231c18;
+}
+
+.retro-brochure-stamp-icon {
+  color: #b6452c;
+  flex: 0 0 auto;
+}
+
+.retro-brochure-stamp-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.retro-brochure-stamp-info b {
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #b6452c;
+  text-transform: uppercase;
+}
+
+.retro-brochure-stamp-info span {
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #231c18;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.retro-brochure-stamp-arrow {
+  color: #7d4924;
+  flex: 0 0 auto;
+}
+
+/* Full-Width Dark Red Letterpress Action Button */
+.retro-brochure-cta-box {
+  text-align: center;
+}
+
+.retro-brochure-cta-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #9e331b;
+  color: #fff8eb;
+  padding: 8px 22px;
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 2px solid #231c18;
+  box-shadow: 2.5px 2.5px 0 #231c18;
+  text-decoration: none;
+  outline: 1px solid #ffd460;
+  outline-offset: -3px;
+  transition: transform 0.1s ease;
+}
+
+.retro-brochure-cta-button:hover {
+  background: #872014;
+  transform: translate(-1px, -1px);
+}
+
+/* Colophon Imprint */
+.retro-brochure-colophon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #5a3825;
+  border-top: 1px solid #d8c29d;
+  padding-top: 4px;
+  flex: 0 0 auto;
+  text-transform: uppercase;
 }
 
 .contact-book-content .contact-page {

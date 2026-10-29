@@ -70,15 +70,17 @@ export function ArcadeScreenSurface({
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
   const returnSnapshotPendingRef = useRef(false);
-  // Every operational CRT monitor stays a live CSS3D page in the room. This
-  // keeps its visual treatment and session state identical before and after focus.
+  // Operational CRT monitors stay live in the room. Contact is a flat paper
+  // artwork, so it switches to a lightweight two-sided session texture after
+  // the room becomes idle. This avoids CSS3D culling at shallow table angles.
   const keepsLiveRoomDocument =
     screenId === "pipeline" ||
     screenId === "terminal" ||
     screenId === "automation" ||
     screenId === "backend" ||
     screenId === "performance";
-  const staticPreview = keepsLiveRoomDocument
+  const usesSessionOnlyPreview = screenId === "contact";
+  const staticPreview = keepsLiveRoomDocument || usesSessionOnlyPreview
     ? undefined
     : getEmbeddedScreenStaticPreview(screenId);
   const staticPreviewUrl = staticPreview
@@ -673,7 +675,6 @@ export function ArcadeScreenSurface({
       previewTextureRef.current = nextTexture;
       setPreviewTexture(nextTexture);
       setIsPreviewCapturePending(false);
-      screenLayer.setPreviewAvailable(runtime, true);
       invalidate();
 
       return true;
@@ -715,9 +716,16 @@ export function ArcadeScreenSurface({
     screenLayer.setPreviewCapturePending(runtime, true);
 
     try {
-      const canvas = await captureEmbeddedScreenSnapshot(runtime.object.element, {
-        shouldContinue: shouldContinueCapture
-      });
+      const canvas = await captureEmbeddedScreenSnapshot(
+        runtime.object.element,
+        usesSessionOnlyPreview
+          ? {
+              shouldContinue: shouldContinueCapture,
+              scale: 1,
+              maxDimension: 1000
+            }
+          : { shouldContinue: shouldContinueCapture }
+      );
       if (!shouldContinueCapture()) {
         clearPendingCapture();
         return false;
@@ -735,7 +743,7 @@ export function ArcadeScreenSurface({
 
       return false;
     }
-  }, [gl, invalidate, screenLayer]);
+  }, [gl, invalidate, screenLayer, usesSessionOnlyPreview]);
 
   useEffect(() => {
     setStaticPreviewLoadFailed(false);

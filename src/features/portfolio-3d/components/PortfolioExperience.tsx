@@ -35,6 +35,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ArchitectureExplorer } from "@/features/architecture/components/ArchitectureExplorer";
 import { ContactPanel } from "@/features/workspace/components/ContactPanel";
+import { RetroBrochureContact } from "./RetroBrochureProfile";
 import { withPortfolio3dBasePath } from "../asset-url";
 import type { EmbeddedScreenId } from "../arcade-screen";
 import type {
@@ -378,22 +379,27 @@ export function ContactEmbeddedScreen({
   }, [interactive]);
 
   return (
-    <section className="contact-book-screen" aria-label="Contact">
-      <header className="contact-book-heading">
-        <Mail size={22} aria-hidden="true" />
-        <h2 ref={headingRef} tabIndex={-1}>
-          Contact
-        </h2>
-        <span className="contact-book-label">CV &amp; channels</span>
+    <section className="contact-book-screen retro-brochure-screen" aria-label="Contact">
+      <header className="contact-book-heading retro-brochure-bar-heading">
+        <div className="flex items-center gap-2">
+          <span className="text-[#a13220] font-bold text-base mono">✦</span>
+          <Mail size={18} aria-hidden="true" className="text-[#a13220]" />
+          <h2 ref={headingRef} tabIndex={-1} className="mono uppercase tracking-wider text-base font-bold text-[#231812]">
+            Contact
+          </h2>
+        </div>
+        <span className="contact-book-label uppercase font-bold text-[#8c6742]">
+          CV &amp; channels
+        </span>
       </header>
       <div
         ref={scrollRef}
-        className="contact-book-content"
+        className="contact-book-content retro-brochure-content-wrapper"
         tabIndex={interactive ? 0 : -1}
         onWheel={(event) => event.stopPropagation()}
         onScroll={onScroll}
       >
-        <ContactPanel />
+        <RetroBrochureContact interactive={interactive} />
       </div>
     </section>
   );
