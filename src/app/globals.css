@@ -8190,8 +8190,8 @@ textarea:focus-visible,
 /* Two-Column Feature: Engineering Dispatch (Left) + Dossier Copy (Right) */
 .retro-brochure-feature {
   display: grid;
-  grid-template-columns: minmax(240px, 0.88fr) minmax(0, 1.12fr);
-  gap: 14px;
+  grid-template-columns: minmax(260px, 0.94fr) minmax(0, 1.06fr);
+  gap: 16px;
   flex: 1 1 auto;
   min-height: 0;
   margin-bottom: 8px;
@@ -8209,14 +8209,14 @@ textarea:focus-visible,
   box-shadow: 3px 3px 0 #231c18;
   color: #231c18;
   text-align: center;
-  padding: 8px 10px;
+  padding: 16px 18px;
 }
 
 .retro-brochure-plate-overline {
   position: relative;
   z-index: 1;
   font-family: 'Arial Narrow', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
   letter-spacing: 0.16em;
   color: #231c18;
@@ -8226,9 +8226,9 @@ textarea:focus-visible,
 .retro-brochure-plate-mark {
   position: relative;
   display: grid;
-  width: 110px;
-  height: 110px;
-  margin: 4px 0;
+  width: 132px;
+  height: 132px;
+  margin: 10px 0;
   place-items: center;
 }
 
@@ -8248,8 +8248,8 @@ textarea:focus-visible,
   position: relative;
   z-index: 2;
   display: grid;
-  width: 72px;
-  height: 72px;
+  width: 82px;
+  height: 82px;
   place-items: center;
   border: 5px solid #231c18;
   border-radius: 50%;
@@ -8264,7 +8264,7 @@ textarea:focus-visible,
   position: relative;
   z-index: 1;
   font-family: 'Impact', sans-serif;
-  font-size: 20px;
+  font-size: 24px;
   letter-spacing: 0.04em;
   line-height: 1;
   color: #231c18;
@@ -8274,7 +8274,8 @@ textarea:focus-visible,
 .retro-brochure-plate-caption {
   position: relative;
   z-index: 1;
-  font-size: 11.5px;
+  max-width: 300px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
   color: #231c18;
@@ -8285,14 +8286,21 @@ textarea:focus-visible,
 .retro-brochure-profile-copy {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 3px solid #231c18;
+  background:
+    linear-gradient(90deg, rgba(182, 69, 44, 0.08), transparent 34%),
+    rgba(255, 251, 239, 0.74);
+  box-shadow: inset 0 0 0 2px rgba(249, 221, 160, 0.8);
 }
 
 .retro-brochure-copy-eyebrow {
   margin: 0 0 2px;
   color: #b6452c;
   font-family: 'Arial Narrow', sans-serif;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -8302,7 +8310,7 @@ textarea:focus-visible,
   margin: 0 0 4px;
   color: #231c18;
   font-family: Impact, Haettenschweiler, sans-serif;
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: 0.02em;
@@ -8311,9 +8319,9 @@ textarea:focus-visible,
 .retro-brochure-summary {
   margin: 0 0 6px;
   color: #3d261a;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .retro-brochure-facts {
@@ -8323,9 +8331,9 @@ textarea:focus-visible,
 
 .retro-brochure-facts > div {
   display: grid;
-  grid-template-columns: 75px minmax(0, 1fr);
+  grid-template-columns: 94px minmax(0, 1fr);
   gap: 8px;
-  padding: 3px 0;
+  padding: 5px 0;
   border-bottom: 1px solid rgba(45, 26, 18, 0.4);
 }
 
@@ -8335,7 +8343,7 @@ textarea:focus-visible,
   gap: 4px;
   color: #b6452c;
   font-family: 'Arial Narrow', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -8344,7 +8352,7 @@ textarea:focus-visible,
 .retro-brochure-facts dd {
   margin: 0;
   color: #231c18;
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -8352,29 +8360,80 @@ textarea:focus-visible,
 .retro-brochure-focus-list {
   display: flex;
   gap: 6px;
-  margin: 6px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .retro-brochure-focus-list li {
-  padding: 3px 11px;
+  padding: 5px 12px;
   border: 1.5px solid #231c18;
   background: #f9e2ab;
   box-shadow: 1.5px 1.5px 0 #231c18;
   color: #231c18;
   font-family: 'Arial Narrow', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.retro-brochure-field-notes {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 2px solid #231c18;
+}
+
+.retro-brochure-field-notes > p {
+  margin: 0 0 7px;
+  color: #b6452c;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.retro-brochure-field-notes > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.retro-brochure-field-notes article {
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(35, 28, 24, 0.72);
+  background: rgba(249, 226, 171, 0.42);
+}
+
+.retro-brochure-field-notes span,
+.retro-brochure-field-notes strong {
+  display: block;
+}
+
+.retro-brochure-field-notes span {
+  margin-bottom: 3px;
+  color: #b6452c;
+  font-family: 'Arial Narrow', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.retro-brochure-field-notes strong {
+  color: #231c18;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 /* Lower Section: Correspondence Voucher Zone with Tabs & Dashed Coupon */
 .retro-brochure-voucher-zone {
   border: 2px dashed #8b6e4e;
   background: rgba(255, 253, 247, 0.95);
-  padding: 8px 12px;
+  padding: 10px 14px;
   margin-bottom: 6px;
   flex: 0 0 auto;
   position: relative;
@@ -8424,7 +8483,7 @@ textarea:focus-visible,
   gap: 8px;
   border: 1.5px solid #231c18;
   background: #f7f0d8;
-  padding: 5px 10px;
+  padding: 8px 12px;
   text-decoration: none;
   box-shadow: 2px 2px 0 #231c18;
   border-radius: 4px;
@@ -8450,7 +8509,7 @@ textarea:focus-visible,
 
 .retro-brochure-stamp-info b {
   font-family: 'Arial Narrow', sans-serif;
-  font-size: 9.5px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
   color: #b6452c;
@@ -8459,7 +8518,7 @@ textarea:focus-visible,
 
 .retro-brochure-stamp-info span {
   font-family: Georgia, serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: #231c18;
   overflow: hidden;
@@ -8486,9 +8545,9 @@ textarea:focus-visible,
   box-sizing: border-box;
   background: #9e331b;
   color: #fff8eb;
-  padding: 8px 22px;
+  padding: 10px 22px;
   font-family: 'Arial Narrow', Arial, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;

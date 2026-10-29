@@ -133,6 +133,23 @@ export function RetroBrochureContact({
                 <li key={label}>{label}</li>
               ))}
             </ul>
+            <section className="retro-brochure-field-notes" aria-label="Working style">
+              <p>Field notes</p>
+              <div>
+                <article>
+                  <span>Scope</span>
+                  <strong>Interfaces &amp; APIs</strong>
+                </article>
+                <article>
+                  <span>Practice</span>
+                  <strong>Build, verify, ship</strong>
+                </article>
+                <article>
+                  <span>Availability</span>
+                  <strong>{profile.availability}</strong>
+                </article>
+              </div>
+            </section>
           </div>
         </section>
 
