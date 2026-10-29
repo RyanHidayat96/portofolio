@@ -70,9 +70,14 @@ export function ArcadeScreenSurface({
   const previewCaptureRequestRef = useRef(0);
   const wasInteractiveRef = useRef(false);
   const returnSnapshotPendingRef = useRef(false);
-  // Primary CRT monitors remain live CSS3D pages in the room, including on
-  // first load. They never swap to a static or captured texture.
-  const keepsLiveRoomDocument = screenId === "pipeline" || screenId === "terminal";
+  // Every operational CRT monitor stays a live CSS3D page in the room. This
+  // keeps its visual treatment and session state identical before and after focus.
+  const keepsLiveRoomDocument =
+    screenId === "pipeline" ||
+    screenId === "terminal" ||
+    screenId === "automation" ||
+    screenId === "backend" ||
+    screenId === "performance";
   const staticPreview = keepsLiveRoomDocument
     ? undefined
     : getEmbeddedScreenStaticPreview(screenId);
@@ -90,7 +95,7 @@ export function ArcadeScreenSurface({
     screenId === "automation" ||
     screenId === "backend" ||
     screenId === "performance";
-  const usesCrtSurface = screenId === "pipeline" || screenId === "terminal";
+  const usesCrtSurface = isMonitor;
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;

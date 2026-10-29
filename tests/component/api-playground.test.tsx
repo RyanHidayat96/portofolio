@@ -62,9 +62,13 @@ describe("ApiPlayground", () => {
     await user.click(screen.getByRole("button", { name: "Send" }));
 
     await waitFor(() => expect(screen.getByText("200 OK")).toBeInTheDocument());
-    expect(fetchMock).toHaveBeenCalledWith(firstEndpoint.path, {
-      headers: { Accept: "application/json" }
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      firstEndpoint.path,
+      expect.objectContaining({
+        headers: { Accept: "application/json" },
+        signal: expect.any(AbortSignal)
+      })
+    );
     expect(screen.getAllByText("application/json").length).toBeGreaterThan(0);
     expect(screen.getByText(/Portfolio Owner/)).toBeInTheDocument();
   });
@@ -110,5 +114,30 @@ describe("ApiPlayground", () => {
     expect(screen.getByText("Network unavailable")).toBeInTheDocument();
     expect(screen.getAllByText("failed").length).toBeGreaterThan(0);
     expect(screen.queryByText("200 OK")).not.toBeInTheDocument();
+  });
+
+  it("cancels an in-flight request when its embedded monitor becomes inactive", async () => {
+    const user = userEvent.setup();
+    let requestSignal: AbortSignal | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            requestSignal = init?.signal ?? undefined;
+            requestSignal?.addEventListener("abort", () => {
+              reject(new DOMException("Request aborted", "AbortError"));
+            });
+          })
+      )
+    );
+    const { rerender } = render(<ApiPlayground variant="screen" interactive />);
+
+    await user.click(screen.getByRole("button", { name: "Send" }));
+    rerender(<ApiPlayground variant="screen" interactive={false} />);
+
+    expect(requestSignal?.aborted).toBe(true);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Send" })).not.toBeDisabled());
+    expect(screen.queryByText("request failed")).not.toBeInTheDocument();
   });
 });

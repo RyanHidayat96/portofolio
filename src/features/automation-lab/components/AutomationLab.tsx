@@ -44,8 +44,9 @@ interface AutomationSignal {
 }
 
 export function AutomationLab({
-  variant = "workspace"
-}: Readonly<{ variant?: "workspace" | "screen" }> = {}): React.ReactElement {
+  variant = "workspace",
+  interactive = true
+}: Readonly<{ variant?: "workspace" | "screen"; interactive?: boolean }> = {}): React.ReactElement {
   const engine = useMemo(() => new AutomationSimulationEngine(), []);
   const [failureType, setFailureType] = useState<FailureType>("none");
   const [events, setEvents] = useState<readonly TimedSimulationEvent[]>([]);
@@ -59,6 +60,13 @@ export function AutomationLab({
     timersRef.current.forEach((timerId) => window.clearTimeout(timerId));
     timersRef.current = [];
   }, []);
+
+  useEffect(() => {
+    if (!interactive && isRunning) {
+      clearTimers();
+      setIsRunning(false);
+    }
+  }, [clearTimers, interactive, isRunning]);
 
   const runSimulation = useCallback(async () => {
     clearTimers();

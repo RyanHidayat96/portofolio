@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Radio, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { AutomationLab } from '@/features/automation-lab/components/AutomationLab';
 import { withPortfolio3dBasePath } from '../asset-url';
@@ -16,12 +16,33 @@ export function AutomationMonitorScreen({ interactive }: Readonly<{ interactive:
   }, [interactive]);
 
   return (
-    <section className="monitor-automation-screen" aria-label="Automation lab monitor">
+    <section
+      className="monitor-automation-screen"
+      aria-label="Automation lab monitor"
+    >
+      {/* CRT Glass Faceplate Optical Layers (Phosphor mesh and inner bezel depth shadow) */}
+      <div className="arcade-crt-phosphor-mesh" aria-hidden="true" />
+      <div className="arcade-crt-glass-depth" aria-hidden="true" />
+
       <header className="monitor-automation-heading">
-        <ShieldCheck size={22} aria-hidden="true" />
-        <h2 ref={headingRef} tabIndex={-1}>Automation lab</h2>
-        <span className="monitor-automation-label">Simulation</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[var(--accent)] font-bold text-base mono">╔═</span>
+          <ShieldCheck size={20} aria-hidden="true" className="text-[var(--accent)]" />
+          <h2 ref={headingRef} tabIndex={-1} className="mono uppercase tracking-wider text-base font-bold">
+            Automation Lab // Testing Rig
+          </h2>
+        </div>
+        <div className="arcade-simulation-meta flex items-center gap-3 mono text-xs">
+          <span className="flex items-center gap-1 text-[var(--accent)]">
+            <Radio size={12} className={interactive ? "animate-pulse" : ""} />
+            <span>ONLINE // 60Hz</span>
+          </span>
+          <span className="arcade-simulation-label uppercase text-[var(--accent-secondary)]">
+            [ SIMULATION RIG ] ═╗
+          </span>
+        </div>
       </header>
+
       <div
         ref={scrollRef}
         className="monitor-automation-scroll"
@@ -29,8 +50,18 @@ export function AutomationMonitorScreen({ interactive }: Readonly<{ interactive:
         aria-label="Automation controls and results"
         onScroll={onScroll}
       >
-        <AutomationLab variant="screen" />
+        <AutomationLab variant="screen" interactive={interactive} />
       </div>
+
+      {/* CRT Monitor Bottom Status Trim */}
+      <footer
+        className="arcade-crt-screen-footer mono text-[11px] text-[var(--text-muted)] flex items-center justify-between px-4 py-1.5 border-t border-[var(--border-strong)] bg-[var(--surface-raised)]"
+        aria-hidden="true"
+      >
+        <span>╚══[ RASTER APERTURE: P3 AMBER ]</span>
+        <span>RIG: PLAYWRIGHT // CYPRESS</span>
+        <span>FRAME: 1000x638 ══╝</span>
+      </footer>
     </section>
   );
 }

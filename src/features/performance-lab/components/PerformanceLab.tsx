@@ -29,9 +29,10 @@ interface PerformanceReleasePosture {
 
 interface PerformanceLabProps {
   readonly variant?: "workspace" | "screen";
+  readonly interactive?: boolean;
 }
 
-export function PerformanceLab({ variant = "workspace" }: PerformanceLabProps): React.ReactElement {
+export function PerformanceLab({ variant = "workspace", interactive = true }: PerformanceLabProps): React.ReactElement {
   const [config, setConfig] = useState<PerformanceRunConfig>(initialConfig);
   const scenario = findPerformanceScenario(config.scenarioId);
   const result = useMemo(() => simulatePerformanceRun(config), [config]);

@@ -6,7 +6,7 @@ import { Panel } from "@/components/ui/Panel";
 import { apiEndpoints } from "@/data/api-endpoints";
 import type { ApiEndpointDefinition } from "@/data/types";
 import { CheckCircle2, Clock, FileJson, Route, Send, ShieldCheck, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type JsonValue =
   string | number | boolean | null | { readonly [key: string]: JsonValue } | readonly JsonValue[];
@@ -30,24 +30,50 @@ interface ApiLifecycleStep {
 
 interface ApiPlaygroundProps {
   readonly variant?: "workspace" | "screen";
+  readonly interactive?: boolean;
 }
 
-export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): React.ReactElement {
+export function ApiPlayground({ variant = "workspace", interactive = true }: ApiPlaygroundProps): React.ReactElement {
   const [activePath, setActivePath] = useState(apiEndpoints[0]?.path ?? "");
   const [response, setResponse] = useState<ApiResponseState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const requestControllerRef = useRef<AbortController | null>(null);
   const isScreenMode = variant === "screen";
   const endpoint = apiEndpoints.find((item) => item.path === activePath) ?? apiEndpoints[0];
 
+  useEffect(() => {
+    if (interactive) return;
+
+    requestControllerRef.current?.abort();
+    requestControllerRef.current = null;
+    setIsLoading(false);
+  }, [interactive]);
+
+  useEffect(
+    () => () => {
+      requestControllerRef.current?.abort();
+    },
+    []
+  );
+
   async function sendRequest(): Promise<void> {
+    if (!interactive) return;
+
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     setIsLoading(true);
     setError(null);
     const startedAt = performance.now();
 
     try {
-      const apiResponse = await fetch(activePath, { headers: { Accept: "application/json" } });
+      const apiResponse = await fetch(activePath, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal
+      });
       const body = (await apiResponse.json()) as JsonValue;
+      if (controller.signal.aborted) return;
       setResponse({
         status: apiResponse.status,
         statusText: apiResponse.statusText,
@@ -56,10 +82,14 @@ export function ApiPlayground({ variant = "workspace" }: ApiPlaygroundProps): Re
         body
       });
     } catch (requestError) {
+      if (controller.signal.aborted) return;
       setResponse(null);
       setError(requestError instanceof Error ? requestError.message : "Request failed.");
     } finally {
-      setIsLoading(false);
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+        setIsLoading(false);
+      }
     }
   }
 

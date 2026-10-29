@@ -341,7 +341,9 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     );
   });
 
-  it.each(['pipeline', 'terminal'] as const)('keeps %s screen live on first room load', async (screenId) => {
+  it.each(['pipeline', 'terminal', 'automation', 'backend', 'performance'] as const)(
+    'keeps %s monitor live on first room load',
+    async (screenId) => {
     harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
     const loadSpy = vi.spyOn(THREE.TextureLoader.prototype, 'load');
 
@@ -358,8 +360,9 @@ describe('ArcadeScreenSurface mobile gestures', () => {
 
     expect(loadSpy).not.toHaveBeenCalled();
     expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-    expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
-  });
+      expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
+    }
+  );
 
   it('waits until camera returns before scheduling latest-frame snapshot', async () => {
     const { rerender } = render(
