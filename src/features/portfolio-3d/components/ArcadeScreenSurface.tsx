@@ -1,15 +1,12 @@
 "use client";
 
 import { useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from "../arcade-screen";
-import { withPortfolio3dBasePath } from "../asset-url";
-import { getEmbeddedScreenStaticPreview } from "../embedded-screen-preview-manifest";
 import { usePortfolio3dState } from "../state/Portfolio3dState";
 import { type EmbeddedScreenRegistration, useEmbeddedScreenLayer } from "./EmbeddedScreenLayer";
-import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
 import { CrtScreenSurface } from "./CrtScreenSurface";
 
 const desktopScreenPixelWidth = 1000;
@@ -18,7 +15,6 @@ export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
-const previewCaptureRetryDelayMs = 360;
 
 export interface EmbeddedScreenPan {
   readonly x: number;
@@ -62,42 +58,18 @@ export function ArcadeScreenSurface({
   onScreenZoomChange?: (screenId: EmbeddedScreenId, scale: number) => void;
   onScreenPanChange?: (screenId: EmbeddedScreenId, pan: EmbeddedScreenPan) => void;
 }>): React.ReactElement {
-  const { gl, invalidate, setEvents, get } = useThree();
+  const { gl, setEvents, get } = useThree();
   const { state, setActiveSection } = usePortfolio3dState();
   const screenLayer = useEmbeddedScreenLayer();
   const runtimeRef = useRef<EmbeddedScreenRegistration | null>(null);
-  const previewTextureRef = useRef<THREE.Texture | null>(null);
-  const previewCaptureRequestRef = useRef(0);
-  const wasInteractiveRef = useRef(false);
-  const returnSnapshotPendingRef = useRef(false);
-  // Operational CRT monitors stay live in the room. Contact is a flat paper
-  // artwork, so it switches to a lightweight two-sided session texture after
-  // the room becomes idle. This avoids CSS3D culling at shallow table angles.
-  const keepsLiveRoomDocument =
-    screenId === "pipeline" ||
-    screenId === "terminal" ||
-    screenId === "automation" ||
-    screenId === "backend" ||
-    screenId === "performance";
-  const usesSessionOnlyPreview = screenId === "contact";
-  const staticPreview = keepsLiveRoomDocument || usesSessionOnlyPreview
-    ? undefined
-    : getEmbeddedScreenStaticPreview(screenId);
-  const staticPreviewUrl = staticPreview
-    ? withPortfolio3dBasePath(staticPreview.publicPath)
-    : undefined;
-  const [previewTexture, setPreviewTexture] = useState<THREE.Texture | null>(null);
-  const [isPreviewCapturePending, setIsPreviewCapturePending] = useState(false);
-  const [staticPreviewLoadFailed, setStaticPreviewLoadFailed] = useState(false);
   const isInteractive =
     state.activeSectionId === screenId && state.navigationState === "section-open";
-  const isMonitor =
+  const usesCrtSurface =
     screenId === "pipeline" ||
     screenId === "terminal" ||
     screenId === "automation" ||
     screenId === "backend" ||
     screenId === "performance";
-  const usesCrtSurface = isMonitor;
   // The document always uses desktop coordinates. On phones its visual scale is
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
@@ -117,9 +89,7 @@ export function ArcadeScreenSurface({
       screen,
       pixelWidth,
       pixelHeight,
-      isInteractive: false,
-      hasPreview: false,
-      isPreviewCapturePending: false
+      isInteractive: false
     };
     runtimeRef.current = runtime;
     screenLayer.registerScreen(runtime);
@@ -145,7 +115,7 @@ export function ArcadeScreenSurface({
     const selectionMode = isInteractive ? "text" : "none";
     element.style.pointerEvents = isInteractive ? "auto" : "none";
     // CSS3DObject defaults to user-select: none. Let the focused document use
-    // native selection and copy, while the room preview remains non-selectable.
+    // native selection and copy, while room documents remain non-selectable.
     element.style.userSelect = selectionMode;
     element.style.setProperty("-webkit-user-select", selectionMode);
     element.inert = !isInteractive;
@@ -645,248 +615,11 @@ export function ArcadeScreenSurface({
     };
   }, [gl, isInteractive, onScreenPanChange, onScreenZoomChange, screenId, screenLayer]);
 
-  const captureReturnSnapshot = useCallback(async (): Promise<boolean> => {
-    if (keepsLiveRoomDocument) {
-      return false;
-    }
-
-    const runtime = runtimeRef.current;
-    if (!runtime || !runtime.content.firstElementChild) {
-      return false;
-    }
-
-    const requestId = ++previewCaptureRequestRef.current;
-    const shouldContinueCapture = (): boolean =>
-      previewCaptureRequestRef.current === requestId &&
-      runtimeRef.current === runtime &&
-      !runtime.isInteractive;
-
-    try {
-      const canvas = await captureEmbeddedScreenSnapshot(runtime.object.element, {
-        shouldContinue: shouldContinueCapture,
-        scale: 1.0,
-        maxDimension: 1000
-      });
-      if (!shouldContinueCapture()) {
-        return false;
-      }
-
-      const nextTexture = createScreenPreviewTexture(canvas, gl);
-      previewTextureRef.current = nextTexture;
-      setPreviewTexture(nextTexture);
-      setIsPreviewCapturePending(false);
-      invalidate();
-
-      return true;
-    } catch {
-      setIsPreviewCapturePending(false);
-      if (previewTextureRef.current) {
-        screenLayer.setPreviewAvailable(runtime, true);
-      }
-      return false;
-    }
-  }, [gl, invalidate, keepsLiveRoomDocument, screenLayer]);
-
-  const capturePreview = useCallback(async (): Promise<boolean> => {
-    const runtime = runtimeRef.current;
-    if (!runtime || !runtime.content.firstElementChild) {
-      return false;
-    }
-
-    const requestId = ++previewCaptureRequestRef.current;
-    const clearPendingCapture = (): void => {
-      if (previewCaptureRequestRef.current === requestId && runtimeRef.current === runtime) {
-        setIsPreviewCapturePending(false);
-        screenLayer.setPreviewCapturePending(runtime, false);
-      }
-    };
-    const shouldContinueCapture = (): boolean =>
-      previewCaptureRequestRef.current === requestId &&
-      runtimeRef.current === runtime &&
-      !runtime.isInteractive &&
-      screenLayer.canCapturePreview();
-    if (!shouldContinueCapture()) {
-      clearPendingCapture();
-      return false;
-    }
-
-    // Keep the current CSS3D viewport visible through the depth-tested opening
-    // until its replacement texture has committed. Never reveal the old preview.
-    setIsPreviewCapturePending(true);
-    screenLayer.setPreviewCapturePending(runtime, true);
-
-    try {
-      const canvas = await captureEmbeddedScreenSnapshot(
-        runtime.object.element,
-        usesSessionOnlyPreview
-          ? {
-              shouldContinue: shouldContinueCapture,
-              scale: 1,
-              maxDimension: 1000
-            }
-          : { shouldContinue: shouldContinueCapture }
-      );
-      if (!shouldContinueCapture()) {
-        clearPendingCapture();
-        return false;
-      }
-
-      const nextTexture = createScreenPreviewTexture(canvas, gl);
-      previewTextureRef.current = nextTexture;
-      setPreviewTexture(nextTexture);
-      setIsPreviewCapturePending(false);
-      invalidate();
-
-      return true;
-    } catch {
-      clearPendingCapture();
-
-      return false;
-    }
-  }, [gl, invalidate, screenLayer, usesSessionOnlyPreview]);
-
-  useEffect(() => {
-    setStaticPreviewLoadFailed(false);
-  }, [staticPreviewUrl]);
-
-  useEffect(() => {
-    if (isInteractive || previewTextureRef.current || !staticPreviewUrl) {
-      return;
-    }
-
-    let isCancelled = false;
-    const loader = new THREE.TextureLoader();
-    const texture = loader.load(
-      staticPreviewUrl,
-      (loadedTexture) => {
-        if (isCancelled) {
-          loadedTexture.dispose();
-          return;
-        }
-
-        const nextTexture = configureScreenPreviewTexture(loadedTexture, gl);
-        previewTextureRef.current = nextTexture;
-        setPreviewTexture(nextTexture);
-        setIsPreviewCapturePending(false);
-        invalidate();
-      },
-      undefined,
-      () => {
-        if (!isCancelled) setStaticPreviewLoadFailed(true);
-      }
-    );
-
-    return () => {
-      isCancelled = true;
-      if (previewTextureRef.current !== texture && !texture.image) {
-        texture.dispose();
-      }
-    };
-  }, [gl, invalidate, isInteractive, staticPreviewUrl]);
-
-  useEffect(() => {
-    if (keepsLiveRoomDocument || isInteractive || previewTextureRef.current) {
-      return;
-    }
-    if (staticPreviewUrl && !staticPreviewLoadFailed) {
-      return;
-    }
-
-    let isCancelled = false;
-    let attempts = 0;
-    let cancelScheduledCapture = (): void => {};
-
-    const scheduleCapture = (delayMs: number): void => {
-      cancelScheduledCapture = screenLayer.schedulePreviewCapture(async () => {
-        if (isCancelled || isInteractive || previewTextureRef.current) {
-          return;
-        }
-
-        const didCapture = await capturePreview();
-        if (isCancelled || didCapture || attempts >= 2) return;
-        attempts += 1;
-        scheduleCapture(previewCaptureRetryDelayMs);
-      }, delayMs);
-    };
-
-    scheduleCapture(0);
-
-    return () => {
-      isCancelled = true;
-      cancelScheduledCapture();
-    };
-  }, [capturePreview, isInteractive, keepsLiveRoomDocument, screenLayer, staticPreviewLoadFailed, staticPreviewUrl]);
-
-  useLayoutEffect(() => {
-    if (isInteractive) {
-      previewCaptureRequestRef.current += 1;
-      wasInteractiveRef.current = true;
-      returnSnapshotPendingRef.current = false;
-      return;
-    }
-
-    if (!wasInteractiveRef.current) {
-      return;
-    }
-
-    wasInteractiveRef.current = false;
-    // Keep the operated live page visible while camera returns. Capturing after
-    // the journey prevents the DOM-to-canvas work from starving camera frames.
-    returnSnapshotPendingRef.current = !keepsLiveRoomDocument;
-  }, [isInteractive, keepsLiveRoomDocument]);
-
-  useEffect(() => {
-    if (
-      keepsLiveRoomDocument ||
-      state.navigationState !== "overview" ||
-      !returnSnapshotPendingRef.current
-    ) {
-      return;
-    }
-
-    let isCancelled = false;
-    const cancelCapture = screenLayer.schedulePreviewCapture(async () => {
-      if (isCancelled || !returnSnapshotPendingRef.current) return;
-
-      const didCapture = await captureReturnSnapshot();
-      if (didCapture || runtimeRef.current?.isInteractive) {
-        returnSnapshotPendingRef.current = false;
-      }
-    }, 0);
-
-    return () => {
-      isCancelled = true;
-      cancelCapture();
-    };
-  }, [captureReturnSnapshot, keepsLiveRoomDocument, screenLayer, state.navigationState]);
-
-  useLayoutEffect(() => {
-    const runtime = runtimeRef.current;
-    if (runtime && previewTexture) {
-      // React has now installed the new map, so hiding the live page cannot
-      // expose the previous snapshot for a frame during the camera return.
-      screenLayer.setPreviewAvailable(runtime, true);
-      invalidate();
-    }
-  }, [invalidate, previewTexture, screenLayer]);
-
-  useEffect(() => () => previewTexture?.dispose(), [previewTexture]);
-
-  useEffect(() => {
-    return () => {
-      previewCaptureRequestRef.current += 1;
-      previewTextureRef.current = null;
-    };
-  }, []);
-
   return (
     <>
       {usesCrtSurface ? (
         <CrtScreenSurface
           screen={screen}
-          texture={previewTexture}
-          showPreview={Boolean(previewTexture && !isInteractive)}
-          isInteractive={isInteractive}
           screenId={screenId}
           onActivate={(delta) => {
             if (delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
@@ -903,38 +636,18 @@ export function ArcadeScreenSurface({
           }}
         >
           <planeGeometry args={[screen.width, screen.height]} />
-          {previewTexture && !isInteractive ? (
-            <meshBasicMaterial
-              key="screen-preview"
-              polygonOffset={isMonitor}
-              polygonOffsetFactor={-1}
-              polygonOffsetUnits={-1}
-              map={previewTexture}
-              color="#ffffff"
-              toneMapped={false}
-              fog={false}
-              depthTest
-              depthWrite
-              side={THREE.DoubleSide}
-            />
-          ) : (
-            /* This clears the canvas only inside the display while preserving its depth. */
-            <meshBasicMaterial
-              key="live-screen-depth"
-              polygonOffset={isMonitor}
-              polygonOffsetFactor={-1}
-              polygonOffsetUnits={-1}
-              color="#000000"
-              blending={THREE.NoBlending}
-              opacity={0}
-              transparent={false}
-              toneMapped={false}
-              fog={false}
-              depthTest
-              depthWrite
-              side={THREE.DoubleSide}
-            />
-          )}
+          {/* Preserve model depth while CSS3D paints every live screen. */}
+          <meshBasicMaterial
+            color="#000000"
+            blending={THREE.NoBlending}
+            opacity={0}
+            transparent={false}
+            toneMapped={false}
+            fog={false}
+            depthTest
+            depthWrite
+            side={THREE.DoubleSide}
+          />
         </mesh>
       )}
     </>
@@ -974,26 +687,4 @@ function getPannedViewportOffset(
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum);
-}
-
-function createScreenPreviewTexture(
-  canvas: HTMLCanvasElement,
-  renderer: THREE.WebGLRenderer
-): THREE.Texture {
-  const texture = new THREE.CanvasTexture(canvas);
-  return configureScreenPreviewTexture(texture, renderer);
-}
-
-function configureScreenPreviewTexture(
-  texture: THREE.Texture,
-  renderer: THREE.WebGLRenderer
-): THREE.Texture {
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.generateMipmaps = true;
-  texture.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-  texture.needsUpdate = true;
-
-  return texture;
 }

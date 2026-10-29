@@ -7,16 +7,10 @@ import type { ArcadeScreenPlacement } from "../arcade-screen";
 
 export function CrtScreenSurface({
   screen,
-  texture,
-  showPreview,
-  isInteractive = false,
   screenId = "pipeline",
   onActivate
 }: Readonly<{
   screen: ArcadeScreenPlacement;
-  texture: THREE.Texture | null;
-  showPreview: boolean;
-  isInteractive?: boolean;
   screenId?: string;
   onActivate: (delta: number) => void;
 }>): React.ReactElement {
@@ -67,7 +61,7 @@ export function CrtScreenSurface({
 
   return (
     <group position={screen.position} quaternion={screen.quaternion}>
-      {/* Primary Screen Mesh with preview texture or live depth punch */}
+      {/* Keep model depth while the live CSS3D document paints the screen. */}
       <mesh
         name={`Embedded_${screenId}_CrtSurface`}
         geometry={baseGeometry}
@@ -76,37 +70,21 @@ export function CrtScreenSurface({
           onActivate(event.delta);
         }}
       >
-        {showPreview && texture ? (
-          <meshBasicMaterial
-            key={`${screenId}-crt-preview`}
-            map={texture}
-            color="#ffffff"
-            depthTest
-            depthWrite
-            polygonOffset
-            polygonOffsetFactor={-1}
-            polygonOffsetUnits={-1}
-            toneMapped={false}
-            fog={false}
-            side={THREE.FrontSide}
-          />
-        ) : (
-          <meshBasicMaterial
-            key={`${screenId}-live-screen-depth`}
-            color="#000000"
-            blending={THREE.NoBlending}
-            opacity={0}
-            transparent={false}
-            toneMapped={false}
-            fog={false}
-            depthTest
-            depthWrite
-            polygonOffset
-            polygonOffsetFactor={-1}
-            polygonOffsetUnits={-1}
-            side={THREE.FrontSide}
-          />
-        )}
+        <meshBasicMaterial
+          key={`${screenId}-live-screen-depth`}
+          color="#000000"
+          blending={THREE.NoBlending}
+          opacity={0}
+          transparent={false}
+          toneMapped={false}
+          fog={false}
+          depthTest
+          depthWrite
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
+          side={THREE.FrontSide}
+        />
       </mesh>
 
       {/* Dynamic Real-Time Specular Glass Sheen:

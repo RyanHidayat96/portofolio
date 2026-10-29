@@ -42,7 +42,7 @@ export function RetroBrochureContact({
         {/* Top Meta Rule */}
         <header className="retro-brochure-masthead">
           <div className="retro-brochure-top-rule">
-            <span>RYANOS / CONTACT BUREAU</span>
+            <span>RYAN HIDAYAT / CONTACT BUREAU</span>
             <span aria-hidden="true">* * *</span>
             <span>PRINTED IN JAKARTA</span>
           </div>
@@ -202,7 +202,7 @@ export function RetroBrochureContact({
 
         {/* Colophon Imprint */}
         <footer className="retro-brochure-colophon" aria-hidden="true">
-          <span>RYANOS PROFESSIONAL CONTACT BROCHURE</span>
+          <span>RYAN HIDAYAT PROFESSIONAL CONTACT BROCHURE</span>
           <span>/</span>
           <span>MMXXVI</span>
         </footer>

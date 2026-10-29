@@ -58,7 +58,7 @@ export function ProfileArtworkScreen({
 
           <header className="profile-poster-masthead">
             <div className="profile-poster-topline">
-              <span>RYANOS / ENGINEER&apos;S EDITION</span>
+              <span>RYAN HIDAYAT / ENGINEER&apos;S EDITION</span>
               <span>JAKARTA / MMXXVI</span>
             </div>
             <div className="profile-poster-title-row">

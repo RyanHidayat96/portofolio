@@ -14,13 +14,9 @@ import {
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../arcade-screen';
-import { createPreviewCaptureQueue } from '../preview-capture-queue';
-import { usePortfolio3dState } from '../state/Portfolio3dState';
-import type { Portfolio3dNavigationState } from '../types';
 
 // CSS3D pages use pixel coordinates while the GLB continues to use meters.
 const cssWorldScale = 1000;
-const previewCaptureIdleMs = 180;
 const screenLayerZIndex = '0';
 const screenOverlayLayerZIndex = '2';
 
@@ -32,13 +28,8 @@ export interface EmbeddedScreenRegistration {
   pixelWidth: number;
   pixelHeight: number;
   isInteractive: boolean;
-  hasPreview: boolean;
-  isPreviewCapturePending: boolean;
   isFlattenedForInteraction?: boolean;
   cssTransform?: string;
-  frozenPreview?: HTMLDivElement;
-  frozenContentDisplay?: string;
-  frozenScrollRestoreFrame?: number;
 }
 
 export interface EmbeddedScreenOverlayRegistration {
@@ -62,11 +53,7 @@ interface EmbeddedScreenLayerRuntime {
   readonly bottomLeft: THREE.Vector3;
   readonly lastCameraMatrix: THREE.Matrix4;
   readonly lastProjectionMatrix: THREE.Matrix4;
-  lastCameraChangeAt: number;
-  lastUserInteractionAt: number;
-  readonly previewQueue: ReturnType<typeof createPreviewCaptureQueue>;
   activeScreen?: EmbeddedScreenRegistration;
-  activationRevealFrame?: number;
   width: number;
   height: number;
 }
@@ -81,8 +68,6 @@ interface EmbeddedScreenLayerController {
     pixelHeight: number
   ) => void;
   setInteractive: (screen: EmbeddedScreenRegistration, isInteractive: boolean) => void;
-  setPreviewCapturePending: (screen: EmbeddedScreenRegistration, isPending: boolean) => void;
-  setPreviewAvailable: (screen: EmbeddedScreenRegistration, isAvailable: boolean) => void;
   registerOverlay: (overlay: EmbeddedScreenOverlayRegistration) => void;
   unregisterOverlay: (overlay: EmbeddedScreenOverlayRegistration) => void;
   configureOverlay: (
@@ -92,8 +77,6 @@ interface EmbeddedScreenLayerController {
     pixelHeight: number
   ) => void;
   forceRepaint: () => void;
-  schedulePreviewCapture: (capture: () => Promise<void>, delayMs: number) => () => void;
-  canCapturePreview: () => boolean;
   render: () => void;
 }
 
@@ -103,11 +86,6 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
   children: ReactNode;
 }>): ReactElement {
   const { camera, gl, invalidate, size } = useThree();
-  const { state } = usePortfolio3dState();
-  const navigationStateRef = useRef(state.navigationState);
-  useLayoutEffect(() => {
-    navigationStateRef.current = state.navigationState;
-  }, [state.navigationState]);
   const runtimeRef = useRef<EmbeddedScreenLayerRuntime | null>(null);
   const [runtime, setRuntime] = useState<EmbeddedScreenLayerRuntime | null>(null);
   const repaintFrameRef = useRef<number | null>(null);
@@ -126,19 +104,6 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
     canvas.style.position = 'relative';
     canvas.style.zIndex = '1';
     parent.insertBefore(renderer.domElement, canvas);
-    const markRoomInputActivity = (event: Event): void => {
-      if (
-        typeof PointerEvent !== 'undefined' &&
-        event instanceof PointerEvent &&
-        event.type === 'pointermove' &&
-        event.buttons === 0
-      ) {
-        return;
-      }
-
-      const activeRuntime = runtimeRef.current;
-      if (activeRuntime) activeRuntime.lastUserInteractionAt = performance.now();
-    };
 
     const nextRuntime: EmbeddedScreenLayerRuntime = {
       renderer,
@@ -154,39 +119,18 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       bottomLeft: new THREE.Vector3(),
       lastCameraMatrix: new THREE.Matrix4(),
       lastProjectionMatrix: new THREE.Matrix4(),
-      lastCameraChangeAt: performance.now(),
-      lastUserInteractionAt: performance.now(),
-      previewQueue: createPreviewCaptureQueue(() =>
-        canCaptureEmbeddedScreenPreview(runtimeRef.current, navigationStateRef.current)
-      ),
       width: 0,
       height: 0
     };
     runtimeRef.current = nextRuntime;
     setRuntime(nextRuntime);
     invalidate();
-    parent.addEventListener('pointerdown', markRoomInputActivity, true);
-    parent.addEventListener('pointermove', markRoomInputActivity, true);
-    parent.addEventListener('touchstart', markRoomInputActivity, { capture: true, passive: true });
-    parent.addEventListener('touchmove', markRoomInputActivity, { capture: true, passive: true });
-    parent.addEventListener('wheel', markRoomInputActivity, { capture: true, passive: true });
-
     return () => {
       if (repaintFrameRef.current !== null) {
         cancelAnimationFrame(repaintFrameRef.current);
         repaintFrameRef.current = null;
       }
-      if (nextRuntime.activationRevealFrame !== undefined) {
-        cancelAnimationFrame(nextRuntime.activationRevealFrame);
-        nextRuntime.activationRevealFrame = undefined;
-      }
-      parent.removeEventListener('pointerdown', markRoomInputActivity, true);
-      parent.removeEventListener('pointermove', markRoomInputActivity, true);
-      parent.removeEventListener('touchstart', markRoomInputActivity, true);
-      parent.removeEventListener('touchmove', markRoomInputActivity, true);
-      parent.removeEventListener('wheel', markRoomInputActivity, true);
       runtimeRef.current = null;
-      nextRuntime.previewQueue.dispose();
       renderer.domElement.remove();
       canvas.style.position = previousPosition;
       canvas.style.zIndex = previousZIndex;
@@ -212,7 +156,6 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
     if (!cameraChanged) return;
     activeRuntime.lastCameraMatrix.copy(camera.matrixWorld);
     activeRuntime.lastProjectionMatrix.copy(camera.projectionMatrix);
-    activeRuntime.lastCameraChangeAt = performance.now();
     if (hasVisibleCssScreens(activeRuntime)) renderEmbeddedScreenLayer(activeRuntime, camera);
   });
 
@@ -270,7 +213,6 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
       },
       unregisterScreen: (screen): void => {
         if (!runtime.screens.has(screen)) return;
-        clearFrozenScreenPreview(screen);
         restoreScreenToLayer(runtime, screen);
         runtime.screens.delete(screen);
         runtime.scene.remove(screen.object);
@@ -288,14 +230,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           .filter((element) => element.scrollTop !== 0 || element.scrollLeft !== 0)
           .map((element) => ({ element, top: element.scrollTop, left: element.scrollLeft }));
 
-        if (runtime.activationRevealFrame !== undefined) {
-          cancelAnimationFrame(runtime.activationRevealFrame);
-          runtime.activationRevealFrame = undefined;
-        }
-        let shouldRevealActiveScreenAfterProjection = false;
-
         if (isInteractive) {
-          clearFrozenScreenPreview(screen);
           if (runtime.activeScreen && runtime.activeScreen !== screen) {
             restoreScreenToLayer(runtime, runtime.activeScreen);
           }
@@ -304,9 +239,7 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           runtime.activeScreen = screen;
           screen.object.visible = true;
           screen.object.element.style.display = '';
-          shouldRevealActiveScreenAfterProjection =
-            screen.hasPreview && !screen.isPreviewCapturePending;
-          screen.object.element.style.visibility = shouldRevealActiveScreenAfterProjection ? 'hidden' : '';
+          screen.object.element.style.visibility = '';
           screen.object.element.style.pointerEvents = 'auto';
 
           // Android Chrome renders this 3D transform correctly but its hit-test
@@ -318,11 +251,6 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
           screen.object.element.style.transformOrigin = '0 0';
           runtime.renderer.domElement.appendChild(screen.object.element);
         } else {
-          // Keep the live document while the camera returns. Cloning a whole
-          // page here blocks the first animation frames, turning the return
-          // journey into a teleport. A later snapshot replaces this live view.
-          screen.isPreviewCapturePending = true;
-          clearFrozenScreenPreview(screen);
           restoreScreenToLayer(runtime, screen);
         }
 
@@ -333,38 +261,8 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         scrollPositions.forEach(({ element, top, left }) => {
           element.scrollTo({ top, left, behavior: 'instant' });
         });
-        if (shouldRevealActiveScreenAfterProjection) {
-          runtime.activationRevealFrame = requestAnimationFrame(() => {
-            runtime.activationRevealFrame = requestAnimationFrame(() => {
-              runtime.activationRevealFrame = undefined;
-              if (runtime.activeScreen !== screen || !screen.isInteractive) return;
-
-              screen.object.element.style.visibility = '';
-              render();
-            });
-          });
-        }
 
         triggerForceRepaint();
-      },
-      setPreviewCapturePending: (screen, isPending): void => {
-        if (!runtime.screens.has(screen) || screen.isPreviewCapturePending === isPending) return;
-
-        screen.isPreviewCapturePending = isPending;
-        if (!isPending) clearFrozenScreenPreview(screen);
-        syncScreenPreviewVisibility(screen);
-        syncLayerPointerEvents(runtime);
-        render();
-      },
-      setPreviewAvailable: (screen, isAvailable): void => {
-        if (!runtime.screens.has(screen)) return;
-
-        screen.hasPreview = isAvailable;
-        screen.isPreviewCapturePending = false;
-        clearFrozenScreenPreview(screen);
-        syncScreenPreviewVisibility(screen);
-        syncLayerPointerEvents(runtime);
-        render();
       },
       registerOverlay: (overlay): void => {
         if (runtime.overlays.has(overlay)) return;
@@ -392,9 +290,6 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
         render();
       },
       forceRepaint: triggerForceRepaint,
-      schedulePreviewCapture: runtime.previewQueue.enqueue,
-      canCapturePreview: () =>
-        canCaptureEmbeddedScreenPreview(runtimeRef.current, navigationStateRef.current),
       render
     };
   }, [camera, invalidate, runtime]);
@@ -467,108 +362,8 @@ function restoreScreenToLayer(
   screen.isFlattenedForInteraction = false;
   screen.object.element.style.pointerEvents = 'none';
   screen.object.element.style.visibility = '';
-  syncScreenPreviewVisibility(screen);
-}
-
-function freezeScreenPreview(screen: EmbeddedScreenRegistration): void {
-  clearFrozenScreenPreview(screen);
-
-  const scrollState = readFrozenScreenScrollState(screen.content);
-  const frozenPreview = screen.content.cloneNode(true) as HTMLDivElement;
-  copyFrozenScreenState(screen.content, frozenPreview);
-  frozenPreview.classList.add('arcade-screen-frozen-preview');
-  frozenPreview.setAttribute('aria-hidden', 'true');
-  frozenPreview.inert = true;
-  frozenPreview.style.pointerEvents = 'none';
-  frozenPreview.style.position = 'absolute';
-  frozenPreview.style.inset = '0';
-  frozenPreview.style.zIndex = '1';
-  frozenPreview.style.width = '100%';
-  frozenPreview.style.height = '100%';
-  frozenPreview.style.overflow = 'hidden';
-
-  screen.frozenContentDisplay = screen.content.style.display;
-  screen.content.style.display = 'none';
-  screen.object.element.appendChild(frozenPreview);
-  restoreFrozenScreenScrollState(frozenPreview, scrollState);
-  screen.frozenPreview = frozenPreview;
-  screen.frozenScrollRestoreFrame = requestAnimationFrame(() => {
-    screen.frozenScrollRestoreFrame = undefined;
-    if (screen.frozenPreview === frozenPreview) {
-      restoreFrozenScreenScrollState(frozenPreview, scrollState);
-    }
-  });
-}
-
-function clearFrozenScreenPreview(screen: EmbeddedScreenRegistration): void {
-  if (screen.frozenScrollRestoreFrame !== undefined) {
-    cancelAnimationFrame(screen.frozenScrollRestoreFrame);
-    screen.frozenScrollRestoreFrame = undefined;
-  }
-  screen.frozenPreview?.remove();
-  screen.frozenPreview = undefined;
-  if (screen.frozenContentDisplay !== undefined) {
-    screen.content.style.display = screen.frozenContentDisplay;
-    screen.frozenContentDisplay = undefined;
-  }
-}
-
-function copyFrozenScreenState(source: HTMLElement, target: HTMLElement): void {
-  const sourceElements = [source, ...source.querySelectorAll<HTMLElement>('*')];
-  const targetElements = [target, ...target.querySelectorAll<HTMLElement>('*')];
-
-  for (let index = 0; index < sourceElements.length; index += 1) {
-    const sourceElement = sourceElements[index];
-    const targetElement = targetElements[index];
-    if (!targetElement) continue;
-
-    if (sourceElement instanceof HTMLInputElement && targetElement instanceof HTMLInputElement) {
-      targetElement.value = sourceElement.value;
-      targetElement.checked = sourceElement.checked;
-    } else if (sourceElement instanceof HTMLTextAreaElement && targetElement instanceof HTMLTextAreaElement) {
-      targetElement.value = sourceElement.value;
-    } else if (sourceElement instanceof HTMLSelectElement && targetElement instanceof HTMLSelectElement) {
-      targetElement.value = sourceElement.value;
-    }
-  }
-}
-
-function readFrozenScreenScrollState(source: HTMLElement): readonly { index: number; top: number; left: number }[] {
-  return [source, ...source.querySelectorAll<HTMLElement>('*')]
-    .map((element, index) => ({ index, top: element.scrollTop, left: element.scrollLeft }))
-    .filter(({ top, left }) => top !== 0 || left !== 0);
-}
-
-function restoreFrozenScreenScrollState(
-  target: HTMLElement,
-  scrollState: readonly { index: number; top: number; left: number }[]
-): void {
-  const targetElements = [target, ...target.querySelectorAll<HTMLElement>('*')];
-  for (const { index, top, left } of scrollState) {
-    const targetElement = targetElements[index];
-    if (!targetElement) continue;
-    targetElement.scrollTop = top;
-    targetElement.scrollLeft = left;
-  }
-}
-
-function canCaptureEmbeddedScreenPreview(
-  runtime: EmbeddedScreenLayerRuntime | null,
-  navigationState: Portfolio3dNavigationState
-): boolean {
-  if (!runtime || document.hidden || navigationState !== 'overview') return false;
-
-  const now = performance.now();
-  return (
-    now - runtime.lastCameraChangeAt >= previewCaptureIdleMs &&
-    now - runtime.lastUserInteractionAt >= previewCaptureIdleMs
-  );
-}
-
-function syncScreenPreviewVisibility(screen: EmbeddedScreenRegistration): void {
-  const shouldRenderCss = screen.isInteractive || screen.isPreviewCapturePending || !screen.hasPreview;
-  screen.object.visible = shouldRenderCss;
-  screen.object.element.style.display = shouldRenderCss ? '' : 'none';
+  screen.object.visible = true;
+  screen.object.element.style.display = '';
 }
 
 function hasVisibleCssScreens(runtime: EmbeddedScreenLayerRuntime): boolean {
@@ -581,8 +376,8 @@ function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
   const activeScreen = runtime.activeScreen;
   const isInteractive = Boolean(activeScreen);
   // Room documents stay behind the WebGL canvas. This lets the model's depth
-  // buffer hide a live CSS3D page behind its bezel and cabinet, just like the
-  // texture-backed monitor surfaces. Only focused pages need to sit above it.
+  // buffer hide a live CSS3D page behind its bezel and cabinet. Only focused
+  // pages need to sit above it.
   runtime.renderer.domElement.style.zIndex = isInteractive || runtime.overlays.size > 0
     ? screenOverlayLayerZIndex
     : screenLayerZIndex;
@@ -606,9 +401,10 @@ function syncLiveRoomScreenOcclusion(runtime: EmbeddedScreenLayerRuntime): void 
       .normalize()
       .dot(screen.screen.normal);
 
-    // If viewed from the side or behind (facing < 0.25), hide the CSS3D DOM element.
-    // The depth-tested WebGL mesh renders the preview texture and is properly occluded by the 3D cabinet walls.
-    const visibility = facing >= 0.25 ? '' : 'hidden';
+    // Paper contact screen lies flat on the table, so it becomes oblique far
+    // earlier than an upright monitor. It must stay painted over its original
+    // GLB paper material instead of exposing that dark backing.
+    const visibility = screen.screenId === 'contact' || facing >= 0.25 ? '' : 'hidden';
     if (screen.object.element.style.visibility !== visibility) {
       screen.object.element.style.visibility = visibility;
     }

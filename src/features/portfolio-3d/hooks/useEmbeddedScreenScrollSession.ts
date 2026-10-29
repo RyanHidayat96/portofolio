@@ -21,9 +21,8 @@ export function useEmbeddedScreenScrollSession(interactive: boolean) {
     if (!scrollContainer) return;
 
     const restoreScroll = (): void => {
-      // The room hides inactive CSS3D documents before their static preview is
-      // captured. A hidden element reports zero dimensions; clamping against
-      // that temporary layout would erase the last scroll position.
+      // A hidden CSS3D document reports zero dimensions. Clamping against that
+      // temporary layout would erase the last scroll position.
       if (scrollContainer.clientHeight < 1 || scrollContainer.scrollHeight < 1) {
         return;
       }

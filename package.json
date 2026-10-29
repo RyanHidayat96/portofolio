@@ -1,5 +1,5 @@
 {
-  "name": "ryanos-portfolio",
+  "name": "ryan-hidayat-portfolio",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,6 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "generate:screen-previews": "node scripts/generate-portfolio-screen-previews.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --check .",
@@ -18,7 +17,6 @@
   },
   "dependencies": {
     "@react-three/fiber": "^9.7.0",
-    "html-to-image": "^1.11.13",
     "lucide-react": "^1.31.0",
     "next": "^16.3.0",
     "react": "^19.2.8",

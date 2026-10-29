@@ -41,7 +41,7 @@ export function ArchitecturePosterScreen({
 
           <header className="architecture-poster-masthead">
             <div className="architecture-poster-topline">
-              <span>RYANOS TECHNICAL PRINT / NO. 04</span>
+              <span>RYAN HIDAYAT TECHNICAL PRINT / NO. 04</span>
               <span>BUILD WITH INTENT</span>
             </div>
             <div className="architecture-poster-title-row">

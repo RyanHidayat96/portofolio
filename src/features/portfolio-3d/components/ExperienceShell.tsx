@@ -132,7 +132,7 @@ export function ExperienceShell({
               <button
                 id="portfolio-3d-scene-title"
                 type="button"
-                className="button-base button-secondary bg-[var(--surface-glass)] uppercase backdrop-blur-md"
+                className="button-base button-secondary bg-[var(--surface-glass)] normal-case backdrop-blur-md"
                 onClick={onRoomReset}
               >
                 Ryan Hidayat

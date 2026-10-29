@@ -1,6 +1,6 @@
-# RyanOS Visual Boundaries
+# Ryan Hidayat Portfolio Visual Boundaries
 
-RyanOS has two deliberately separate visual systems. They share content and
+Ryan Hidayat's portfolio has two deliberately separate visual systems. They share content and
 navigation contracts, but never share visual tokens, typography, effects, or
 component overrides.
 

@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import { ArcadeScreenSurface, type EmbeddedScreenPan } from '../../src/features/portfolio-3d/components/ArcadeScreenSurface';
 import type { EmbeddedScreenRegistration } from '../../src/features/portfolio-3d/components/EmbeddedScreenLayer';
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from '../../src/features/portfolio-3d/arcade-screen';
-import { captureEmbeddedScreenSnapshot } from '../../src/features/portfolio-3d/components/EmbeddedScreenSnapshot';
 
 const harness = vi.hoisted(() => ({
   root: {} as {
@@ -15,7 +14,6 @@ const harness = vi.hoisted(() => ({
   },
   runtime: undefined as EmbeddedScreenRegistration | undefined,
   state: { activeSectionId: 'architecture', navigationState: 'section-open' },
-  scheduledPreviewCaptures: [] as { capture: () => Promise<void>; delayMs: number }[],
   screenLayer: {
     registerScreen: vi.fn((screen: EmbeddedScreenRegistration) => {
       harness.runtime = screen;
@@ -25,19 +23,7 @@ const harness = vi.hoisted(() => ({
     setInteractive: vi.fn((screen: EmbeddedScreenRegistration, isInteractive: boolean) => {
       screen.isInteractive = isInteractive;
     }),
-    setPreviewCapturePending: vi.fn(),
-    setPreviewAvailable: vi.fn(),
-    schedulePreviewCapture: vi.fn((capture: () => Promise<void>, delayMs: number) => {
-      const job = { capture, delayMs };
-      harness.scheduledPreviewCaptures.push(job);
-      return () => {
-        harness.scheduledPreviewCaptures = harness.scheduledPreviewCaptures.filter(
-          (entry) => entry !== job
-        );
-      };
-    }),
-    render: vi.fn(),
-    canCapturePreview: vi.fn(() => true)
+    render: vi.fn()
   },
   setActiveSection: vi.fn()
 }));
@@ -58,9 +44,6 @@ vi.mock('../../src/features/portfolio-3d/components/EmbeddedScreenLayer', () => 
   useEmbeddedScreenLayer: () => harness.screenLayer
 }));
 
-vi.mock('../../src/features/portfolio-3d/components/EmbeddedScreenSnapshot', () => ({
-  captureEmbeddedScreenSnapshot: vi.fn()
-}));
 
 const placement = {
   position: new THREE.Vector3(),
@@ -151,12 +134,10 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     vi.useFakeTimers();
     harness.runtime = undefined;
     harness.state = { activeSectionId: 'architecture', navigationState: 'section-open' };
-    harness.scheduledPreviewCaptures = [];
     harness.setActiveSection.mockClear();
     Object.values(harness.screenLayer).forEach((entry) => {
       if (typeof entry === 'function' && 'mockClear' in entry) entry.mockClear();
     });
-    vi.mocked(captureEmbeddedScreenSnapshot).mockReset();
 
     host = document.createElement('div');
     const canvas = document.createElement('canvas');
@@ -305,111 +286,4 @@ describe('ArcadeScreenSurface mobile gestures', () => {
     expect(scrollContainer.scrollTop).toBe(100);
   });
 
-  it('uses a static first-load preview for ordinary monitor screens', async () => {
-    harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
-    const staticTexture: THREE.Texture<HTMLImageElement> = new THREE.Texture(document.createElement('img'));
-    const loadSpy = vi
-      .spyOn(THREE.TextureLoader.prototype, 'load')
-      .mockImplementation((_url, onLoad, _onProgress, _onError) => {
-        onLoad?.(staticTexture);
-        return staticTexture;
-      });
-
-    render(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    expect(harness.runtime).toBeDefined();
-
-    await act(async () => { await Promise.resolve(); });
-
-    expect(loadSpy).toHaveBeenCalledWith(
-      '/portfolio-screen-previews/architecture.webp',
-      expect.any(Function),
-      undefined,
-      expect.any(Function)
-    );
-    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-    expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
-    expect(harness.screenLayer.setPreviewAvailable).toHaveBeenCalledWith(
-      harness.runtime,
-      true
-    );
-  });
-
-  it.each(['pipeline', 'terminal', 'automation', 'backend', 'performance'] as const)(
-    'keeps %s monitor live on first room load',
-    async (screenId) => {
-    harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
-    const loadSpy = vi.spyOn(THREE.TextureLoader.prototype, 'load');
-
-    render(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId={screenId}
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-
-    await act(async () => { await Promise.resolve(); });
-
-    expect(loadSpy).not.toHaveBeenCalled();
-    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-      expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
-    }
-  );
-
-  it('waits until camera returns before scheduling latest-frame snapshot', async () => {
-    const { rerender } = render(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-    expect(harness.runtime).toBeDefined();
-    harness.runtime!.content.appendChild(document.createElement('section'));
-
-    harness.state = { activeSectionId: 'architecture', navigationState: 'section-open' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-
-    harness.state = { activeSectionId: 'overview', navigationState: 'returning' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-
-    expect(captureEmbeddedScreenSnapshot).not.toHaveBeenCalled();
-    expect(harness.screenLayer.schedulePreviewCapture).not.toHaveBeenCalled();
-
-    harness.state = { activeSectionId: 'overview', navigationState: 'overview' };
-    rerender(
-      <ArcadeScreenSurface
-        screen={placement}
-        screenId="architecture"
-        onScreenZoomChange={onScreenZoomChange}
-        onScreenPanChange={onScreenPanChange}
-      />
-    );
-
-    await act(async () => { await Promise.resolve(); });
-    expect(harness.screenLayer.schedulePreviewCapture).toHaveBeenCalled();
-  });
 });

@@ -43,7 +43,7 @@ export function ExperienceArtworkScreen({
 
           <header className="experience-poster-masthead">
             <div className="experience-poster-topline">
-              <span>RYANOS CAREER REVIEW</span>
+              <span>RYAN HIDAYAT CAREER REVIEW</span>
               <span>ISSUE {String(professionalExperience.length).padStart(2, "0")}</span>
             </div>
             <div className="experience-poster-title-row">

@@ -7887,8 +7887,8 @@ textarea:focus-visible,
   border: none !important;
   box-shadow: none !important;
   overflow: visible !important;
-  /* Contact lies flat on the table. Keep CSS3D visible until its room
-     snapshot has committed, even when the camera sees the paper obliquely. */
+  /* Contact lies flat on the table, so it must remain visible at an oblique
+     room angle. */
   backface-visibility: visible;
 }
 

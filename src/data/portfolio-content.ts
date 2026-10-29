@@ -395,7 +395,7 @@ export const projects: readonly ProjectCaseStudy[] = [
     ]
   },
   {
-    slug: "ryanos-portfolio",
+    slug: "ryan-hidayat-portfolio",
     title: "Ryan Portfolio",
     categories: ["build", "devops"],
     role: "Full Stack Engineer",

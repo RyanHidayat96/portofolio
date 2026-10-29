@@ -22,7 +22,7 @@ export const capabilities: readonly Capability[] = [
     relatedProjects: [
       "enterprise-audit-monitoring-platform",
       "enterprise-backend-development",
-      "ryanos-portfolio"
+      "ryan-hidayat-portfolio"
     ]
   },
   {
@@ -99,7 +99,7 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
       "TanStack Table"
     ],
     relatedExperience: ["jasa-marga-full-stack"],
-    relatedProjects: ["enterprise-audit-monitoring-platform", "ryanos-portfolio"],
+    relatedProjects: ["enterprise-audit-monitoring-platform", "ryan-hidayat-portfolio"],
     domain: "build"
   },
   {

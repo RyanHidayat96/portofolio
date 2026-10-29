@@ -1,5 +1,5 @@
 import { act, cleanup, render } from '@testing-library/react';
-import { StrictMode, useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
@@ -23,16 +23,12 @@ const embeddedScreenIds = [
 const harness = vi.hoisted(() => ({
   frame: () => {},
   root: {} as { camera: THREE.PerspectiveCamera; gl: { domElement: HTMLCanvasElement }; invalidate: () => void; size: { width: number; height: number } },
-  navigation: 'overview',
   renderCss: vi.fn()
 }));
 
 vi.mock('@react-three/fiber', () => ({
   useThree: () => harness.root,
   useFrame: (callback: () => void) => { harness.frame = callback; }
-}));
-vi.mock('../../src/features/portfolio-3d/state/Portfolio3dState', () => ({
-  usePortfolio3dState: () => ({ state: { navigationState: harness.navigation } })
 }));
 vi.mock('three/examples/jsm/renderers/CSS3DRenderer.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('three/examples/jsm/renderers/CSS3DRenderer.js')>();
@@ -61,7 +57,6 @@ function Subject() { return <EmbeddedScreenLayer><ScreenProbe /></EmbeddedScreen
 beforeEach(() => {
   vi.useFakeTimers();
   harness.renderCss.mockClear();
-  harness.navigation = 'overview';
   const host = document.createElement('div');
   const canvas = document.createElement('canvas');
   host.appendChild(canvas);
@@ -75,7 +70,7 @@ beforeEach(() => {
   screen = {
     screenId: 'performance', object: new CSS3DObject(element), content,
     screen: { position: new THREE.Vector3(), quaternion: new THREE.Quaternion(), normal: new THREE.Vector3(0, 0, 1), width: 2, height: 1.5 },
-    pixelWidth: 1000, pixelHeight: 750, isInteractive: false, hasPreview: false, isPreviewCapturePending: false
+    pixelWidth: 1000, pixelHeight: 750, isInteractive: false
   };
   Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: function (this: HTMLElement, options: ScrollToOptions) {
     this.scrollTop = options.top ?? 0;
@@ -91,7 +86,7 @@ afterEach(() => {
 });
 
 describe('embedded screen render scheduling', () => {
-  it('skips repeated idle renders but updates for movement, zoom and explicit screen changes', async () => {
+  it('skips repeated idle renders but updates live screens for movement and zoom', () => {
     render(<Subject />);
     act(() => harness.frame());
     harness.renderCss.mockClear();
@@ -101,39 +96,13 @@ describe('embedded screen render scheduling', () => {
     expect(harness.renderCss).toHaveBeenCalledTimes(1);
     act(() => { harness.root.camera.fov = 35; harness.root.camera.updateProjectionMatrix(); harness.frame(); });
     expect(harness.renderCss).toHaveBeenCalledTimes(2);
-    act(() => layer.setPreviewAvailable(screen, true));
-    expect(screen.object.element.style.display).toBe('none');
     act(() => layer.setInteractive(screen, true));
     expect(screen.object.element.style.display).toBe('');
-    expect(screen.object.element.style.visibility).toBe('hidden');
-    const transform = screen.object.element.style.transform;
-    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
-    expect(screen.object.element.style.visibility).toBe('hidden');
-    await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(screen.object.element.style.visibility).toBe('');
+    const transform = screen.object.element.style.transform;
     act(() => { harness.root.camera.position.y += 1; harness.frame(); });
     expect(screen.object.element.style.transform).not.toBe(transform);
   });
-
-  it.each(embeddedScreenIds)(
-    'delays live reveal for preview-backed %s screen until its projected layout is ready',
-    async (screenId) => {
-      screen = { ...screen, screenId };
-      render(<Subject />);
-
-      act(() => layer.setPreviewAvailable(screen, true));
-      act(() => layer.setInteractive(screen, true));
-
-      expect(screen.object.element.style.display).toBe('');
-      expect(screen.object.element.style.visibility).toBe('hidden');
-
-      await act(async () => { await vi.advanceTimersByTimeAsync(20); });
-      expect(screen.object.element.style.visibility).toBe('hidden');
-      await act(async () => { await vi.advanceTimersByTimeAsync(20); });
-
-      expect(screen.object.element.style.visibility).toBe('');
-    }
-  );
 
   it('keeps uncaptured first-time screens visible immediately', () => {
     render(<Subject />);
@@ -145,7 +114,6 @@ describe('embedded screen render scheduling', () => {
     render(<Subject />);
     const cssLayer = harness.root.gl.domElement.parentElement?.querySelector<HTMLElement>('.arcade-css-layer');
     expect(cssLayer).toBeTruthy();
-    act(() => layer.setPreviewAvailable(screen, true));
     act(() => layer.setInteractive(screen, true));
     screen.content.scrollTop = 450;
     screen.content.scrollLeft = 20;
@@ -153,7 +121,6 @@ describe('embedded screen render scheduling', () => {
     expect(screen.content.scrollTop).toBe(450);
     expect(screen.content.scrollLeft).toBe(20);
     expect(screen.object.visible).toBe(true);
-    expect(screen.frozenPreview).toBeUndefined();
     expect(cssLayer?.style.zIndex).toBe('0');
     await act(async () => { await vi.advanceTimersByTimeAsync(20); });
     expect(screen.content.scrollTop).toBe(450);
@@ -165,7 +132,6 @@ describe('embedded screen render scheduling', () => {
     act(() => layer.setInteractive(screen, true));
     expect(screen.content.scrollTop).toBe(450);
     expect(screen.object.visible).toBe(true);
-    expect(screen.frozenPreview).toBeUndefined();
   });
 
   it.each(embeddedScreenIds)(
@@ -190,37 +156,4 @@ describe('embedded screen render scheduling', () => {
     }
   );
 
-  it('waits for overview and camera rest, including after StrictMode remount', async () => {
-    const view = render(<StrictMode><Subject /></StrictMode>);
-    const capture = vi.fn(async () => {});
-    act(() => layer.schedulePreviewCapture(capture, 0));
-    harness.navigation = 'focusing';
-    view.rerender(<StrictMode><Subject /></StrictMode>);
-    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
-    expect(capture).not.toHaveBeenCalled();
-    harness.navigation = 'overview';
-    view.rerender(<StrictMode><Subject /></StrictMode>);
-    act(() => { harness.root.camera.position.x += 1; harness.frame(); });
-    await act(async () => { await vi.advanceTimersByTimeAsync(120); });
-    expect(capture).not.toHaveBeenCalled();
-    await act(async () => { await vi.advanceTimersByTimeAsync(360); });
-    expect(capture).toHaveBeenCalledOnce();
-  });
-
-  it('waits for room input to settle before running preview captures', async () => {
-    render(<Subject />);
-    const capture = vi.fn(async () => {});
-    act(() => layer.schedulePreviewCapture(capture, 0));
-
-    await act(async () => { await vi.advanceTimersByTimeAsync(100); });
-    const pointerMove = new Event('pointermove', { bubbles: true });
-    Object.defineProperty(pointerMove, 'buttons', { value: 1 });
-    act(() => harness.root.gl.domElement.parentElement!.dispatchEvent(pointerMove));
-
-    await act(async () => { await vi.advanceTimersByTimeAsync(160); });
-    expect(capture).not.toHaveBeenCalled();
-
-    await act(async () => { await vi.advanceTimersByTimeAsync(160); });
-    expect(capture).toHaveBeenCalledOnce();
-  });
 });
