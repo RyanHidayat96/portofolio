@@ -46,12 +46,14 @@ interface TerminalPanelProps {
   readonly interactive?: boolean;
   readonly terminalOutputRef?: Ref<HTMLDivElement>;
   readonly onTerminalOutputScroll?: UIEventHandler<HTMLDivElement>;
+  readonly terminalOutputTabIndex?: number;
 }
 
 export function TerminalPanel({
   onNavigate,
   terminalOutputRef,
   onTerminalOutputScroll,
+  terminalOutputTabIndex,
   variant = "workspace",
   interactive = true
 }: Readonly<TerminalPanelProps>): React.ReactElement {
@@ -216,6 +218,7 @@ export function TerminalPanel({
         role="log"
         aria-live="polite"
         aria-label="Terminal output"
+        tabIndex={terminalOutputTabIndex}
         onClick={() => inputRef.current?.focus()}
         onScroll={onTerminalOutputScroll}
       >

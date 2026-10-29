@@ -6511,6 +6511,7 @@ textarea:focus-visible,
     .monitor-performance-scroll,
     .monitor-api-scroll,
     .monitor-terminal-scroll,
+    .terminal-panel-screen .terminal-screen,
     .profile-artwork-content,
     .experience-artwork-content,
     .architecture-embedded-content,
@@ -6801,10 +6802,7 @@ textarea:focus-visible,
 .monitor-terminal-scroll {
   min-height: 0;
   flex: 1;
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  scrollbar-color: #ffb000 #0b0703;
+  overflow: hidden;
   touch-action: pan-y;
   container-type: inline-size;
 }
@@ -8503,6 +8501,11 @@ textarea:focus-visible,
   flex: 1;
   min-height: 0;
   max-height: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: #ffb000 #0b0703;
+  touch-action: pan-y;
   background: #050301;
   padding: 12px;
   font-size: 12px;
@@ -10233,6 +10236,7 @@ textarea:focus-visible,
     .monitor-performance-scroll,
     .monitor-api-scroll,
     .monitor-terminal-scroll,
+    .terminal-panel-screen .terminal-screen,
     .profile-artwork-content,
     .experience-artwork-content,
     .architecture-embedded-content,
@@ -10250,6 +10254,7 @@ textarea:focus-visible,
     .monitor-performance-scroll,
     .monitor-api-scroll,
     .monitor-terminal-scroll,
+    .terminal-panel-screen .terminal-screen,
     .profile-artwork-content,
     .experience-artwork-content,
     .architecture-embedded-content,
@@ -10267,6 +10272,7 @@ textarea:focus-visible,
     .monitor-performance-scroll,
     .monitor-api-scroll,
     .monitor-terminal-scroll,
+    .terminal-panel-screen .terminal-screen,
     .profile-artwork-content,
     .experience-artwork-content,
     .architecture-embedded-content,
@@ -10280,6 +10286,7 @@ textarea:focus-visible,
     .monitor-performance-scroll,
     .monitor-api-scroll,
     .monitor-terminal-scroll,
+    .terminal-panel-screen .terminal-screen,
     .profile-artwork-content,
     .experience-artwork-content,
     .architecture-embedded-content,
@@ -10296,6 +10303,7 @@ textarea:focus-visible,
     .monitor-performance-scroll,
     .monitor-api-scroll,
     .monitor-terminal-scroll,
+    .terminal-panel-screen .terminal-screen,
     .profile-artwork-content,
     .experience-artwork-content,
     .architecture-embedded-content,
@@ -10316,6 +10324,7 @@ textarea:focus-visible,
       .monitor-performance-scroll,
       .monitor-api-scroll,
       .monitor-terminal-scroll,
+      .terminal-panel-screen .terminal-screen,
       .architecture-embedded-content
     ) {
     padding-inline-end: var(--embedded-screen-mobile-scrollbar-gutter);

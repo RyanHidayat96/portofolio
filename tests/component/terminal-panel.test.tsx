@@ -90,10 +90,12 @@ describe("TerminalPanel", () => {
         onNavigate={vi.fn()}
         terminalOutputRef={outputRef}
         onTerminalOutputScroll={onOutputScroll}
+        terminalOutputTabIndex={0}
       />
     );
 
     expect(outputRef.current).toHaveClass("terminal-screen");
+    expect(outputRef.current).toHaveAttribute("tabindex", "0");
     fireEvent.scroll(outputRef.current!);
     expect(onOutputScroll).toHaveBeenCalledOnce();
   });

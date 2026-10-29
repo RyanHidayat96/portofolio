@@ -63,14 +63,13 @@ export function TerminalMonitorScreen({ interactive }: Readonly<{ interactive: b
 
       <div
         className="monitor-terminal-scroll"
-        tabIndex={interactive ? 0 : -1}
-        aria-label="Terminal commands and output"
       >
         <TerminalPanel
           variant="screen"
           interactive={interactive}
           terminalOutputRef={terminalOutputScrollRef}
           onTerminalOutputScroll={onTerminalOutputScroll}
+          terminalOutputTabIndex={interactive ? 0 : -1}
           onNavigate={(section) => setActiveSection(terminalNavigationTargets[section] ?? 'overview')}
         />
       </div>
