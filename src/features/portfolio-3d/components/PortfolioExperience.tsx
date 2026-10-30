@@ -35,6 +35,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ArchitecturePosterScreen } from "./ArchitecturePosterScreen";
 import { RetroBrochureContact } from "./RetroBrochureProfile";
+import { prepareMobileRoomPreview } from "./ArcadeScreenSurface";
 import { withPortfolio3dBasePath } from "../asset-url";
 import type { EmbeddedScreenId } from "../arcade-screen";
 import type {
@@ -275,7 +276,12 @@ function PortfolioExperienceContent({
         }
         assetProgress={assetProgress}
         isScreenFocusView={isScreenFocusView || isScreenApproach}
-        onRoomReset={() => setActiveSection("overview")}
+        onRoomReset={async () => {
+          if (state.activeSectionId === "pipeline") {
+            await prepareMobileRoomPreview("pipeline");
+          }
+          setActiveSection("overview");
+        }}
       />
       {embeddedScreenElements.pipeline
         ? createPortal(
@@ -506,6 +512,7 @@ function ModelViewerRenderCalibration(): null {
 
   useEffect(() => {
     configurePortfolio3dRenderer(gl);
+    if (typeof window !== "undefined") (window as any).__threeScene = scene;
 
     const canvasScene = sceneRef.current;
     const previousEnvironment = canvasScene.environment;
@@ -672,9 +679,13 @@ function Portfolio3dNavigation(): React.ReactElement {
                 disabled={isLocked}
                 onFocus={() => setFocusedHotspot(hotspot?.id, "keyboard")}
                 onBlur={() => setFocusedHotspot(undefined)}
-                onClick={() => {
+                onClick={async () => {
                   if (isLocked) {
                     return;
+                  }
+
+                  if (state.activeSectionId === "pipeline" && contract.id !== "pipeline") {
+                    await prepareMobileRoomPreview("pipeline");
                   }
 
                   if (hotspot) {

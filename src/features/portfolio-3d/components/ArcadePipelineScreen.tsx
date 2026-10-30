@@ -6,6 +6,7 @@ import { PipelineSimulatorPanel } from "@/features/pipeline/components/PipelineS
 import { usePortfolio3dState } from "../state/Portfolio3dState";
 import { withPortfolio3dBasePath } from "../asset-url";
 import { useEmbeddedScreenScrollSession } from "../hooks/useEmbeddedScreenScrollSession";
+import { prepareMobileRoomPreview } from "./ArcadeScreenSurface";
 
 export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
@@ -48,7 +49,10 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
         className="arcade-pipeline-scroll"
         tabIndex={interactive ? 0 : -1}
         aria-label="Pipeline controls and results"
-        onScroll={onScroll}
+        onScroll={(event) => {
+          onScroll(event);
+          event.currentTarget.dataset.scrollTop = String(event.currentTarget.scrollTop);
+        }}
       >
         <PipelineSimulatorPanel variant="screen" interactive={interactive} />
       </div>
@@ -68,9 +72,17 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
 
 export function ArcadePipelineControls(): React.ReactElement {
   const { setActiveSection } = usePortfolio3dState();
+
+  const returnToRoom = async (): Promise<void> => {
+    // Mobile CSS3D can go black when Chromium reparents it into room layer.
+    // Capture while focused, before that reparent happens.
+    await prepareMobileRoomPreview("pipeline");
+    setActiveSection("overview");
+  };
+
   return (
     <nav className="arcade-focus-controls" aria-label="Pipeline view controls">
-      <button type="button" className="button-base button-secondary" onClick={() => setActiveSection("overview")}>
+      <button type="button" className="button-base button-secondary" onClick={() => void returnToRoom()}>
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
       </button>

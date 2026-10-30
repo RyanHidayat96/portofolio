@@ -1,12 +1,14 @@
 "use client";
 
 import { useThree } from "@react-three/fiber";
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from "../arcade-screen";
+import { withPortfolio3dBasePath } from "../asset-url";
 import { usePortfolio3dState } from "../state/Portfolio3dState";
 import { type EmbeddedScreenRegistration, useEmbeddedScreenLayer } from "./EmbeddedScreenLayer";
+import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
 import { CrtScreenSurface } from "./CrtScreenSurface";
 
 const desktopScreenPixelWidth = 1000;
@@ -15,6 +17,46 @@ export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
+const mobileRoomPreviewCaptureEvent = "portfolio-3d:prepare-mobile-room-preview";
+const mobilePipelineInitialPreviewPath = "/models/portfolio-3d/previews/pipeline-initial.png";
+const mobilePipelinePreviewCaptureScale = 0.72;
+
+interface MobileRoomPreviewCaptureRequest {
+  readonly screenId: EmbeddedScreenId;
+  claimed: boolean;
+  ready: () => void;
+}
+
+export function prepareMobileRoomPreview(screenId: EmbeddedScreenId): Promise<void> {
+  if (
+    typeof window === "undefined" ||
+    !window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`).matches
+  ) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      resolve();
+    };
+    const request: MobileRoomPreviewCaptureRequest = {
+      screenId,
+      claimed: false,
+      ready: finish
+    };
+    const timeout = window.setTimeout(finish, 100);
+    window.dispatchEvent(new CustomEvent<MobileRoomPreviewCaptureRequest>(
+      mobileRoomPreviewCaptureEvent,
+      { detail: request }
+    ));
+
+    if (!request.claimed) finish();
+  });
+}
 
 export interface EmbeddedScreenPan {
   readonly x: number;
@@ -58,10 +100,15 @@ export function ArcadeScreenSurface({
   onScreenZoomChange?: (screenId: EmbeddedScreenId, scale: number) => void;
   onScreenPanChange?: (screenId: EmbeddedScreenId, pan: EmbeddedScreenPan) => void;
 }>): React.ReactElement {
-  const { gl, setEvents, get } = useThree();
+  const { gl, invalidate, setEvents, get } = useThree();
   const { state, setActiveSection } = usePortfolio3dState();
   const screenLayer = useEmbeddedScreenLayer();
   const runtimeRef = useRef<EmbeddedScreenRegistration | null>(null);
+  const mobilePreviewTextureRef = useRef<THREE.Texture | null>(null);
+  const captureRequestRef = useRef(0);
+  const hasSessionMobileRoomPreviewRef = useRef(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [mobileRoomPreview, setMobileRoomPreview] = useState<THREE.Texture | null>(null);
   const isInteractive =
     state.activeSectionId === screenId && state.navigationState === "section-open";
   const usesCrtSurface =
@@ -74,6 +121,15 @@ export function ArcadeScreenSurface({
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
   const pixelHeight = (pixelWidth * screen.height) / screen.width;
+  const usesMobilePipelinePreview = screenId === "pipeline" && isMobileViewport;
+
+  useEffect(() => {
+    const media = window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`);
+    const updateViewport = (): void => setIsMobileViewport(media.matches);
+    updateViewport();
+    media.addEventListener("change", updateViewport);
+    return () => media.removeEventListener("change", updateViewport);
+  }, []);
 
   useLayoutEffect(() => {
     const element = document.createElement("div");
@@ -107,6 +163,123 @@ export function ArcadeScreenSurface({
     if (!runtime) return;
     screenLayer.configureScreen(runtime, screen, pixelWidth, pixelHeight);
   }, [pixelHeight, pixelWidth, screen, screenLayer]);
+
+  const captureMobileRoomPreview = useCallback(async (): Promise<boolean> => {
+    const runtime = runtimeRef.current;
+    if (!usesMobilePipelinePreview || !runtime || !runtime.content.firstElementChild) return false;
+
+    const requestId = ++captureRequestRef.current;
+    const previewSource = cloneMobileRoomPreviewSource(runtime.object.element, pixelWidth, pixelHeight);
+    try {
+      runtime.object.element.dataset.mobileRoomPreview = "capturing";
+      const canvas = await captureEmbeddedScreenSnapshot(previewSource, {
+        // The monitor occupies a small area on phones. 720px wide preserves
+        // text clarity while keeping a room texture inexpensive.
+        maxDimension: 720,
+        scale: mobilePipelinePreviewCaptureScale
+      });
+      if (runtimeRef.current !== runtime || requestId !== captureRequestRef.current) return false;
+
+      const texture = createMobileRoomPreviewTexture(canvas, gl);
+      const previousTexture = mobilePreviewTextureRef.current;
+      mobilePreviewTextureRef.current = texture;
+      hasSessionMobileRoomPreviewRef.current = true;
+      setMobileRoomPreview(texture);
+      invalidate();
+      window.requestAnimationFrame(() => {
+        if (mobilePreviewTextureRef.current === texture) previousTexture?.dispose();
+      });
+      runtime.object.element.dataset.mobileRoomPreview = "ready";
+
+      // Let React attach texture before caller restores 3D room layer.
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+      return true;
+    } catch (error) {
+      runtime.object.element.dataset.mobileRoomPreview = "failed";
+      runtime.object.element.dataset.mobileRoomPreviewError =
+        error instanceof Error ? error.message : "unknown capture error";
+      return false;
+    } finally {
+      previewSource.remove();
+    }
+  }, [gl, invalidate, pixelHeight, pixelWidth, usesMobilePipelinePreview]);
+
+  useEffect(() => {
+    if (!usesMobilePipelinePreview) return;
+
+    let cancelled = false;
+    const loader = new THREE.TextureLoader();
+    const initialPreviewUrl = withPortfolio3dBasePath(mobilePipelineInitialPreviewPath);
+
+    loader.load(
+      initialPreviewUrl,
+      (texture) => {
+        if (cancelled || hasSessionMobileRoomPreviewRef.current) {
+          texture.dispose();
+          return;
+        }
+
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.anisotropy = Math.min(2, gl.capabilities.getMaxAnisotropy());
+        texture.needsUpdate = true;
+
+        const previousTexture = mobilePreviewTextureRef.current;
+        mobilePreviewTextureRef.current = texture;
+        setMobileRoomPreview(texture);
+        invalidate();
+        window.requestAnimationFrame(() => {
+          if (mobilePreviewTextureRef.current === texture) previousTexture?.dispose();
+        });
+
+        runtimeRef.current?.object.element.setAttribute("data-mobile-room-preview", "initial-ready");
+      },
+      undefined,
+      () => runtimeRef.current?.object.element.setAttribute("data-mobile-room-preview", "initial-failed")
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [gl, usesMobilePipelinePreview]);
+
+  useLayoutEffect(() => {
+    if (!usesMobilePipelinePreview || !isInteractive) return;
+
+    const onPrepareRoomPreview = (event: Event): void => {
+      const request = (event as CustomEvent<MobileRoomPreviewCaptureRequest>).detail;
+      if (!request || request.screenId !== screenId) return;
+
+      request.claimed = true;
+      // `captureMobileRoomPreview` synchronously clones focused document
+      // before its first await. The room can therefore start moving now while
+      // bitmap work continues against clone, not reparented CSS3D node.
+      void captureMobileRoomPreview();
+      request.ready();
+    };
+
+    window.addEventListener(mobileRoomPreviewCaptureEvent, onPrepareRoomPreview);
+    return () => {
+      window.removeEventListener(mobileRoomPreviewCaptureEvent, onPrepareRoomPreview);
+    };
+  }, [captureMobileRoomPreview, isInteractive, screenId, usesMobilePipelinePreview]);
+
+  useLayoutEffect(() => {
+    const runtime = runtimeRef.current;
+    if (!runtime) return;
+    screenLayer.setRoomPreview?.(
+      runtime,
+      Boolean(usesMobilePipelinePreview && mobileRoomPreview && !isInteractive)
+    );
+  }, [isInteractive, mobileRoomPreview, screenLayer, usesMobilePipelinePreview]);
+
+  useEffect(() => () => {
+    captureRequestRef.current += 1;
+    mobilePreviewTextureRef.current?.dispose();
+    mobilePreviewTextureRef.current = null;
+  }, []);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
@@ -620,6 +793,7 @@ export function ArcadeScreenSurface({
       {usesCrtSurface ? (
         <CrtScreenSurface
           screen={screen}
+          roomPreview={usesMobilePipelinePreview && !isInteractive ? mobileRoomPreview : null}
           screenId={screenId}
           onActivate={(delta) => {
             if (delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
@@ -687,4 +861,66 @@ function getPannedViewportOffset(
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(Math.max(value, minimum), maximum);
+}
+
+function cloneMobileRoomPreviewSource(
+  source: HTMLElement,
+  pixelWidth: number,
+  pixelHeight: number
+): HTMLElement {
+  const previewSource = source.cloneNode(true) as HTMLElement;
+  previewSource.inert = false;
+  previewSource.removeAttribute("aria-hidden");
+  Object.assign(previewSource.style, {
+    height: `${pixelHeight}px`,
+    // Keep clone paintable, but behind the document background. A transparent
+    // WebGL canvas would otherwise reveal it for one frame during a scroll.
+    left: "0",
+    opacity: "1",
+    pointerEvents: "none",
+    position: "fixed",
+    top: "0",
+    transform: "none",
+    transformOrigin: "top left",
+    visibility: "visible",
+    width: `${pixelWidth}px`,
+    zIndex: "-1"
+  });
+
+  document.body.appendChild(previewSource);
+
+  const sourceElements = [source, ...source.querySelectorAll<HTMLElement>("*")];
+  const previewElements = [previewSource, ...previewSource.querySelectorAll<HTMLElement>("*")];
+  sourceElements.forEach((element, index) => {
+    const previewElement = previewElements[index];
+    if (!previewElement) return;
+
+    // Preserve dynamic interactive input/select states
+    if (element instanceof HTMLInputElement && previewElement instanceof HTMLInputElement) {
+      previewElement.value = element.value;
+      previewElement.checked = element.checked;
+    } else if (element instanceof HTMLTextAreaElement && previewElement instanceof HTMLTextAreaElement) {
+      previewElement.value = element.value;
+    } else if (element instanceof HTMLSelectElement && previewElement instanceof HTMLSelectElement) {
+      previewElement.selectedIndex = element.selectedIndex;
+      previewElement.value = element.value;
+    }
+
+  });
+
+  return previewSource;
+}
+
+function createMobileRoomPreviewTexture(
+  canvas: HTMLCanvasElement,
+  renderer: THREE.WebGLRenderer
+): THREE.Texture {
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  texture.anisotropy = Math.min(2, renderer.capabilities.getMaxAnisotropy());
+  texture.needsUpdate = true;
+  return texture;
 }

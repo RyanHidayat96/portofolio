@@ -28,6 +28,7 @@ export interface EmbeddedScreenRegistration {
   pixelWidth: number;
   pixelHeight: number;
   isInteractive: boolean;
+  hasRoomPreview?: boolean;
   isFlattenedForInteraction?: boolean;
   cssTransform?: string;
 }
@@ -68,6 +69,7 @@ interface EmbeddedScreenLayerController {
     pixelHeight: number
   ) => void;
   setInteractive: (screen: EmbeddedScreenRegistration, isInteractive: boolean) => void;
+  setRoomPreview: (screen: EmbeddedScreenRegistration, isAvailable: boolean) => void;
   registerOverlay: (overlay: EmbeddedScreenOverlayRegistration) => void;
   unregisterOverlay: (overlay: EmbeddedScreenOverlayRegistration) => void;
   configureOverlay: (
@@ -264,6 +266,11 @@ export function EmbeddedScreenLayer({ children }: Readonly<{
 
         triggerForceRepaint();
       },
+      setRoomPreview: (screen, isAvailable): void => {
+        if (!runtime.screens.has(screen)) return;
+        screen.hasRoomPreview = isAvailable;
+        render();
+      },
       registerOverlay: (overlay): void => {
         if (runtime.overlays.has(overlay)) return;
 
@@ -395,6 +402,11 @@ function syncLayerPointerEvents(runtime: EmbeddedScreenLayerRuntime): void {
 function syncLiveRoomScreenOcclusion(runtime: EmbeddedScreenLayerRuntime): void {
   for (const screen of runtime.screens) {
     if (screen.isInteractive) continue;
+
+    if (screen.hasRoomPreview) {
+      screen.object.element.style.visibility = 'hidden';
+      continue;
+    }
 
     const facing = runtime.screenToCamera
       .subVectors(runtime.camera.position, screen.object.position)

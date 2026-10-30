@@ -528,13 +528,12 @@ function SceneShaderWarmup({ ready }: Readonly<{
       warmedUpRef.current = true;
       // Prepare materials after the full room and environment are mounted so
       // the first screen transition is not where shader compilation happens.
-      void gl.compileAsync(scene, camera)
-        .then(() => {
-          if (!cancelled) invalidate();
-        })
-        .catch(() => {
-          // Rendering remains functional when a browser cannot compile early.
-        });
+      try {
+        gl.compile(scene, camera);
+        if (!cancelled) invalidate();
+      } catch {
+        // Rendering remains functional when a browser cannot compile early.
+      }
     };
 
     if (typeof window.requestIdleCallback === 'function') {

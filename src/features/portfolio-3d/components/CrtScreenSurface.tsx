@@ -7,13 +7,21 @@ import type { ArcadeScreenPlacement } from "../arcade-screen";
 
 export function CrtScreenSurface({
   screen,
+  roomPreview,
   screenId = "pipeline",
   onActivate
 }: Readonly<{
   screen: ArcadeScreenPlacement;
+  roomPreview?: THREE.Texture | null;
   screenId?: string;
   onActivate: (delta: number) => void;
 }>): React.ReactElement {
+  const surfacePosition = useMemo(
+    () => roomPreview
+      ? screen.position.clone().addScaledVector(screen.normal, 0.001)
+      : screen.position,
+    [roomPreview, screen]
+  );
   const baseGeometry = useMemo(
     () => new THREE.PlaneGeometry(screen.width, screen.height),
     [screen.height, screen.width]
@@ -60,7 +68,7 @@ export function CrtScreenSurface({
   });
 
   return (
-    <group position={screen.position} quaternion={screen.quaternion}>
+    <group position={surfacePosition} quaternion={screen.quaternion}>
       {/* Keep model depth while the live CSS3D document paints the screen. */}
       <mesh
         name={`Embedded_${screenId}_CrtSurface`}
@@ -70,21 +78,40 @@ export function CrtScreenSurface({
           onActivate(event.delta);
         }}
       >
-        <meshBasicMaterial
-          key={`${screenId}-live-screen-depth`}
-          color="#000000"
-          blending={THREE.NoBlending}
-          opacity={0}
-          transparent={false}
-          toneMapped={false}
-          fog={false}
-          depthTest
-          depthWrite
-          polygonOffset
-          polygonOffsetFactor={-1}
-          polygonOffsetUnits={-1}
-          side={THREE.FrontSide}
-        />
+        {roomPreview ? (
+          <meshBasicMaterial
+            key={`${screenId}-mobile-room-preview-${roomPreview.id}`}
+            map={roomPreview}
+            color="#ffffff"
+            toneMapped={false}
+            fog={false}
+            depthTest
+            depthWrite
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
+            // Placement orientation follows GLB material winding, which differs
+            // between authored monitors. The room-only bitmap must remain visible
+            // from its playable front side on every device.
+            side={THREE.DoubleSide}
+          />
+        ) : (
+          <meshBasicMaterial
+            key={`${screenId}-live-screen-depth`}
+            color="#000000"
+            blending={THREE.NoBlending}
+            opacity={0}
+            transparent={false}
+            toneMapped={false}
+            fog={false}
+            depthTest
+            depthWrite
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
+            side={THREE.FrontSide}
+          />
+        )}
       </mesh>
 
       {/* Dynamic Real-Time Specular Glass Sheen:
