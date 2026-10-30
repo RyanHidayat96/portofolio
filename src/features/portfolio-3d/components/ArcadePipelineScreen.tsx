@@ -49,10 +49,7 @@ export function ArcadePipelineScreen({ interactive }: Readonly<{ interactive: bo
         className="arcade-pipeline-scroll"
         tabIndex={interactive ? 0 : -1}
         aria-label="Pipeline controls and results"
-        onScroll={(event) => {
-          onScroll(event);
-          event.currentTarget.dataset.scrollTop = String(event.currentTarget.scrollTop);
-        }}
+        onScroll={onScroll}
       >
         <PipelineSimulatorPanel variant="screen" interactive={interactive} />
       </div>

@@ -12,7 +12,13 @@ export function useEmbeddedScreenScrollSession(interactive: boolean) {
 
   const onScroll = useCallback<UIEventHandler<HTMLDivElement>>((event) => {
     if (interactive) {
-      lastScrollTopRef.current = event.currentTarget.scrollTop;
+      const top = event.currentTarget.scrollTop;
+      const left = event.currentTarget.scrollLeft;
+      lastScrollTopRef.current = top;
+      if (top !== 0) event.currentTarget.dataset.scrollTop = String(top);
+      else delete event.currentTarget.dataset.scrollTop;
+      if (left !== 0) event.currentTarget.dataset.scrollLeft = String(left);
+      else delete event.currentTarget.dataset.scrollLeft;
     }
   }, [interactive]);
 
@@ -28,11 +34,14 @@ export function useEmbeddedScreenScrollSession(interactive: boolean) {
       }
 
       const maxScrollTop = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight);
+      const targetTop = Math.min(lastScrollTopRef.current, maxScrollTop);
       // State restoration must not inherit the page's smooth-scroll animation.
       scrollContainer.scrollTo({
-        top: Math.min(lastScrollTopRef.current, maxScrollTop),
+        top: targetTop,
         behavior: 'instant'
       });
+      if (targetTop !== 0) scrollContainer.dataset.scrollTop = String(targetTop);
+      else delete scrollContainer.dataset.scrollTop;
     };
 
     // CSS3D reparents the screen after each layout switch. Reapply after its

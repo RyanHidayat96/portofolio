@@ -180,6 +180,12 @@ function PortfolioExperienceContent({
     activeEmbeddedScreenId && embeddedScreenElements[activeEmbeddedScreenId] && isSettledAtSection
   );
   const isScreenApproach = Boolean(activeEmbeddedScreenId && state.navigationState === "focusing");
+  const returnActiveScreenToRoom = useCallback(async (): Promise<void> => {
+    if (activeEmbeddedScreenId) {
+      await prepareMobileRoomPreview(activeEmbeddedScreenId);
+    }
+    setActiveSection("overview");
+  }, [activeEmbeddedScreenId, setActiveSection]);
   const handleEmbeddedScreenReady = useCallback(
     (screenId: EmbeddedScreenId, element: HTMLElement | null): void => {
       setEmbeddedScreenElements((current) => {
@@ -230,7 +236,7 @@ function PortfolioExperienceContent({
                 <button
                   type="button"
                   className="button-base button-secondary"
-                  onClick={() => setActiveSection("overview")}
+                  onClick={() => void returnActiveScreenToRoom()}
                 >
                   <ArrowLeft size={18} aria-hidden="true" />
                   Back to Room
@@ -248,7 +254,7 @@ function PortfolioExperienceContent({
                 <button
                   type="button"
                   className="button-base button-secondary"
-                  onClick={() => setActiveSection("overview")}
+                  onClick={() => void returnActiveScreenToRoom()}
                 >
                   <ArrowLeft size={18} aria-hidden="true" />
                   Back to Room
@@ -276,12 +282,7 @@ function PortfolioExperienceContent({
         }
         assetProgress={assetProgress}
         isScreenFocusView={isScreenFocusView || isScreenApproach}
-        onRoomReset={async () => {
-          if (state.activeSectionId === "pipeline") {
-            await prepareMobileRoomPreview("pipeline");
-          }
-          setActiveSection("overview");
-        }}
+        onRoomReset={() => void returnActiveScreenToRoom()}
       />
       {embeddedScreenElements.pipeline
         ? createPortal(
@@ -456,6 +457,11 @@ function Portfolio3dRouteController(): null {
       }
 
       event.preventDefault();
+      const currentScreenId = getEmbeddedScreenId(state.activeSectionId);
+      if (currentScreenId) {
+        void prepareMobileRoomPreview(currentScreenId).then(() => setActiveSection("overview"));
+        return;
+      }
       setActiveSection("overview");
     };
 
@@ -684,8 +690,9 @@ function Portfolio3dNavigation(): React.ReactElement {
                     return;
                   }
 
-                  if (state.activeSectionId === "pipeline" && contract.id !== "pipeline") {
-                    await prepareMobileRoomPreview("pipeline");
+                  const currentScreenId = getEmbeddedScreenId(state.activeSectionId);
+                  if (currentScreenId && contract.id !== currentScreenId) {
+                    await prepareMobileRoomPreview(currentScreenId);
                   }
 
                   if (hotspot) {

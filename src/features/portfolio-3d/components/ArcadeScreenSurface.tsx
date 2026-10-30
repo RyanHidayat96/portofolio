@@ -18,8 +18,19 @@ const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
 const mobileRoomPreviewCaptureEvent = "portfolio-3d:prepare-mobile-room-preview";
-const mobilePipelineInitialPreviewPath = "/models/portfolio-3d/previews/pipeline-initial.png";
 const mobilePipelinePreviewCaptureScale = 0.72;
+
+const mobileInitialPreviewPathByScreen: Readonly<Record<EmbeddedScreenId, string>> = {
+  profile: "/models/portfolio-3d/previews/profile-initial.png",
+  experience: "/models/portfolio-3d/previews/experience-initial.png",
+  architecture: "/models/portfolio-3d/previews/architecture-initial.png",
+  pipeline: "/models/portfolio-3d/previews/pipeline-initial.png",
+  automation: "/models/portfolio-3d/previews/automation-initial.png",
+  performance: "/models/portfolio-3d/previews/performance-initial.png",
+  backend: "/models/portfolio-3d/previews/backend-initial.png",
+  terminal: "/models/portfolio-3d/previews/terminal-initial.png",
+  contact: "/models/portfolio-3d/previews/contact-initial.png"
+};
 
 interface MobileRoomPreviewCaptureRequest {
   readonly screenId: EmbeddedScreenId;
@@ -121,7 +132,7 @@ export function ArcadeScreenSurface({
   // controlled by the physical frame and the touch zoom below, not responsive reflow.
   const pixelWidth = desktopScreenPixelWidth;
   const pixelHeight = (pixelWidth * screen.height) / screen.width;
-  const usesMobilePipelinePreview = screenId === "pipeline" && isMobileViewport;
+  const usesMobileRoomPreview = isMobileViewport;
 
   useEffect(() => {
     const media = window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`);
@@ -166,7 +177,7 @@ export function ArcadeScreenSurface({
 
   const captureMobileRoomPreview = useCallback(async (): Promise<boolean> => {
     const runtime = runtimeRef.current;
-    if (!usesMobilePipelinePreview || !runtime || !runtime.content.firstElementChild) return false;
+    if (!usesMobileRoomPreview || !runtime || !runtime.content.firstElementChild) return false;
 
     const requestId = ++captureRequestRef.current;
     const previewSource = cloneMobileRoomPreviewSource(runtime.object.element, pixelWidth, pixelHeight);
@@ -202,14 +213,14 @@ export function ArcadeScreenSurface({
     } finally {
       previewSource.remove();
     }
-  }, [gl, invalidate, pixelHeight, pixelWidth, usesMobilePipelinePreview]);
+  }, [gl, invalidate, pixelHeight, pixelWidth, usesMobileRoomPreview]);
 
   useEffect(() => {
-    if (!usesMobilePipelinePreview) return;
+    if (!usesMobileRoomPreview) return;
 
     let cancelled = false;
     const loader = new THREE.TextureLoader();
-    const initialPreviewUrl = withPortfolio3dBasePath(mobilePipelineInitialPreviewPath);
+    const initialPreviewUrl = withPortfolio3dBasePath(mobileInitialPreviewPathByScreen[screenId]);
 
     loader.load(
       initialPreviewUrl,
@@ -243,10 +254,10 @@ export function ArcadeScreenSurface({
     return () => {
       cancelled = true;
     };
-  }, [gl, usesMobilePipelinePreview]);
+  }, [gl, screenId, usesMobileRoomPreview]);
 
   useLayoutEffect(() => {
-    if (!usesMobilePipelinePreview || !isInteractive) return;
+    if (!usesMobileRoomPreview || !isInteractive) return;
 
     const onPrepareRoomPreview = (event: Event): void => {
       const request = (event as CustomEvent<MobileRoomPreviewCaptureRequest>).detail;
@@ -264,16 +275,24 @@ export function ArcadeScreenSurface({
     return () => {
       window.removeEventListener(mobileRoomPreviewCaptureEvent, onPrepareRoomPreview);
     };
-  }, [captureMobileRoomPreview, isInteractive, screenId, usesMobilePipelinePreview]);
+  }, [captureMobileRoomPreview, isInteractive, screenId, usesMobileRoomPreview]);
+
+  const previousInteractiveRef = useRef(isInteractive);
+  useEffect(() => {
+    if (previousInteractiveRef.current && !isInteractive && usesMobileRoomPreview) {
+      void captureMobileRoomPreview();
+    }
+    previousInteractiveRef.current = isInteractive;
+  }, [captureMobileRoomPreview, isInteractive, usesMobileRoomPreview]);
 
   useLayoutEffect(() => {
     const runtime = runtimeRef.current;
     if (!runtime) return;
     screenLayer.setRoomPreview?.(
       runtime,
-      Boolean(usesMobilePipelinePreview && mobileRoomPreview && !isInteractive)
+      Boolean(usesMobileRoomPreview && mobileRoomPreview && !isInteractive)
     );
-  }, [isInteractive, mobileRoomPreview, screenLayer, usesMobilePipelinePreview]);
+  }, [isInteractive, mobileRoomPreview, screenLayer, usesMobileRoomPreview]);
 
   useEffect(() => () => {
     captureRequestRef.current += 1;
@@ -793,7 +812,7 @@ export function ArcadeScreenSurface({
       {usesCrtSurface ? (
         <CrtScreenSurface
           screen={screen}
-          roomPreview={usesMobilePipelinePreview && !isInteractive ? mobileRoomPreview : null}
+          roomPreview={usesMobileRoomPreview && !isInteractive ? mobileRoomPreview : null}
           screenId={screenId}
           onActivate={(delta) => {
             if (delta <= 5 && state.navigationState === "overview") setActiveSection(screenId);
@@ -810,18 +829,34 @@ export function ArcadeScreenSurface({
           }}
         >
           <planeGeometry args={[screen.width, screen.height]} />
-          {/* Preserve model depth while CSS3D paints every live screen. */}
-          <meshBasicMaterial
-            color="#000000"
-            blending={THREE.NoBlending}
-            opacity={0}
-            transparent={false}
-            toneMapped={false}
-            fog={false}
-            depthTest
-            depthWrite
-            side={THREE.DoubleSide}
-          />
+          {usesMobileRoomPreview && !isInteractive && mobileRoomPreview ? (
+            <meshBasicMaterial
+              key={`${screenId}-mobile-room-preview-${mobileRoomPreview.id}`}
+              map={mobileRoomPreview}
+              color="#ffffff"
+              toneMapped={false}
+              fog={false}
+              depthTest
+              depthWrite
+              polygonOffset
+              polygonOffsetFactor={-1}
+              polygonOffsetUnits={-1}
+              side={THREE.DoubleSide}
+            />
+          ) : (
+            /* Preserve model depth while CSS3D paints every live screen. */
+            <meshBasicMaterial
+              color="#000000"
+              blending={THREE.NoBlending}
+              opacity={0}
+              transparent={false}
+              toneMapped={false}
+              fog={false}
+              depthTest
+              depthWrite
+              side={THREE.DoubleSide}
+            />
+          )}
         </mesh>
       )}
     </>
@@ -906,6 +941,13 @@ function cloneMobileRoomPreviewSource(
       previewElement.value = element.value;
     }
 
+    // cloneNode does not retain native scroll offsets. Preserve them as data
+    // for the SVG snapshot serializer so every mobile screen captures the
+    // same viewport the visitor last saw, not its initial scroll position.
+    const scrollTop = element.scrollTop || Number(element.dataset.scrollTop || 0);
+    const scrollLeft = element.scrollLeft || Number(element.dataset.scrollLeft || 0);
+    if (scrollTop !== 0) previewElement.dataset.scrollTop = String(scrollTop);
+    if (scrollLeft !== 0) previewElement.dataset.scrollLeft = String(scrollLeft);
   });
 
   return previewSource;

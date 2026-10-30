@@ -6,6 +6,7 @@ import { AutomationLab } from '@/features/automation-lab/components/AutomationLa
 import { withPortfolio3dBasePath } from '../asset-url';
 import { useEmbeddedScreenScrollSession } from '../hooks/useEmbeddedScreenScrollSession';
 import { usePortfolio3dState } from '../state/Portfolio3dState';
+import { prepareMobileRoomPreview } from './ArcadeScreenSurface';
 
 export function AutomationMonitorScreen({ interactive }: Readonly<{ interactive: boolean }>): React.ReactElement {
   const headingRef = useRef<HTMLHeadingElement | null>(null);
@@ -68,10 +69,14 @@ export function AutomationMonitorScreen({ interactive }: Readonly<{ interactive:
 
 export function AutomationMonitorControls(): React.ReactElement {
   const { setActiveSection } = usePortfolio3dState();
+  const returnToRoom = async (): Promise<void> => {
+    await prepareMobileRoomPreview('automation');
+    setActiveSection('overview');
+  };
 
   return (
     <nav className="arcade-focus-controls" aria-label="Automation view controls">
-      <button type="button" className="button-base button-secondary" onClick={() => setActiveSection('overview')}>
+      <button type="button" className="button-base button-secondary" onClick={() => void returnToRoom()}>
         <ArrowLeft size={18} aria-hidden="true" />
         Back to Room
       </button>

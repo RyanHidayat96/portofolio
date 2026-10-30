@@ -73,7 +73,7 @@ function markScrollOffsets(source: HTMLElement): () => void {
   const restores: Array<{ element: HTMLElement; previous: string | null }> = [];
   for (const element of [source, ...source.querySelectorAll<HTMLElement>("*")]) {
     const top = element.scrollTop || Number(element.dataset.scrollTop || 0);
-    const left = element.scrollLeft;
+    const left = element.scrollLeft || Number(element.dataset.scrollLeft || 0);
     if (top === 0 && left === 0) continue;
     restores.push({ element, previous: element.getAttribute(snapshotScrollAttribute) });
     element.setAttribute(snapshotScrollAttribute, JSON.stringify({ left, top } satisfies ScrollPosition));
