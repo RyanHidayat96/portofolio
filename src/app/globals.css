@@ -7935,7 +7935,7 @@ textarea:focus-visible,
 
 .retro-brochure-page {
   position: relative;
-  width: 1000px;
+  width: 100%;
   height: 100% !important;
   max-height: 100% !important;
   box-sizing: border-box;

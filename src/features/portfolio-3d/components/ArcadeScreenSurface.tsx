@@ -12,13 +12,14 @@ import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
 import { CrtScreenSurface } from "./CrtScreenSurface";
 
 const desktopScreenPixelWidth = 1000;
+const mobileScreenPixelWidth = 500;
 const mobileViewportBreakpoint = 768;
 export const maximumMobileScreenZoom = 2.5;
 const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
 const mobileRoomPreviewCaptureEvent = "portfolio-3d:prepare-mobile-room-preview";
-const mobilePipelinePreviewCaptureScale = 0.72;
+const mobilePipelinePreviewCaptureScale = 1;
 
 const mobileInitialPreviewPathByScreen: Readonly<Record<EmbeddedScreenId, string>> = {
   profile: "/models/portfolio-3d/previews/profile-initial.png",
@@ -128,10 +129,10 @@ export function ArcadeScreenSurface({
     screenId === "automation" ||
     screenId === "backend" ||
     screenId === "performance";
-  // The document always uses desktop coordinates. On phones its visual scale is
-  // controlled by the physical frame and the touch zoom below, not responsive reflow.
+  // The document always uses desktop coordinates (1000px) so the layout,
+  // typography, and proportions are 100% identical to what is seen in the room.
   const pixelWidth = desktopScreenPixelWidth;
-  const pixelHeight = (pixelWidth * screen.height) / screen.width;
+  const pixelHeight = Math.round((pixelWidth * screen.height) / screen.width);
   const usesMobileRoomPreview = isMobileViewport;
 
   useEffect(() => {
@@ -184,10 +185,9 @@ export function ArcadeScreenSurface({
     try {
       runtime.object.element.dataset.mobileRoomPreview = "capturing";
       const canvas = await captureEmbeddedScreenSnapshot(previewSource, {
-        // The monitor occupies a small area on phones. 720px wide preserves
-        // text clarity while keeping a room texture inexpensive.
-        maxDimension: 720,
-        scale: mobilePipelinePreviewCaptureScale
+        // 50% resolution canvas matching the 500px mobile DOM width.
+        maxDimension: 500,
+        scale: 1
       });
       if (runtimeRef.current !== runtime || requestId !== captureRequestRef.current) return false;
 
