@@ -19,7 +19,7 @@ const minimumMobileCameraPanDistance = 8;
 const minimumEmbeddedContentScrollDistance = 1;
 const embeddedContentScrollEdgeTolerance = 1;
 const mobileRoomPreviewCaptureEvent = "portfolio-3d:prepare-mobile-room-preview";
-const mobilePipelinePreviewCaptureScale = 1;
+const mobileRoomPreviewMaxDimension = 500;
 
 const mobileInitialPreviewPathByScreen: Readonly<Record<EmbeddedScreenId, string>> = {
   profile: "/models/portfolio-3d/previews/profile-initial.png",
@@ -118,6 +118,7 @@ export function ArcadeScreenSurface({
   const runtimeRef = useRef<EmbeddedScreenRegistration | null>(null);
   const mobilePreviewTextureRef = useRef<THREE.Texture | null>(null);
   const captureRequestRef = useRef(0);
+  const hasPreExitCaptureRef = useRef(false);
   const hasSessionMobileRoomPreviewRef = useRef(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [mobileRoomPreview, setMobileRoomPreview] = useState<THREE.Texture | null>(null);
@@ -185,8 +186,8 @@ export function ArcadeScreenSurface({
     try {
       runtime.object.element.dataset.mobileRoomPreview = "capturing";
       const canvas = await captureEmbeddedScreenSnapshot(previewSource, {
-        // 50% resolution canvas matching the 500px mobile DOM width.
-        maxDimension: 500,
+        // Match the 500px mobile DOM width for readable room-monitor text.
+        maxDimension: mobileRoomPreviewMaxDimension,
         scale: 1
       });
       if (runtimeRef.current !== runtime || requestId !== captureRequestRef.current) return false;
@@ -264,6 +265,7 @@ export function ArcadeScreenSurface({
       if (!request || request.screenId !== screenId) return;
 
       request.claimed = true;
+      hasPreExitCaptureRef.current = true;
       // `captureMobileRoomPreview` synchronously clones focused document
       // before its first await. The room can therefore start moving now while
       // bitmap work continues against clone, not reparented CSS3D node.
@@ -280,7 +282,14 @@ export function ArcadeScreenSurface({
   const previousInteractiveRef = useRef(isInteractive);
   useEffect(() => {
     if (previousInteractiveRef.current && !isInteractive && usesMobileRoomPreview) {
-      void captureMobileRoomPreview();
+      // Back to Room already captured this screen while it was focused. A
+      // second capture after CSS3D reparenting was both expensive and could
+      // replace the correct viewport with the page's default scroll position.
+      if (hasPreExitCaptureRef.current) {
+        hasPreExitCaptureRef.current = false;
+      } else {
+        void captureMobileRoomPreview();
+      }
     }
     previousInteractiveRef.current = isInteractive;
   }, [captureMobileRoomPreview, isInteractive, usesMobileRoomPreview]);
