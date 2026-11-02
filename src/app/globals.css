@@ -9745,6 +9745,38 @@ textarea:focus-visible,
   padding: 1.5rem;
 }
 
+.arcade-screen-document .sm\:p-5 {
+  padding: 1.25rem;
+}
+
+.arcade-screen-document .sm\:text-3xl {
+  font-size: 1.875rem;
+}
+
+.arcade-screen-document .sm\:h-32 {
+  height: 8rem;
+}
+
+.arcade-screen-document .sm\:inline-block {
+  display: inline-block;
+}
+
+.arcade-screen-document .sm\:items-center {
+  align-items: center;
+}
+
+.arcade-screen-document [class~="sm:grid-cols-[40px_1fr_auto]"] {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+}
+
+.arcade-screen-document [class~="lg:grid-cols-[0.85fr_1.15fr]"] {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+}
+
+.arcade-screen-document [class~="lg:grid-cols-[1fr_0.9fr]"] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+}
+
 .arcade-screen-document .md\:grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -12829,4 +12861,13 @@ textarea:focus-visible,
     border-right: 0;
     border-bottom: 3px solid #1c2934;
   }
+}
+
+/* Printed room art must not depend on host fonts. Android lacks several
+   desktop poster fonts, which made the live document and its generated texture
+   disagree most visibly in large titles such as "System Atlas". */
+.arcade-screen-document--profile .profile-artwork-screen :is(h1, h2, h3, h4, p, span, strong, a, button, label),
+.arcade-screen-document--experience .experience-artwork-screen :is(h1, h2, h3, h4, p, span, strong, a, button, label),
+.arcade-screen-document--architecture .architecture-poster-screen :is(h1, h2, h3, h4, p, span, strong, a, button, label) {
+  font-family: var(--font-linear-sans), sans-serif !important;
 }

@@ -6,6 +6,8 @@ import * as THREE from "three";
 import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import type { ArcadeScreenPlacement, EmbeddedScreenId } from "../arcade-screen";
 import { withPortfolio3dBasePath } from "../asset-url";
+import { enqueueMobileRoomPreviewCapture } from "../mobile-room-preview-capture-queue";
+import { mobileRoomPreviewRevision } from "../mobile-room-preview-revision";
 import { usePortfolio3dState } from "../state/Portfolio3dState";
 import { type EmbeddedScreenRegistration, useEmbeddedScreenLayer } from "./EmbeddedScreenLayer";
 import { captureEmbeddedScreenSnapshot } from "./EmbeddedScreenSnapshot";
@@ -120,6 +122,9 @@ export function ArcadeScreenSurface({
   const captureRequestRef = useRef(0);
   const hasPreExitCaptureRef = useRef(false);
   const hasSessionMobileRoomPreviewRef = useRef(false);
+  const hasInitialDevicePreviewRequestRef = useRef(false);
+  const isInteractiveRef = useRef(false);
+  const sessionCaptureInFlightRef = useRef(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [mobileRoomPreview, setMobileRoomPreview] = useState<THREE.Texture | null>(null);
   const isInteractive =
@@ -135,6 +140,10 @@ export function ArcadeScreenSurface({
   const pixelWidth = desktopScreenPixelWidth;
   const pixelHeight = Math.round((pixelWidth * screen.height) / screen.width);
   const usesMobileRoomPreview = isMobileViewport;
+
+  useEffect(() => {
+    isInteractiveRef.current = isInteractive;
+  }, [isInteractive]);
 
   useEffect(() => {
     const media = window.matchMedia(`(max-width: ${mobileViewportBreakpoint - 1}px)`);
@@ -221,7 +230,9 @@ export function ArcadeScreenSurface({
 
     let cancelled = false;
     const loader = new THREE.TextureLoader();
-    const initialPreviewUrl = withPortfolio3dBasePath(mobileInitialPreviewPathByScreen[screenId]);
+    const initialPreviewUrl = withPortfolio3dBasePath(
+      `${mobileInitialPreviewPathByScreen[screenId]}?v=${mobileRoomPreviewRevision}`
+    );
 
     loader.load(
       initialPreviewUrl,
@@ -257,6 +268,29 @@ export function ArcadeScreenSurface({
     };
   }, [gl, screenId, usesMobileRoomPreview]);
 
+  useEffect(() => {
+    if (!usesMobileRoomPreview || isInteractive || hasInitialDevicePreviewRequestRef.current) return;
+
+    hasInitialDevicePreviewRequestRef.current = true;
+    let cancelled = false;
+
+    void enqueueMobileRoomPreviewCapture(async () => {
+      if (
+        cancelled ||
+        isInteractiveRef.current ||
+        sessionCaptureInFlightRef.current ||
+        hasSessionMobileRoomPreviewRef.current
+      ) {
+        return;
+      }
+      await captureMobileRoomPreview();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [captureMobileRoomPreview, isInteractive, usesMobileRoomPreview]);
+
   useLayoutEffect(() => {
     if (!usesMobileRoomPreview || !isInteractive) return;
 
@@ -269,7 +303,10 @@ export function ArcadeScreenSurface({
       // `captureMobileRoomPreview` synchronously clones focused document
       // before its first await. The room can therefore start moving now while
       // bitmap work continues against clone, not reparented CSS3D node.
-      void captureMobileRoomPreview();
+      sessionCaptureInFlightRef.current = true;
+      void captureMobileRoomPreview().finally(() => {
+        sessionCaptureInFlightRef.current = false;
+      });
       request.ready();
     };
 
