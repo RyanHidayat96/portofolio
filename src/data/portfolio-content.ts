@@ -18,27 +18,26 @@ export const branding: Branding = {
   heroStatementLead: "I build systems.",
   heroStatementAccent: "I engineer confidence.",
   metadataDescription:
-    "Full Stack Engineer and SDET experienced in enterprise application development, Next.js, React, Node.js, Java Spring Boot, APIs, databases, test automation, performance engineering, Docker, and GitLab CI/CD.",
-  openGraphBadge: "Full Stack × Quality Engineering",
-  openGraphHighlights: ["Next.js", "React", "Node.js", "Spring Boot", "Playwright", "GitLab CI/CD"],
-  twitterDescription: "Full Stack Engineer × SDET building enterprise systems and quality."
+    "Full Stack Developer and SDET with 7+ years of experience across enterprise web, mobile, and AI-powered applications, backend services, test automation frameworks, and quality engineering.",
+  openGraphBadge: "Full Stack Developer × SDET",
+  openGraphHighlights: ["Next.js", "React Native", "TypeScript", "Node.js", "Azure OpenAI", ".NET Core", "Spring Boot", "Playwright", "SDET"],
+  twitterDescription: "Full Stack Developer × SDET with 7+ years building enterprise web, mobile, AI-powered solutions, and test automation."
 };
 
 export const profile: Profile = {
   name: "Ryan Hidayat",
   headline: "Full Stack Engineer × SDET",
   role: "Full Stack Developer",
-  yearsOfExperience: "5+ years",
+  yearsOfExperience: "7+ years",
   tagline: "Engineering the product. Engineering the confidence behind it.",
   summary:
-    "Full Stack Developer with SDET background across enterprise apps, APIs, databases, automation, performance, and CI/CD.",
+    "Full Stack Developer and SDET with 7+ years of experience across enterprise web, mobile, and AI-powered applications, backend services, test automation frameworks, and quality engineering.",
   location: "Jakarta, Indonesia",
   availability: "Open to Full Stack and SDET roles",
   focusAreas: [
     "Full Stack Development",
-    "API and Data Workflows",
-    "Quality Engineering",
-    "CI/CD Delivery"
+    "AI-Powered Applications",
+    "Software Development Engineer in Test (SDET)"
   ],
   contact: {
     email: {
@@ -164,15 +163,21 @@ export const experience: readonly ExperienceRole[] = [
     period: "Dec 2022 - Jun 2025",
     location: "Jakarta, Indonesia",
     responsibilities: [
-      "Performed manual testing across web, Android, and iOS platforms.",
-      "Developed and maintained automation scripts using WebDriverIO and Playwright.",
-      "Validated APIs with Postman and Jest and performed load and stress testing with K6.",
-      "Prepared test plans, scenarios, cases, executions, defect reports, SIT, smoke, regression, and UAT activities."
+      "Performed end-to-end Manual Testing across Web, Android, and iOS platforms to ensure application quality and compliance with business requirements.",
+      "Developed, executed, and maintained automation test scripts using WebDriverIO and Playwright to improve regression testing efficiency.",
+      "Performed API Testing and API Automation using Postman and Jest to validate business services and backend integrations.",
+      "Conducted Performance Testing, Load Testing, and Stress Testing using K6 to evaluate system performance under various workloads.",
+      "Created and maintained Test Plans, Test Scenarios, Test Cases, and Test Execution activities in Jira based on Business Process Specifications (BPS).",
+      "Performed System Integration Testing (SIT), Smoke Testing, Smooth Testing, Regression Testing, and User Acceptance Testing (UAT).",
+      "Identified, analyzed, documented, and tracked software defects in Jira while collaborating closely with development teams to ensure timely resolution.",
+      "Prepared user documentation and user guides for deployed applications to support end users during implementation and production rollout.",
+      "Validated and verified application data using MySQL and SAP S/4HANA to ensure data integrity across integrated systems.",
+      "Actively participated in grooming sessions with Project Managers, Business Process Analysts, Frontend Developers, and Backend Developers to discuss requirements, clarify business processes, and estimate testing efforts."
     ],
     impact: [
-      "Built strong product quality context before moving into SDET and full-stack development.",
-      "Worked with delivery teams across requirements, testing, documentation, and release support.",
-      "Validated application data through MySQL and SAP S/4HANA workflows."
+      "Built strong product quality context across Web, Android, iOS, and SAP S/4HANA platforms.",
+      "Streamlined regression testing cycles through automated web and API testing suites.",
+      "Maintained data integrity and reliability across enterprise business workflows."
     ],
     technologies: [
       "WebDriverIO",
@@ -181,26 +186,74 @@ export const experience: readonly ExperienceRole[] = [
       "Jest",
       "K6",
       "Jira",
+      "Confluence",
       "MySQL",
       "SAP S/4HANA"
+    ]
+  },
+  {
+    id: "kpp-full-stack",
+    company: "PT Kalimantan Prima Persada",
+    role: "Full Stack Developer",
+    period: "Aug 2020 - Oct 2022",
+    location: "Jakarta, Indonesia",
+    responsibilities: [
+      "Developed and maintained the Learning Integrated Management System (LIMAS) web application using .NET Core, JavaScript, and SQL Server to track training records, conduct online training sessions, assign classes, and evaluate employee assessments.",
+      "Built frontend mobile modules for the Mobile Office KPP (M-OK) application using React Native, TypeScript, and GraphQL, integrating attendance, internal applications, and operational systems into a unified platform for on-the-go staff productivity.",
+      "Developed the Mobile Office KPP Assistant (MOKA) AI-powered web and mobile application using React Native, Vite React, Python, and Azure OpenAI APIs to deliver localized, district-specific conversational assistance for regional office employees.",
+      "Developed the Validation E-Faktur Pajak Windows Service application using ASP.NET, Azure Document Intelligence (OCR), and Azure OpenAI APIs to automatically read, extract key data, and summarize tax invoices with improved processing accuracy.",
+      "Designed and developed the CashFlow KPP interactive dashboard and reporting solution using Power BI, SQL Server, and Microsoft Fabric to record transactions, summarize site-level cash flow, and provide real-time financial insights across locations.",
+      "Built and enhanced enterprise web-based solutions using .NET, JavaScript, SQL Server, and Oracle based on business requirements.",
+      "Designed and implemented RESTful APIs using ASP.NET Web APIs to enable reliable communication and integration across internal operational and enterprise applications.",
+      "Reviewed and maintained source code in Azure Repos (Git) and implemented CI/CD pipelines in Azure DevOps to support automated build and deployment workflows.",
+      "Collaborated with business users and stakeholders through requirement discussions and User Acceptance Testing (UAT) sessions to ensure solution alignment and delivery quality."
+    ],
+    impact: [
+      "Engineered innovative AI conversational assistants and OCR invoice extraction services with Azure OpenAI.",
+      "Enhanced regional enterprise workforce productivity through unified React Native and .NET Core applications.",
+      "Delivered real-time financial transparency and multi-site cash flow intelligence with Power BI and Microsoft Fabric."
+    ],
+    technologies: [
+      ".NET Core",
+      "ASP.NET",
+      "C#",
+      "React Native",
+      "Vite React",
+      "TypeScript",
+      "JavaScript",
+      "Python",
+      "Azure OpenAI",
+      "Azure Document Intelligence",
+      "Power BI",
+      "Microsoft Fabric",
+      "GraphQL",
+      "SQL Server",
+      "Oracle",
+      "Azure DevOps"
     ]
   },
   {
     id: "adira-software-engineer",
     company: "PT Adira Finance",
     role: "Software Engineer",
-    period: "Aug 2021 - Nov 2022",
+    period: "May 2019 - Jul 2020",
     location: "Jakarta, Indonesia",
     responsibilities: [
-      "Developed and maintained enterprise financial application features using Java Spring Boot and ZK Framework.",
-      "Implemented REST APIs, backend services, digital document generation, and microservices-oriented improvements.",
-      "Resolved production support tickets through troubleshooting, Oracle SQL validation, and data correction.",
-      "Maintained SSIS packages for ETL and enterprise data integration processes."
+      "Developed and maintained the ACTION core financial application using Java Spring Boot and the ZK Framework to support loan processing operations across branch offices.",
+      "Resolved production support tickets by analyzing business issues, validating data integrity, and performing Oracle SQL data corrections, including updates, inserts, and data validation.",
+      "Investigated application defects, identified root causes, and collaborated with System Analysts to deliver maintenance enhancements (MTC) for recurring production issues.",
+      "Developed digital document generation services using Spring Boot, Apache POI, and electronic stamp integration as part of the company's document digitization initiative.",
+      "Designed and implemented RESTful APIs to enable reliable communication between enterprise applications and backend services.",
+      "Contributed to the implementation of a microservices architecture to improve application scalability, maintainability, and performance.",
+      "Optimized Oracle database queries to improve application response time and overall system efficiency.",
+      "Developed and maintained SSIS packages to support ETL and enterprise data integration processes.",
+      "Performed troubleshooting, debugging, and production support to ensure the stability and reliability of business-critical financial applications.",
+      "Collaborated with Business Analysts, System Analysts, QA Engineers, and infrastructure teams throughout the software development lifecycle."
     ],
     impact: [
-      "Established Ryan's original software engineering foundation.",
-      "Built backend, database, production support, and enterprise troubleshooting experience.",
-      "Connected business-critical application work with reliability and maintainability concerns."
+      "Established Ryan's core engineering foundation in enterprise Java, Spring Boot, and financial backend systems.",
+      "Ensured data integrity and operational uptime for high-volume loan processing across nationwide branches.",
+      "Modernized document generation and enterprise integration via RESTful microservices and SSIS ETL pipelines."
     ],
     technologies: [
       "Java",
@@ -634,19 +687,25 @@ export const projects: readonly ProjectCaseStudy[] = [
 export const skillGroups: readonly SkillGroup[] = [
   {
     id: "build",
-    title: "Build Engineering",
+    title: "Full Stack Development",
     skills: [
       {
-        name: "Frontend Applications",
+        name: "Frontend & Mobile Applications",
         purpose:
-          "Build user-facing systems with Next.js, React, TypeScript, Tailwind CSS, and data workflows.",
+          "Build responsive web and mobile systems with Next.js, React, Vite React, React Native, TypeScript, and Tailwind CSS.",
         relatedProjects: ["Enterprise Audit Monitoring Platform", "Ryan Portfolio"]
       },
       {
-        name: "Backend Services",
+        name: "Backend Services & APIs",
         purpose:
-          "Design REST APIs and service logic with Node.js, Express, Java Spring Boot, and microservices patterns.",
+          "Design RESTful APIs and microservices with Node.js, Express.js, Java Spring Boot, and .NET Core / ASP.NET.",
         relatedProjects: ["Enterprise Audit Monitoring Platform", "Enterprise Backend Development"]
+      },
+      {
+        name: "AI & Intelligent Applications",
+        purpose:
+          "Integrate Azure OpenAI APIs, OpenAI models, Azure Document Intelligence (OCR), and Python conversational assistants into web and mobile platforms.",
+        relatedProjects: ["Enterprise Audit Monitoring Platform"]
       },
       {
         name: "Forms, Tables, and Workflows",
@@ -658,21 +717,21 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     id: "quality",
-    title: "Quality Engineering",
+    title: "SDET & Automation",
     skills: [
       {
         name: "Web and API Automation",
         purpose:
-          "Create maintainable automation with Playwright, WebDriverIO, Postman, Jest, and TypeScript.",
+          "Create maintainable automation frameworks with Playwright, WebDriverIO, Selenium, Katalon Studio, Postman, Jest, and TypeScript.",
         relatedProjects: ["Enterprise Web Automation Ecosystem", "SMTP Bulk Testing Solution"]
       },
       {
-        name: "Mobile Automation",
+        name: "Mobile & Real-Device Automation",
         purpose: "Validate Android and iOS behavior with Appium and AWS Device Farm execution.",
         relatedProjects: ["Cross-Platform Mobile Automation"]
       },
       {
-        name: "Performance Engineering",
+        name: "Performance & Stress Testing",
         purpose: "Evaluate load, stress, thresholds, and bottleneck signals with K6 and JMeter.",
         relatedProjects: ["Performance & Load Testing"]
       }
@@ -680,30 +739,30 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     id: "data",
-    title: "Data Engineering Context",
+    title: "Databases & Persistence",
     skills: [
       {
-        name: "Relational Data",
+        name: "Relational & Enterprise Databases",
         purpose:
-          "Work with PostgreSQL, MySQL, Oracle, SQL, Sequelize, migrations, filters, and pagination.",
+          "Work with PostgreSQL, MySQL, SQL Server, Oracle, SQL, MongoDB, Sequelize, migrations, filters, and pagination.",
         relatedProjects: ["Enterprise Audit Monitoring Platform", "Enterprise Backend Development"]
       },
       {
-        name: "Enterprise Integration",
+        name: "Data Integration & ETL",
         purpose:
-          "Support ETL, SSIS, SAP S/4HANA validation, and operational data workflows where verified.",
+          "Support SSIS packages, data migrations, ETL pipelines, and SAP S/4HANA validation.",
         relatedProjects: ["Enterprise Backend Development"]
       }
     ]
   },
   {
     id: "delivery",
-    title: "Delivery and CI/CD",
+    title: "CI/CD & Delivery Gates",
     skills: [
       {
-        name: "CI/CD Quality Gates",
+        name: "Automated Quality Gates",
         purpose:
-          "Connect build, test, report, and deploy signals through GitLab CI/CD and GitLab Runners.",
+          "Connect build, test, report, and deploy signals through GitLab CI/CD, Azure DevOps, and GitLab Runners.",
         relatedProjects: [
           "Enterprise Web Automation Ecosystem",
           "Enterprise Audit Monitoring Platform",
@@ -711,8 +770,8 @@ export const skillGroups: readonly SkillGroup[] = [
         ]
       },
       {
-        name: "Dockerized Execution",
-        purpose: "Use Docker for repeatable automation and application delivery workflows.",
+        name: "Containerized Execution",
+        purpose: "Use Docker for repeatable automation environments and Allure test reporting.",
         relatedProjects: [
           "Enterprise Web Automation Ecosystem",
           "Enterprise Audit Monitoring Platform",

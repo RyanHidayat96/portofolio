@@ -4,21 +4,29 @@ export const capabilities: readonly Capability[] = [
   {
     id: "build-frontend-backend",
     domain: "build",
-    title: "Build",
-    description: "Frontend, backend, API, and enterprise application development.",
+    title: "Full Stack",
+    description: "Frontend, mobile, backend, REST API, and AI-powered enterprise application development.",
     technologies: [
       "Next.js",
       "React",
+      "React Native",
+      "Vite React",
       "TypeScript",
       "JavaScript",
+      "Python",
       "Node.js",
       "Express",
+      "Sequelize",
+      ".NET Core",
+      "ASP.NET",
+      "C#",
       "Java",
       "Spring Boot",
       "REST API",
-      "Microservices"
+      "GraphQL",
+      "Azure OpenAI"
     ],
-    relatedExperience: ["jasa-marga-full-stack", "adira-software-engineer"],
+    relatedExperience: ["jasa-marga-full-stack", "kpp-full-stack", "adira-software-engineer"],
     relatedProjects: [
       "enterprise-audit-monitoring-platform",
       "enterprise-backend-development",
@@ -35,6 +43,7 @@ export const capabilities: readonly Capability[] = [
       "WebDriverIO",
       "Appium",
       "Selenium",
+      "Katalon Studio",
       "Jest",
       "Postman",
       "K6",
@@ -54,9 +63,19 @@ export const capabilities: readonly Capability[] = [
     domain: "data",
     title: "Data",
     description:
-      "Relational data modeling, SQL validation, ORM work, ETL, and enterprise data context.",
-    technologies: ["MySQL", "PostgreSQL", "Oracle", "SQL", "Sequelize", "MongoDB", "SSIS"],
-    relatedExperience: ["jasa-marga-full-stack", "adira-software-engineer", "astra-sqa"],
+      "Relational data modeling, SQL validation, ORM work, migrations, and database workflows.",
+    technologies: [
+      "PostgreSQL",
+      "MySQL",
+      "SQL Server",
+      "Oracle",
+      "SQL",
+      "Sequelize",
+      "MongoDB",
+      "SSIS",
+      "SAP S/4HANA"
+    ],
+    relatedExperience: ["jasa-marga-full-stack", "kpp-full-stack", "adira-software-engineer", "astra-sqa"],
     relatedProjects: ["enterprise-audit-monitoring-platform", "enterprise-backend-development"]
   },
   {
@@ -65,8 +84,16 @@ export const capabilities: readonly Capability[] = [
     title: "Delivery",
     description:
       "Dockerized execution, CI/CD workflows, runners, device farms, and deploy-readiness signals.",
-    technologies: ["GitLab CI/CD", "Docker", "GitLab Runner", "AWS Device Farm", "GitLab Pages"],
-    relatedExperience: ["jasa-marga-full-stack", "jasa-marga-sdet"],
+    technologies: [
+      "GitLab CI/CD",
+      "Azure DevOps",
+      "Docker",
+      "GitLab Runner",
+      "AWS Device Farm",
+      "GitLab Pages",
+      "MinIO"
+    ],
+    relatedExperience: ["jasa-marga-full-stack", "jasa-marga-sdet", "kpp-full-stack"],
     relatedProjects: [
       "enterprise-audit-monitoring-platform",
       "enterprise-web-automation-ecosystem",
@@ -82,7 +109,7 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     label: "Idea",
     description: "Translate business requirements into safe, testable engineering scope.",
     technologies: ["Requirements", "Workflow analysis", "Jira"],
-    relatedExperience: ["astra-sqa", "jasa-marga-full-stack"],
+    relatedExperience: ["astra-sqa", "kpp-full-stack", "jasa-marga-full-stack"],
     relatedProjects: ["enterprise-audit-monitoring-platform"],
     domain: "build"
   },
@@ -93,12 +120,13 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     technologies: [
       "Next.js",
       "React",
+      "React Native",
       "TypeScript",
       "Tailwind CSS",
       "TanStack Query",
       "TanStack Table"
     ],
-    relatedExperience: ["jasa-marga-full-stack"],
+    relatedExperience: ["kpp-full-stack", "jasa-marga-full-stack"],
     relatedProjects: ["enterprise-audit-monitoring-platform", "ryan-hidayat-portfolio"],
     domain: "build"
   },
@@ -106,8 +134,8 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     id: "api",
     label: "API",
     description: "Design RESTful boundaries between UI workflows and backend services.",
-    technologies: ["REST API", "Node.js", "Express", "Spring Boot"],
-    relatedExperience: ["jasa-marga-full-stack", "adira-software-engineer"],
+    technologies: ["REST API", "Node.js", "Express", "Spring Boot", ".NET Core", "ASP.NET", "GraphQL"],
+    relatedExperience: ["jasa-marga-full-stack", "kpp-full-stack", "adira-software-engineer"],
     relatedProjects: ["enterprise-audit-monitoring-platform", "enterprise-backend-development"],
     domain: "build"
   },
@@ -116,8 +144,8 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     label: "Backend",
     description:
       "Implement service logic, validation, authentication, authorization, and integration work.",
-    technologies: ["Node.js", "Express", "Java", "Spring Boot", "Microservices"],
-    relatedExperience: ["jasa-marga-full-stack", "adira-software-engineer"],
+    technologies: ["Node.js", "Express", "Java", "Spring Boot", ".NET Core", "C#", "Python", "Microservices"],
+    relatedExperience: ["jasa-marga-full-stack", "kpp-full-stack", "adira-software-engineer"],
     relatedProjects: ["enterprise-audit-monitoring-platform", "enterprise-backend-development"],
     domain: "build"
   },
@@ -125,8 +153,8 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     id: "data",
     label: "Data",
     description: "Model, query, validate, migrate, and integrate enterprise data safely.",
-    technologies: ["PostgreSQL", "MySQL", "Oracle", "SQL", "Sequelize", "SSIS"],
-    relatedExperience: ["jasa-marga-full-stack", "adira-software-engineer", "astra-sqa"],
+    technologies: ["PostgreSQL", "MySQL", "SQL Server", "Oracle", "SQL", "Sequelize", "Power BI", "SSIS"],
+    relatedExperience: ["jasa-marga-full-stack", "kpp-full-stack", "adira-software-engineer", "astra-sqa"],
     relatedProjects: ["enterprise-audit-monitoring-platform", "enterprise-backend-development"],
     domain: "data"
   },
@@ -150,8 +178,8 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     label: "CI/CD",
     description:
       "Connect build, test, report, and deploy signals through repeatable delivery workflows.",
-    technologies: ["GitLab CI/CD", "Docker", "GitLab Runner", "Allure", "GitLab Pages"],
-    relatedExperience: ["jasa-marga-full-stack", "jasa-marga-sdet"],
+    technologies: ["GitLab CI/CD", "Azure DevOps", "Docker", "GitLab Runner", "Allure", "GitLab Pages"],
+    relatedExperience: ["jasa-marga-full-stack", "jasa-marga-sdet", "kpp-full-stack"],
     relatedProjects: [
       "enterprise-audit-monitoring-platform",
       "enterprise-web-automation-ecosystem",
@@ -166,7 +194,7 @@ export const fullCycleNodes: readonly FullCycleNode[] = [
     description:
       "Support release confidence through operational visibility, troubleshooting, and public-safe delivery thinking.",
     technologies: ["Production support", "Troubleshooting", "Dashboards", "Quality gates"],
-    relatedExperience: ["jasa-marga-full-stack", "adira-software-engineer"],
+    relatedExperience: ["jasa-marga-full-stack", "kpp-full-stack", "adira-software-engineer"],
     relatedProjects: ["enterprise-audit-monitoring-platform", "enterprise-backend-development"],
     domain: "delivery"
   }

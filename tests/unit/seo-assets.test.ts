@@ -22,7 +22,7 @@ describe("SEO and production asset configuration", () => {
 
     expect(siteConfig.title).toBe("Ryan Hidayat — Full Stack Engineer × SDET");
     expect(siteConfig.description).toBe(
-      "Full Stack Engineer and SDET experienced in enterprise application development, Next.js, React, Node.js, Java Spring Boot, APIs, databases, test automation, performance engineering, Docker, and GitLab CI/CD."
+      "Full Stack Developer and SDET with 7+ years of experience across enterprise web, mobile, and AI-powered applications, backend services, test automation frameworks, and quality engineering."
     );
     expect(webManifest).toMatchObject({
       name: siteConfig.title,

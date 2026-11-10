@@ -30,7 +30,7 @@ describe("verified portfolio data", () => {
     expect(profile.yearsOfExperience).not.toHaveLength(0);
     expect(profile.contact.email.href).toMatch(/^mailto:/);
     expect(profile.contact.linkedIn.href).toMatch(/^https:\/\//);
-    expect(experience).toHaveLength(4);
+    expect(experience).toHaveLength(5);
     expect(education[0]?.institution).not.toHaveLength(0);
   });
 

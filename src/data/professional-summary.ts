@@ -32,17 +32,29 @@ const roleSummaries: Readonly<Record<string, RoleSummary>> = {
   "astra-sqa": {
     summary: "Manual and automated testing for web, Android, and iOS applications.",
     contributions: [
-      "Prepared test plans, scenarios, defect reports, and regression checks, supporting integration and user acceptance testing.",
+      "Prepared test plans, scenarios, defect reports, and regression checks, supporting SIT, regression, and UAT.",
       "Maintained WebDriverIO and Playwright automation, validated APIs with Postman and Jest, and tested performance with K6.",
-      "Validated application data through MySQL and SAP S/4HANA workflows."
+      "Validated application data through MySQL and SAP S/4HANA enterprise workflows."
     ],
     outcome:
-      "Supported release decisions with test execution, defect reporting, and data validation across platforms."
+      "Ensured cross-platform software stability, thorough defect tracking, and release confidence."
+  },
+  "kpp-full-stack": {
+    summary: "Full stack enterprise web and mobile application development.",
+    contributions: [
+      "Built the LIMAS training management platform using .NET Core, JavaScript, and SQL Server.",
+      "Developed mobile modules for Mobile Office KPP (M-OK) with React Native, TypeScript, and GraphQL.",
+      "Developed the MOKA mobile/web assistant using React Native, Vite React, and Python.",
+      "Engineered invoice processing service with ASP.NET and document extraction services.",
+      "Built enterprise web solutions and RESTful APIs using .NET, JavaScript, and SQL Server."
+    ],
+    outcome:
+      "Delivered scalable web and mobile application modules across enterprise operational systems."
   },
   "adira-software-engineer": {
-    summary: "Backend development and production support for financial applications.",
+    summary: "Backend development and production support for core financial applications.",
     contributions: [
-      "Developed application features, REST APIs, and document generation with Java, Spring Boot, and ZK Framework.",
+      "Developed application features, REST APIs, and digital document generation with Java, Spring Boot, and ZK Framework.",
       "Resolved production tickets through troubleshooting, Oracle SQL validation, and data correction.",
       "Maintained SSIS packages for data transformation and enterprise integration."
     ],
@@ -59,9 +71,10 @@ export const professionalExperience = experience.map((role) => ({
 }));
 
 export const professionalHighlights = [
-  { id: "jasa-marga-full-stack", title: "Enterprise application development" },
-  { id: "jasa-marga-sdet", title: "Automation connected to delivery" },
-  { id: "adira-software-engineer", title: "Financial application engineering" }
+  { id: "jasa-marga-full-stack", title: "Enterprise Full Stack Development" },
+  { id: "jasa-marga-sdet", title: "SDET & Automation Ecosystem" },
+  { id: "kpp-full-stack", title: "Full Stack Web, Mobile & AI Solutions" },
+  { id: "adira-software-engineer", title: "Financial Backend Engineering" }
 ].flatMap((highlight) => {
   const role = professionalExperience.find((item) => item.id === highlight.id);
   return role
@@ -80,24 +93,24 @@ export const skillApplications: Readonly<
   >
 > = {
   build: {
-    title: "Application Development",
-    example: "Audit tracking screens, role-based APIs, document uploads, and reporting workflows.",
+    title: "Full Stack Development",
+    example: "Next.js, React, React Native, Node.js, .NET Core, and Azure OpenAI enterprise web and mobile applications.",
     experienceId: "jasa-marga-full-stack"
   },
   quality: {
-    title: "Test Automation & Quality",
-    example: "Web and mobile automation frameworks, API validation, and load testing.",
+    title: "Software Development Engineer in Test (SDET)",
+    example: "Web and mobile automation frameworks, API validation, self-healing, and performance testing.",
     experienceId: "jasa-marga-sdet"
   },
   data: {
-    title: "Databases & Integration",
+    title: "Databases & Persistence",
     example:
-      "Oracle SQL troubleshooting, production data correction, and SSIS integration packages.",
-    experienceId: "adira-software-engineer"
+      "PostgreSQL, MySQL, SQL Server, and Oracle database design, query optimization, and data workflows.",
+    experienceId: "jasa-marga-full-stack"
   },
   delivery: {
-    title: "CI/CD & Delivery",
-    example: "Docker-based test execution, GitLab pipelines, device testing, and Allure reports.",
+    title: "CI/CD & Quality Gates",
+    example: "Dockerized execution, GitLab pipelines, Azure DevOps, device testing, and Allure reports.",
     experienceId: "jasa-marga-sdet"
   }
 };

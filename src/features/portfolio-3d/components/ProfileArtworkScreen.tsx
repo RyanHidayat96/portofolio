@@ -83,14 +83,12 @@ export function ProfileArtworkScreen({
           <h2 id="profile-frame-title">Professional Profile</h2>
           <p className="profile-frame-headline">Development With a Quality Background</p>
           <p className="profile-frame-tagline">
-            My experience spans financial applications, enterprise workflows, and software testing.
-            I started in software engineering with Java and backend systems, then worked in manual
-            testing, automation, and SDET roles before moving into full-stack development.
+            My experience centers on enterprise full-stack development, AI-powered application engineering, and software quality engineering (SDET).
+            I build robust web, mobile, and intelligent applications while designing scalable automation frameworks to ensure release confidence.
           </p>
           <p className="profile-frame-summary">
-            Today, I work across application screens, APIs, and data workflows. That testing
-            background shapes how I approach validation, access control, failure cases, and release
-            readiness alongside feature development.
+            Today, I engineer full-stack systems across Next.js, React, React Native, Node.js, and .NET Core with Azure OpenAI integrations,
+            backed by relational databases and robust test automation suites that protect software quality.
           </p>
           <dl className="profile-frame-facts">
             <div>

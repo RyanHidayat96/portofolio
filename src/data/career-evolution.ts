@@ -18,19 +18,19 @@ export const publicCareerEvolution = {
       label: '01',
       stage: 'Software Engineering Foundation',
       domains: ['Build', 'Backend', 'Data'],
-      story: 'Application development foundation across backend, APIs, data, and production-minded troubleshooting.'
+      story: 'Application development foundation across backend, APIs, data, and production-minded troubleshooting at Adira Finance and Kalimantan Prima Persada.'
     },
     {
       label: '02',
       stage: 'Quality Engineering Depth',
       domains: ['Automation', 'API', 'Performance'],
-      story: 'Testing discipline evolved into automation, failure analysis, reporting, and release confidence.'
+      story: 'Testing discipline evolved into automation, failure analysis, reporting, and release confidence across Astra International and Jasa Marga.'
     },
     {
       label: '03',
       stage: 'Full-Cycle Ownership',
       domains: ['Full Stack', 'Quality', 'Delivery'],
-      story: 'This layer combines product build, data integrity, automation mindset, and delivery discipline.'
+      story: 'This layer combines enterprise product build, AI integrations, data integrity, automation mindset, and delivery discipline.'
     }
   ]
 } as const;
